@@ -13,6 +13,7 @@ from __future__ import generators
 
 from PartitionRefinement import PartitionRefinement
 from Sequence import Sequence
+from Util import arbitrary_item
 
 def LexBFS(G):
     """Find lexicographic breadth-first-search traversal order of a graph.
@@ -22,10 +23,10 @@ def LexBFS(G):
     Running time is O(n+m) and additional space usage over G is O(n).
     """
     P = PartitionRefinement(G)
-    S = Sequence([iter(P).next()], key=id)
+    S = Sequence(P, key=id)
     while S:
-        set = iter(S).next()    # find first set in ordered partition
-        v = iter(set).next()    # and first remaining vertex in that set
+        set = S[0]
+        v = arbitrary_item(set)
         yield v
         P.remove(v)
         if not set:

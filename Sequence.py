@@ -14,7 +14,8 @@ class SequenceError(Exception): pass
 
 class Sequence:
     """Maintain a sequence of items subject to insertions and removals.
-    All sequence operations take constant time.
+    All sequence operations take constant time except indexing, which
+    takes time proportional to the index.
     """
 
     def __init__(self, iterable=[], key=None):
@@ -43,6 +44,16 @@ class Sequence:
             if item == self._first:
                 return
     
+    def __getitem__(self,i):
+        """Return the ith item in the sequence."""
+        item = self._first
+        while i:
+            item = self._next[item]
+            if item == self._first:
+                raise IndexError("Index out of range")
+            i -= 1
+        return self._items.get(item,item)
+        
     def __len__(self):
         """Number of items in the sequence."""
         return len(self._next)
