@@ -62,7 +62,7 @@ def isIndependentSet(V,G):
     """
     class NonIndependent(Exception):
         pass
-    
+
     def TestIndependent(seq):
         for x in seq:
             raise NonIndependent

@@ -28,13 +28,13 @@ per entry of D, rather than a list of all prime factors of D.
 def primes():
     '''Yields the sequence of primes via the Sieve of Eratosthenes.'''
     yield 2                 # Only even prime.  Sieve only odd numbers.
-    
+
     # Generate recursively the sequence of primes up to sqrt(n).
     # Each p from the sequence is used to initiate sieving at p*p.
     roots = primes()
     root = roots.next()
     square = root*root
-    
+
     # The main sieving loop.
     # We use a hash table D such that D[n]=2p for p a prime factor of n.
     # Each prime p up to sqrt(n) appears once as a value in D, and is

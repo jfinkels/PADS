@@ -43,7 +43,7 @@ class Sequence:
             item = self._next[item]
             if item == self._first:
                 return
-    
+
     def __getitem__(self,i):
         """Return the ith item in the sequence."""
         item = self._first
@@ -53,7 +53,7 @@ class Sequence:
                 raise IndexError("Index out of range")
             i -= 1
         return self._items.get(item,item)
-        
+
     def __len__(self):
         """Number of items in the sequence."""
         return len(self._next)

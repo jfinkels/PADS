@@ -43,52 +43,52 @@ class RegularLanguage:
             self.recognizer = RegExp(arg)
         else:
             raise LanguageError("Unrecognized constructor for RegularLanguage")
-    
+
     def __contains__(self,inputsequence):
         return self.recognizer(inputsequence)
-        
+
     def __eq__(self,other):
         if not isinstance(other,RegularLanguage):
             return None
         return self.recognizer.minimize() == other.recognizer.minimize()
-        
+
     def __ne__(self,other):
         return not (self == other)
-        
+
     def __le__(self,other):
         return not(self &~ other)
-        
+
     def __ge__(self,other):
         return not(other &~ self)
-        
+
     def __lt__(self,other):
         return self <= other and self != other
-    
+
     def __gt__(self,other):
         return self >= other and self != other
-        
+
     def __invert__(self):
         """Complement (with respect to alphabet) of language."""
         return Language(self.recognizer.complement())
-        
+
     def __and__(self,other):
         """Intersection of two languages with the same alphabet."""
         if not isinstance(other,RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
         return Language(self.recognizer.intersection(other.recognizer))
-        
+
     def __or__(self,other):
         """Union of two languages with the same alphabet."""
         if not isinstance(other,RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
         return Language(self.recognizer.union(other.recognizer))
-        
+
     def __xor__(self,other):
         """Symmetric difference of two languages with the same alphabet."""
         if not isinstance(other,RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
         return Language(self.recognizer.symmetricDifference(other.recognizer))
-        
+
     def __nonzero__(self):
         """Is this the empty language?"""
         for x in self.recognizer.states():
@@ -110,9 +110,9 @@ class FiniteAutomaton:
      - x.asDFA(): return an equivalent DFA
      - x.asNFA(): return an equivalent NFA
     """
-    
+
     initial = alphabet = transition = isfinal = asDFA = asNFA = None
-    
+
     def __len__(self):
         """How many states does this automaton have?"""
         return len(list(self.states()))
@@ -120,7 +120,7 @@ class FiniteAutomaton:
     def __call__(self,symbols):
         """Test whether sequence of symbols is accepted by the DFA."""
         return self.asDFA()(symbols)
-    
+
     def language(self):
         """Form language object for language recognized by automaton."""
         return RegularLanguage(self)
@@ -132,7 +132,7 @@ class FiniteAutomaton:
     def pprint(self,output=sys.stdout):
         """Pretty-print this automaton to an output stream."""
         return self.asNFA().pprint(output)
-    
+
     def minimize(self):
         """Return smallest equivalent DFA."""
         return _MinimumDFA(self.asDFA())
@@ -144,23 +144,23 @@ class FiniteAutomaton:
     def renumber(self,offset=0):
         """Replace complicated state objects by small integers."""
         return _RenumberNFA(self.asNFA(),offset=offset)
-        
+
     def RegExp(self):
         """Return equivalent regular expression."""
         return self.asNFA().RegExp()
-        
+
     def complement(self):
         """Make automaton recognizing complement of given automaton's language."""
         return _ComplementDFA(self.asDFA())
-        
+
     def union(self,other):
         """Make automaton recognizing union of two automata's languages."""
         return _ProductDFA(self.asDFA(),other.asDFA(),operator.or_)
-        
+
     def intersection(self,other):
         """Make automaton recognizing union of two automata's languages."""
         return _ProductDFA(self.asDFA(),other.asDFA(),operator.and_)
-        
+
     def symmetricDifference(self,other):
         """Make automaton recognizing union of two automata's languages."""
         return _ProductDFA(self.asDFA(),other.asDFA(),operator.xor)
@@ -172,7 +172,7 @@ class DFA(FiniteAutomaton):
     """
     def asDFA(self):
         return self
-        
+
     def asNFA(self):
         return _NFAfromDFA(self)
 
@@ -185,7 +185,7 @@ class DFA(FiniteAutomaton):
                                  " not in input alphabet")
             state = self.transition(state,symbol)
         return self.isfinal(state)
-        
+
     def __eq__(self,other):
         """Report whether these two DFAs have equivalent states."""
         if not isinstance(other,DFA) or len(self) != len(other) \
@@ -205,7 +205,7 @@ class DFA(FiniteAutomaton):
                 elif equivalences[xc] != yc:
                     return False
         return True
-        
+
     def __ne__(self,other):
         """Report whether these two DFAs have equivalent states."""
         return not (self == other)
@@ -219,7 +219,7 @@ class NFA(FiniteAutomaton):
     """
     def asNFA(self):
         return self
-        
+
     def asDFA(self):
         return _DFAfromNFA(self)
 
@@ -255,12 +255,12 @@ class NFA(FiniteAutomaton):
     def RegExp(self):
         """Convert to regular expression and return as a string.
         See Sipser for an explanation of this algorithm."""
-        
+
         # create artificial initial and final states
         initial = object()
         final = object()
         states = Set([initial,final]) | Set(self.states())
-        
+
         # 2d matrix of expressions connecting each pair of states
         expr = {}
         for x in states:
@@ -321,7 +321,7 @@ class _DFAfromNFA(DFA):
         self.initial = N.initial
         self.alphabet = N.alphabet
         self.NFA = N
-    
+
     def transition(self,stateset,symbol):
         output = Set()
         for state in stateset:
@@ -342,10 +342,10 @@ class _NFAfromDFA(NFA):
         self.initial = ImmutableSet([D.initial])
         self.alphabet = D.alphabet
         self.DFA = D
-    
+
     def transition(self,state,symbol):
         return ImmutableSet([self.DFA.transition(state,symbol)])
-    
+
     def isfinal(self,state):
         return self.DFA.isfinal(state)
 
@@ -387,7 +387,7 @@ class RegExp(NFA):
     #   initial = the initial states of the subexpression
     #   penultimate = states one step away from an accepting state
     #   epsilon = true if the subexpression accepts the empty string
-    
+
     def epsilon(self):
         """Parse an empty string and return an empty automaton."""
         return Empty,Empty,True
@@ -430,7 +430,7 @@ class RegExp(NFA):
                 self.successor[state] |= initial
             epsilon = True
         return initial,penultimate,epsilon
-        
+
     def term(self):
         """Parse a summable expression: factor or concatenation."""
         initial,penultimate,epsilon = self.factor()
@@ -465,10 +465,10 @@ class LookupNFA(NFA):
         self.initial = ImmutableSet(initial)
         self.ttable = ttable
         self.final = ImmutableSet(final)
-        
+
     def transition(self,state,symbol):
         return ImmutableSet(self.ttable[state,symbol])
-        
+
     def isfinal(self,state):
         return state in self.final
 
@@ -497,7 +497,7 @@ class _ProductDFA(DFA):
         self.D1 = D1
         self.D2 = D2
         self.op = op
-    
+
     def transition(self,state,symbol):
         s1,s2 = state
         return self.D1.transition(s1,symbol), \
@@ -508,7 +508,7 @@ class _ProductDFA(DFA):
         f1 = self.D1.isfinal(s1) and 1 or 0
         f2 = self.D2.isfinal(s2) and 1 or 0
         return self.op(f1,f2)
-    
+
 def _ReverseNFA(N):
     """Construct NFA for reversal of original NFA's language."""
     initial = [s for s in N.states() if N.isfinal(s)]
@@ -525,10 +525,10 @@ class _ComplementDFA(DFA):
         self.DFA = D
         self.initial = D.initial
         self.alphabet = D.alphabet
-    
+
     def transition(self,state,symbol):
         return self.DFA.transition(state,symbol)
-    
+
     def isfinal(self,state):
         return not self.DFA.isfinal(state)
 
@@ -554,18 +554,18 @@ class _MinimumDFA(DFA):
                         unrefined.append(new)
                     else:
                         unrefined.append(old)
-        
+
         # convert partition to DFA
         P.freeze()
         self.partition = P
         self.initial = P[D.initial]
         self.alphabet = D.alphabet
         self.DFA = D
-        
+
     def transition(self,state,symbol):
         rep = arbitrary_item(state)
         return self.partition[self.DFA.transition(rep,symbol)]
-        
+
     def isfinal(self,state):
         rep = arbitrary_item(state)
         return self.DFA.isfinal(rep)
@@ -602,13 +602,13 @@ class RegExpTest(unittest.TestCase):
         for L1,Li,Lx in self.languages:
             L2 = RegularLanguage(L1.recognizer.RegExp())
             self.assertEqual(L1,L2)
-    
+
     def testInequivalent(self):
         """test that different regular languages are recognized as different"""
         for i in range(len(self.languages)):
             for j in range(i):
                 self.assertNotEqual(self.languages[i][0],
                                     self.languages[j][0])
-                
+
 if __name__ == "__main__":
-    unittest.main()   
+    unittest.main()   

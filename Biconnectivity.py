@@ -21,12 +21,12 @@ class BiconnectedComponents(DFS.Searcher):
     dictionary mapping each vertex to its neighbor set.
     The result of BiconnectedComponents(G) is a sequence of subgraphs of G.
     """
-    
+
     def __init__(self,G):
         """Search for biconnected components of graph G."""
         if not isUndirected(G):
             raise ValueError("BiconnectedComponents: input not undirected graph")
-    
+
         # set up data structures for DFS
         self._components = []
         self._dfsnumber = {}
@@ -34,10 +34,10 @@ class BiconnectedComponents(DFS.Searcher):
         self._active = []
         self._low = {}
         self._ancestors = {} # directed subgraph from nodes to DFS ancestors
-        
+
         # perform the Depth First Search
         DFS.Searcher.__init__(self,G)
-        
+
         # clean up now-useless data structures
         del self._dfsnumber, self._activelen, self._active
         del self._low, self._ancestors
@@ -92,11 +92,11 @@ class BiconnectivityTester(DFS.Searcher):
     Either successfully inits or raises NotBiconnected.
     Otherwise does nothing.
     """
-    
+
     def __init__(self,G):
         """Search for biconnected components of graph G."""
         if not isUndirected(G):
-            raise NotBiconnected 
+            raise NotBiconnected
         self._dfsnumber = {}
         self._low = {}
         self._rootedge = None
@@ -131,7 +131,7 @@ def isBiconnected(G):
     except NotBiconnected:
         return False
 
-    
+
 # If run as "python CubicHam.py", run tests on various small graphs
 # and check that the correct results are obtained.
 
@@ -161,7 +161,7 @@ class BiconnectivityTest(unittest.TestCase):
         """G1 is biconnected but G2 is not."""
         self.assertEqual(isBiconnected(self.G1), True)
         self.assertEqual(isBiconnected(self.G2), False)
-        
+
     def testBiconnectedComponents(self):
         """G2 has four biconnected components."""
         C = BiconnectedComponents(self.G2)
@@ -172,4 +172,4 @@ class BiconnectivityTest(unittest.TestCase):
         self.assertEqual(CV,[[0,2,5],[1,3,6,8],[2,3],[4,7]])
 
 if __name__ == "__main__":
-    unittest.main()   
+    unittest.main()   

@@ -37,14 +37,14 @@ class RangeMin:
             big = map(max, self._ansv(False), self._ansv(True))
             parents = dict([(i,big[i][1]) for i in range(len(X)) if big[i]])
             self._lca = LCA(parents)
-        
+
     def __getslice__(self,left,right):
         """Return min(X[left:right])."""
         right = min(right, len(self._data))  # handle omitted right index
         if right <= left:
             return None     # empty range has no minimum
         return self._data[self._lca(left,right-1)]
-    
+
     def __len__(self):
         """How much data do we have?  Needed for negative index in slice."""
         return len(self._data)
@@ -65,7 +65,7 @@ class RangeMin:
             output[xi[1]] = stack[-1]
             stack.append(xi)
         return output
-        
+
     def _lca(self,first,last):
         """Function to replace LCA when we have too little data."""
         return 0
@@ -105,7 +105,7 @@ class RestrictedRangeMin:
             if blockid not in ids:
                 ids[blockid] = PrecomputedRangeMin(_pairs(XX))
         self._blocks = [ids[b] for b in blocks]
-        
+
         # Build data structure for interblock queries
         self._blockrange = LogarithmicRangeMin(blockmin)
         self._data = list(X)
@@ -137,16 +137,16 @@ class PrecomputedRangeMin:
 
     def __init__(self,X):
         self._minima = [PrefixMinima(X[i:]) for i in range(len(X))]
-    
+
     def __getslice__(self,x,y):
         return self._minima[x][y-x-1]
-        
+
     def __len__(self):
         return len(self._minima)
-        
+
 class LogarithmicRangeMin:
     """RangeMin in O(n log n) space and constant query time."""
-    
+
     def __init__(self,X):
         """Compute min(X[i:i+2**j]) for each possible i,j."""
         self._minima = m = [list(X)]
@@ -160,7 +160,7 @@ class LogarithmicRangeMin:
         j = _logtable[y-x]
         row = self._minima[j]
         return min(row[x],row[y-2**j])
-        
+
     def __len__(self):
         return len(self._minima[0])
 
@@ -178,14 +178,14 @@ class LCA:
         root = [x for x in children if x not in parent]
         if len(root) != 1:
             raise ValueError("LCA input is not a tree")
- 
+
         levels = []
         self._representatives = {}
         self._visit(children,levels,root[0],0)
         if [x for x in parent if x not in self._representatives]:
             raise ValueError("LCA input is not a tree")
         self._rangemin = RangeMinFactory(levels)
-            
+
     def __call__(self,*nodes):
         """Find least common ancestor of a set of nodes."""
         r = [self._representatives[x] for x in nodes]
@@ -221,7 +221,7 @@ class OfflineLCA(dict):
         # self.ancestors maps disjoint set ids to the ancestors themselves.
         self.descendants = UnionFind()
         self.ancestors = {}
-        
+
         # invert the parent relationship so we can traverse the tree
         self.children = {}
         for x,px in parent.iteritems():
@@ -229,7 +229,7 @@ class OfflineLCA(dict):
         root = [x for x in self.children if x not in parent]
         if len(root) != 1:
             raise ValueError("LCA input is not a tree")
-        
+
         # initiate depth first traversal
         self.visited = Set()
         self.traverse(root[0])
@@ -307,7 +307,7 @@ class LCATest(unittest.TestCase):
         ('a','i'):'a',
         ('f','i'):'f',
     }
-    
+
     def testLCA(self):
         L = LCA(self.parent)
         for k,v in self.lcas.iteritems():
@@ -317,11 +317,11 @@ class LCATest(unittest.TestCase):
         L = LCA(self.parent, LogarithmicRangeMin)
         for k,v in self.lcas.iteritems():
             self.assertEqual(L(*k),v)
-            
+
     def testOfflineLCA(self):
         L = OfflineLCA(self.parent, self.lcas.iterkeys())
         for (p,q),v in self.lcas.iteritems():
             self.assertEqual(L[p][q],v)
 
 if __name__ == "__main__":
-    unittest.main()   
+    unittest.main()   

@@ -15,14 +15,14 @@ def LongestIncreasingSubsequence(S):
     occurrences of that value can end the sequence, then the
     earliest occurrence is preferred.
     """
-    
+
     # The main data structures: head[i] is value x from S that
     # terminates a length-i subsequence, and tail[i] is either
     # None (if i=0) or the pair (head[i-1],tail[i-1]) as they
     # existed when x was processed.
     head = []
     tail = [None]
-    
+
     for x in S:
         i = bisect_left(head,x)
         if i >= len(head):
@@ -45,7 +45,7 @@ def LongestIncreasingSubsequence(S):
 
     output.reverse()
     return output
-    
+
 # If run as "python LongestIncreasingSubsequence.py", run tests on various
 # small lists and check that the correct subsequences are generated.
 
@@ -58,4 +58,4 @@ class LISTest(unittest.TestCase):
                                                       [1,2,3,5,8,9])
 
 if __name__ == "__main__":
-    unittest.main()   
+    unittest.main()   

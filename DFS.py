@@ -48,7 +48,7 @@ def preorder(G):
     for v,w,edgetype in search(G):
         if edgetype is forward:
             yield w
-    
+
 def postorder(G):
     """Generate all vertices of graph G in depth-first postorder."""
     for v,w,edgetype in search(G):

@@ -20,7 +20,7 @@ def matching(graph):
     The same object may occur in both U and V, and is treated as two
     distinct vertices if this happens.
     """
-    
+
     # initialize greedy matching (redundant, but faster than full search)
     matching = {}
     for u in graph:
@@ -28,7 +28,7 @@ def matching(graph):
             if v not in matching:
                 matching[v] = u
                 break
-    
+
     while True:
         # structure residual graph into layers
         # pred[u] gives the neighbor in the previous layer for u in U
@@ -41,7 +41,7 @@ def matching(graph):
         for v in matching:
             del pred[matching[v]]
         layer = list(pred)
-        
+
         # repeatedly extend layering structure by another pair of layers
         while layer and not unmatched:
             newLayer = {}
@@ -57,7 +57,7 @@ def matching(graph):
                     pred[matching[v]] = v
                 else:
                     unmatched.append(v)
-        
+
         # did we finish layering without finding any alternating paths?
         if not unmatched:
             unlayered = {}

@@ -23,7 +23,7 @@ def matching(G, initialMatching = None):
     that adjacency tests take constant time each.
     The output is a dictionary mapping vertices to their matches;
     unmatched vertices are omitted from the dictionary.
-    
+
     We use Edmonds' blossom-contraction algorithm, as described e.g.
     in Galil's 1986 Computing Surveys paper.
     """
@@ -36,7 +36,7 @@ def matching(G, initialMatching = None):
         """Search for a single augmenting path.
         Returns true if the matching size was increased, false otherwise.
         """
-    
+
         # Data structures for augmenting path search:
         #
         # leader: union-find structure; the leader of a blossom is one
@@ -63,14 +63,14 @@ def matching(G, initialMatching = None):
         T = {}
         unexplored = []
         base = {}
-        
+
         # Subroutines for augmenting path search.
         # Many of these are called only from one place, but are split out
         # as subroutines to improve modularization and readability.
-        
+
         def blossom(v,w,a):
             """Create a new blossom from edge v-w with common ancestor a."""
-            
+
             def findSide(v,w):
                 path = [leader[v]]
                 b = (v,w)   # new base for all T nodes found on the path
@@ -81,7 +81,7 @@ def matching(G, initialMatching = None):
                     unexplored.append(tnode)
                     path.append(leader[T[tnode]])
                 return path
-            
+
             a = leader[a]   # sanity check
             path1,path2 = findSide(v,w), findSide(w,v)
             leader.union(*path1)
@@ -111,7 +111,7 @@ def matching(G, initialMatching = None):
                 if tnode == goal:
                     return path     # finished recursive subpath
                 start = T[tnode]
-                
+
         def alternate(v):
             """Make v unmatched by alternating the path to the root of its structure tree."""
             path = alternatingPath(v)
@@ -128,20 +128,20 @@ def matching(G, initialMatching = None):
             alternate(w)
             matching[v] = w
             matching[w] = v
-            
+
         def ss(v,w):
             """Handle detection of an S-S edge in augmenting path search.
             Like augment(), returns true iff the matching size was increased.
             """
-    
+
             if leader[v] == leader[w]:
                 return False        # self-loop within blossom, ignore
-    
+
             # parallel search up two branches of structure tree
             # until we find a common ancestor of v and w
             path1, head1 = {}, v
             path2, head2 = {}, w
-    
+
             def step(path, head):
                 head = leader[head]
                 parent = leader[S[head]]
@@ -150,26 +150,26 @@ def matching(G, initialMatching = None):
                 path[head] = parent
                 path[parent] = leader[T[parent]]
                 return path[parent]
-                
+
             while 1:
                 head1 = step(path1, head1)
                 head2 = step(path2, head2)
-                
+
                 if head1 == head2:
                     blossom(v, w, head1)
                     return False
-                
+
                 if leader[S[head1]] == head1 and leader[S[head2]] == head2:
                     addMatch(v, w)
                     return True
-                
+
                 if head1 in path2:
                     blossom(v, w, head1)
                     return False
-                
+
                 if head2 in path1:
                     blossom(v, w, head2)
-                    return False    
+                    return False
 
         # Start of main augmenting path search code.
 
@@ -194,9 +194,9 @@ def matching(G, initialMatching = None):
                     if leader[u] not in S:
                         S[u] = w    # and add its match as an S-node
                         unexplored.append(u)
-                        
+
         return False    # ran out of graph without finding an augmenting path
-                        
+
     # augment the matching until it is maximum
     while augment():
         pass
@@ -210,7 +210,7 @@ def greedyMatching(G, initialMatching=None):
     it away and store the contraction on a stack for later matching.
     If neither of these two cases applies, we match an arbitrary edge.
     """
-    
+
     # Copy initial matching so we can use it nondestructively
     matching = {}
     if initialMatching:
@@ -238,7 +238,7 @@ def greedyMatching(G, initialMatching=None):
     # make sets of degree one and degree two vertices
     deg1 = Set([v for v in avail if len(avail[v]) == 1])
     deg2 = Set([v for v in avail if len(avail[v]) == 2])
-    d2edges = []    
+    d2edges = []
     def updateDegree(v):
         """Cluster degree changed, update sets."""
         if v in deg1:
@@ -251,7 +251,7 @@ def greedyMatching(G, initialMatching=None):
             deg1.add(v)
         elif len(avail[v]) == 2:
             deg2.add(v)
-    
+
     def addMatch(v,w):
         """Add edge connecting two given cluster reps, update avail."""
         p,q = avail[v][w]

@@ -29,19 +29,19 @@ def HamiltonianCycles(G):
     if minDegree(G) < 2:
         return
     G = copyGraph(G,map_to_constant(True))
-    
+
     # Subgraph of forced edges in the input
     forced_in_input = dict([(v,{}) for v in G])
-        
+
     # Subgraph of forced edges in current G
     forced_in_current = dict([(v,{}) for v in G])
-        
+
     # List of vertices with degree two
     degree_two = [v for v in G if len(G[v]) == 2]
-            
+
     # Collection of vertices with forced edges
     forced_vertices = {}
-    
+
     # Reuse results of call to matching() to speed up subsequent calls
     previous_matching = {}
 
@@ -59,12 +59,12 @@ def HamiltonianCycles(G):
         was_forced = w in forced_in_current[v]
         if was_forced:
             del forced_in_current[v][w],forced_in_current[w][v]
-        
+
         def unremove():
             G[v][w] = G[w][v] = was_original
             if was_forced:
                 forced_in_current[v][w] = forced_in_current[w][v] = True
-        
+
         actions.append(unremove)
 
     def now_degree_two(v):
@@ -118,7 +118,7 @@ def HamiltonianCycles(G):
         was_original = G[v][w]
         if was_original:
             forced_in_input[v][w] = forced_in_input[w][v] = True
-        
+
         def unforce():
             """Undo call to force."""
             for x in not_previously_forced:
@@ -131,7 +131,7 @@ def HamiltonianCycles(G):
         return remove_third_leg(v) and remove_third_leg(w) and \
             force_into_triangle(v,w) and force_into_triangle(w,v) and \
             force_from_triangle(v,w)
-            
+
     def force_into_triangle(v,w):
         """
         After v,w has been added to forced edges, check if w
@@ -144,7 +144,7 @@ def HamiltonianCycles(G):
         if y not in G[x]:
             return True
         return force(x,y)
-    
+
     def force_from_triangle(v,w):
         """
         After v,w has been added to forced edges, check whether it
@@ -159,7 +159,7 @@ def HamiltonianCycles(G):
                 if not force(u,x):
                     return False
         return True
-        
+
     def contract(v):
         """
         Contract out degree two vertex.
@@ -173,7 +173,7 @@ def HamiltonianCycles(G):
                 return force(u,v) and force(v,w) and force(u,w)
             if not safely_remove(u,w):
                 return None     # Unable to remove uw, no cycles exist
-        
+
         if not force(u,v) or not force(v,w):
             return None     # Forcing the edges led to a contradiction
         remove(u,v)
@@ -181,7 +181,7 @@ def HamiltonianCycles(G):
         G[u][w] = G[w][u] = False
         forced_in_current[u][w] = forced_in_current[w][u] = True
         del G[v],forced_vertices[v]
-        
+
         def uncontract():
             del G[u][w],G[w][u]
             del forced_in_current[u][w],forced_in_current[w][u]
@@ -212,15 +212,15 @@ def HamiltonianCycles(G):
         """
         if degree_two:
             return handle_degree_two()
-            
+
         # At this point, we are going to branch, and if the time is really
         # exponential in the size of the remaining graph we can afford some
         # more expensive pruning steps first.
-        
+
         # If graph is Hamiltonian it must be biconnected
         if not isBiconnected(G):
             return None
-            
+
         # If graph is Hamiltonian, unforced edges must have a perfect matching.
         # We jump-start the matching algorithm with our previously computed
         # matching (or as much of it as fits the current graph) since that is
@@ -238,7 +238,7 @@ def HamiltonianCycles(G):
         previous_matching.update(M)
         if len(M) != len(G):
             return None
-            
+
         # Here with a degree three graph in which the forced edges
         # form a matching.  Pick an unforced edge adjacent to a
         # forced one, if possible, else pick any unforced edge,
@@ -248,7 +248,7 @@ def HamiltonianCycles(G):
         else:
             v = arbitrary_item(G)
         w = [x for x in G[v] if x not in forced_in_current[v]][0]
-        
+
         def continuation():
             """Here after searching first recursive subgraph."""
             if force(v,w):
@@ -274,7 +274,7 @@ class CubicHamTest(unittest.TestCase):
         for C in HamiltonianCycles(G):
             # Count the cycle.
             count += 1
-            
+
             # Check that it's a degree-two undirected subgraph.
             for v in C:
                 self.assertEqual(len(C[v]),2)
@@ -294,12 +294,12 @@ class CubicHamTest(unittest.TestCase):
 
         # Did we find enough cycles?
         self.assertEqual(count,N)
-        
+
     def testCube(self):
         """Cube has six Hamiltonian cycles."""
         cube = dict([(i,(i^1,i^2,i^4)) for i in range(8)])
         self.check(cube,6)
-    
+
     def twistedLadder(self,n):
         """Connect opposite vertices on an even length cycle."""
         return dict([(i,((i+1)%n,(i-1)%n,(i+n//2)%n)) for i in range(n)])
@@ -308,7 +308,7 @@ class CubicHamTest(unittest.TestCase):
         """twistedLadder(4n) has 2n+1 Hamiltonian cycles."""
         for n in range(4,50,4):
             self.check(self.twistedLadder(n),n//2+1)
-            
+
     def testOddTwistedLadders(self):
         """twistedLadder(4n+2) has 2n+4 Hamiltonian cycles."""
         for n in range(6,50,4):
@@ -322,7 +322,7 @@ class CubicHamTest(unittest.TestCase):
                 T[v,w] = dict([((v,u),True) for u in G[v] if u != w])
                 T[v,w][w,v] = True
         return T
-                    
+
     def testSierpinski(self):
         """
         Sierpinski triangle like graphs formed by repeated truncation
@@ -334,4 +334,4 @@ class CubicHamTest(unittest.TestCase):
             self.check(G,3)
 
 if __name__ == "__main__":
-    unittest.main()   
+    unittest.main()   

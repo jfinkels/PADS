@@ -9,7 +9,7 @@ def LongestCommonSubsequence(A,B):
     """Find longest common subsequence of iterables A and B."""
     A = list(A)
     B = list(B)
-    
+
     # Fill dictionary lcsLen[i,j] with length of LCS of A[:i] and B[:j]
     lcsLen = {}
     for i in range(len(A)+1):
@@ -20,7 +20,7 @@ def LongestCommonSubsequence(A,B):
                 lcsLen[i,j] = lcsLen[i-1,j-1] + 1
             else:
                 lcsLen[i,j] = max(lcsLen[i-1,j], lcsLen[i,j-1])
-    
+
     # Produce actual sequence by backtracking through pairs (i,j),
     # using computed lcsLen values to guide backtracking
     i = len(A)
@@ -34,6 +34,6 @@ def LongestCommonSubsequence(A,B):
         i -= 1
         j -= 1
         LCS.append(A[i])
-    
+
     LCS.reverse()
     return LCS

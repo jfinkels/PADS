@@ -75,10 +75,10 @@ class BipartitenessTest(unittest.TestCase):
     def testEvenCycles(self):
         for i in range(4,12,2):
             self.assertEqual(isBipartite(self.cycle(i)), True)
-            
+
     def testOddCycles(self):
         for i in range(3,12,2):
             self.assertEqual(isBipartite(self.cycle(i)), False)
 
 if __name__ == "__main__":
-    unittest.main()   
+    unittest.main()   

@@ -24,15 +24,15 @@ class PartitionRefinement:
         S = Set(items)
         self._sets = {id(S):S}
         self._partition = dict([(x,S) for x in S])
-        
+
     def __getitem__(self,element):
         """Return the set that contains the given element."""
         return self._partition[element]
-        
+
     def __iter__(self):
         """Loop through the sets in the partition."""
         return self._sets.itervalues()
-        
+
     def __len__(self):
         """Return the number of sets in the partition."""
         return len(self._sets)

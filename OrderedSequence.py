@@ -32,7 +32,7 @@ class SimpleOrderedSequence(Sequence):
     def cmp(self,x,y):
         """Compare the positions of x and y in the sequence."""
         return cmp(self._tag[self.key(x)],self._tag[self.key(y)])
-    
+
     def append(self,x):
         """Add x to the end of the sequence."""
         if not self._next:  # add to empty sequence
@@ -86,14 +86,14 @@ class LogarithmicOrderedSequence(SimpleOrderedSequence):
 
     def rebalance(self,x):
         """Clean up after x and its successor's tags collide.
-        
+
         At each iteration of the rebalancing algorithm, we look at
         a contiguous subsequence of items, defined as the items for which
         self._tag &~ mask == base.  We keep track of the first and last
         items in the subsequence, and the number of items, until we find
         a subsequence with sufficiently low density, at which point
         we space the tags evenly throughout the available values.
-        
+
         The multiplier controls the growth of the threshhold density;
         it is 2/T for the T parameter described by Bender et al.
         Large multipliers lead to fewer relabels, while small items allow
