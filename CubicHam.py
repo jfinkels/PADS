@@ -271,7 +271,6 @@ class CubicHamTest(unittest.TestCase):
     def truncate(self,G):
         """Replace each vertex of G by a triangle and return the result."""
         T = {}
-        T = dict([((v,w),(v,u)) for v in G for w in G[v] for u in G[v]])
         for v in G:
             for w in G[v]:
                 T[(v,w)] = {(w,v):True}
