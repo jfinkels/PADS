@@ -7,9 +7,9 @@ modular decomposition of graphs, etc.
 D. Eppstein, November 2003.
 """
 
-class PartitionError(Exception): pass
-
 from sets import Set, ImmutableSet
+
+class PartitionError(Exception): pass
 
 class PartitionRefinement:
     """Maintain and refine a partition of a set of items into subsets.
@@ -22,8 +22,7 @@ class PartitionRefinement:
         items.  Initially, all items belong to the same subset.
         """
         S = Set(items)
-        self._sets = [S]
-        self._setids = Set([id(S)])
+        self._sets = {id(S):S}
         self._partition = dict([(x,S) for x in S])
         
     def __getitem__(self,element):
@@ -32,7 +31,7 @@ class PartitionRefinement:
         
     def __iter__(self):
         """Loop through the sets in the partition."""
-        return iter(self._sets)
+        return self._sets.itervalues()
         
     def __len__(self):
         """Return the number of sets in the partition."""
@@ -40,22 +39,17 @@ class PartitionRefinement:
 
     def add(self,element,set):
         """Add a new element to the given partition subset."""
-        if self._setids is None:
-            raise PartitionError("Partition has been frozen")
-        if id(set) not in self._setids:
+        if id(set) not in self._sets:
             raise PartitionError("Set does not belong to the partition")
         if element in self._partition:
             raise PartitionError("Element already belongs to the partition")
-        self._partition[element] = set
         set.add(element)
+        self._partition[element] = set
 
     def remove(self,element):
         """Remove the given element from its partition subset."""
-        if self._setids is None:
-            raise PartitionError("Partition has been frozen")
-        set = self._partition[element]
+        self._partition[element].remove(element)
         del self._partition[element]
-        set.remove(element)
 
     def refine(self,S):
         """Refine each set A in the partition to the two sets
@@ -64,24 +58,16 @@ class PartitionRefinement:
         a newly created set, while A - S will be a modified
         version of an existing set in the partition.
         """
-        if self._setids is None:
-            raise PartitionError("Partition has been frozen")
-        hit = []
-        ids = {}
-        S = Set(S)
+        hit = {}
+        output = []
         for x in S:
             if x in self._partition:
                 Ax = self._partition[x]
-                if id(Ax) not in ids:
-                    hit.append(Ax)
-                    ids[id(Ax)] = Set()
-                ids[id(Ax)].add(x)
-        output = []
-        for A in hit:
-            AS = ids[id(A)]
+                hit.setdefault(id(Ax),Set()).add(x)
+        for A,AS in hit.items():
+            A = self._sets[A]
             if AS != A:
-                self._sets.append(AS)
-                self._setids.add(id(AS))
+                self._sets[id(AS)] = AS
                 for x in AS:
                     self._partition[x] = AS
                 A -= AS
@@ -90,11 +76,9 @@ class PartitionRefinement:
 
     def freeze(self):
         """Make all sets in S immutable."""
-        isets = []
-        for S in self:
+        for S in self._sets.values():
             I = ImmutableSet(S)
             for x in I:
                 self._partition[x] = I
-            isets.append(I)
-        self._sets = isets
-        self._setids = None
+            self._sets[id(I)] = I
+            del self._sets[id(S)]
