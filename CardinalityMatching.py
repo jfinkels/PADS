@@ -5,9 +5,11 @@ Find maximum cardinality matchings in general undirected graphs.
 D. Eppstein, UC Irvine, September 6, 2003.
 """
 
-from UnionFind import UnionFind
-from sets import Set
 import sys
+from sets import Set
+
+from UnionFind import UnionFind
+from Util import arbitrary_item
 
 if 'True' not in globals():
     globals()['True'] = not None
@@ -289,15 +291,15 @@ def greedyMatching(G, initialMatching=None):
     # loop adding edges or contracting deg2 clusters
     while avail:
         if deg1:
-            v = iter(deg1).next()
-            w = iter(avail[v]).next()
+            v = arbitrary_item(deg1)
+            w = arbitrary_item(avail[v])
             addMatch(v,w)
         elif deg2:
-            v = iter(deg2).next()
+            v = arbitrary_item(deg2)
             contract(v)
         else:
-            v = iter(avail).next()
-            w = iter(avail[v]).next()
+            v = arbitrary_item(avail)
+            w = arbitrary_item(avail[v])
             addMatch(v,w)
 
     # at this point the edges listed in d2edges form a matchable tree
@@ -311,8 +313,8 @@ def greedyMatching(G, initialMatching=None):
         avail[u][v] = avail[v][u] = (u,v)
     deg1 = Set([v for v in avail if len(avail[v]) == 1])
     while deg1:
-        v = iter(deg1).next()
-        w = iter(avail[v]).next()
+        v = arbitrary_item(deg1)
+        w = arbitrary_item(avail[v])
         addMatch(v,w)
 
     return matching

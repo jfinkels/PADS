@@ -7,6 +7,7 @@ D. Eppstein, UC Irvine, November 2003.
 """
 
 from __future__ import generators
+from Util import arbitrary_item
 
 import sys
 import operator
@@ -226,7 +227,7 @@ class NFA(FiniteAutomaton):
         visited = Set()
         unvisited = Set(self.initial)
         while unvisited:
-            state = iter(unvisited).next()
+            state = arbitrary_item(unvisited)
             yield state
             unvisited.remove(state)
             visited.add(state)
@@ -542,7 +543,7 @@ class _MinimumDFA(DFA):
         P.refine([s for s in D.states() if D.isfinal(s)])
         unrefined = Sequence(P,key=id)
         while unrefined:
-            part = iter(unrefined).next()
+            part = arbitrary_item(unrefined)
             unrefined.remove(part)
             for symbol in D.alphabet:
                 neighbors = Set()
@@ -562,11 +563,11 @@ class _MinimumDFA(DFA):
         self.DFA = D
         
     def transition(self,state,symbol):
-        rep = iter(state).next()
+        rep = arbitrary_item(state)
         return self.partition[self.DFA.transition(rep,symbol)]
         
     def isfinal(self,state):
-        rep = iter(state).next()
+        rep = arbitrary_item(state)
         return self.DFA.isfinal(rep)
 
 # If called as standalone routine, run some unit tests

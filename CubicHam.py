@@ -8,6 +8,7 @@ import unittest
 from Graphs import *
 from Biconnectivity import isBiconnected
 from CardinalityMatching import matching
+from Util import arbitrary_item
 
 def HamiltonianCycles(G):
     """
@@ -240,9 +241,9 @@ def HamiltonianCycles(G):
         # forced one, if possible, else pick any unforced edge,
         # and branch on the chosen edge.
         if forced_vertices:
-            v = iter(forced_vertices).next()
+            v = arbitrary_item(forced_vertices)
         else:
-            v = iter(G).next()
+            v = arbitrary_item(G)
         w = [x for x in G[v] if x not in forced_in_current[v]][0]
         
         def continuation():
@@ -279,7 +280,7 @@ class CubicHamTest(unittest.TestCase):
 
             # Check that it connects all vertices.
             nreached = 0
-            x = iter(G).next()
+            x = arbitrary_item(G)
             a,b = x,x
             while True:
                 nreached += 1
