@@ -51,9 +51,37 @@ def BiconnectedComponents(G):
 
     return components
 
+class NotBiconnected(Exception): pass
+
 def isBiconnected(G):
     """Return True if graph G is biconnected, False otherwise."""
-    return len(BiconnectedComponents(G)) == 1
+
+    dfsnumber = {}
+    def traverse(v):
+        """Stripped down version of DFS from BiconnectedComponents."""
+        low_v = dfsnumber[v] = len(dfsnumber)
+        for w in G[v]:
+            if w in dfsnumber:
+                low_v = min(low_v, dfsnumber[w])
+            else:
+                low_w = traverse(w)
+                if low_w == dfsnumber[v] and dfsnumber[w] > 1:
+                    raise NotBiconnected
+                else:
+                    low_v = min(low_v,low_w)
+        return low_v
+
+    try:
+        traverse(arbitrary_item(G))
+    except NotBiconnected:
+        return False
+
+    for v in G:
+        if v not in dfsnumber:
+            return False
+
+    return True
+    
     
 # If run as "python CubicHam.py", run tests on various small graphs
 # and check that the correct results are obtained.
