@@ -1,6 +1,6 @@
 """Biconnectivity.py
 
-DFS-based algorithm for computing connected components.
+DFS-based algorithm for computing biconnected components.
 
 D. Eppstein, April 2004.
 """
@@ -43,7 +43,7 @@ def BiconnectedComponents(G):
         if v not in dfsnumber:
             active = []
             traverse(v)
-            if len(active) > 1:
+            if len(active) > 1 or len(G[v]) == 0:
                 components.append(active)
 
     return components
