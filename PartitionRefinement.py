@@ -7,7 +7,9 @@ modular decomposition of graphs, etc.
 D. Eppstein, November 2003.
 """
 
-from sets import Set
+class PartitionError(Exception): pass
+
+from sets import Set, ImmutableSet
 
 class PartitionRefinement:
     """Maintain and refine a partition of a set of items into subsets.
@@ -24,7 +26,7 @@ class PartitionRefinement:
         self._setids = Set([id(S)])
         self._partition = dict([(x,S) for x in S])
         
-    def __get__(self,element):
+    def __getitem__(self,element):
         """Return the set that contains the given element."""
         return self._partition[element]
         
@@ -38,15 +40,19 @@ class PartitionRefinement:
 
     def add(self,element,set):
         """Add a new element to the given partition subset."""
+        if self._setids is None:
+            raise PartitionError("Partition has been frozen")
         if id(set) not in self._setids:
-            raise ValueError("Set does not belong to the partition")
+            raise PartitionError("Set does not belong to the partition")
         if element in self._partition:
-            raise ValueError("Element already belongs to the partition")
+            raise PartitionError("Element already belongs to the partition")
         self._partition[element] = set
         set.add(element)
 
     def remove(self,element):
         """Remove the given element from its partition subset."""
+        if self._setids is None:
+            raise PartitionError("Partition has been frozen")
         set = self._partition[element]
         del self._partition[element]
         set.remove(element)
@@ -58,6 +64,8 @@ class PartitionRefinement:
         a newly created set, while A - S will be a modified
         version of an existing set in the partition.
         """
+        if self._setids is None:
+            raise PartitionError("Partition has been frozen")
         hit = []
         ids = {}
         S = Set(S)
@@ -79,3 +87,14 @@ class PartitionRefinement:
                 A -= AS
                 output.append((AS,A))
         return output
+
+    def freeze(self):
+        """Make all sets in S immutable."""
+        isets = []
+        for S in self:
+            I = ImmutableSet(S)
+            for x in I:
+                self._partition[x] = I
+            isets.append(I)
+        self._sets = isets
+        self._setids = None
