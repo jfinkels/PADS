@@ -1,7 +1,10 @@
 """LexBFS.py
 
 Lexicographic breadth-first-search traversal of a graph, as described
-in http://www.cs.colostate.edu/~rmm/lexbfs.ps
+in Habib, McConnell, Paul, and Viennot, "Lex-BFS and Partition Refinement,
+with Applications to Transitive Orientation, Interval Graph Recognition,
+and Consecutive Ones Testing", Theor. Comput. Sci. 234:59-84 (2000),
+http://www.cs.colostate.edu/~rmm/lexbfs.ps
 
 D. Eppstein, November 2003.
 """
