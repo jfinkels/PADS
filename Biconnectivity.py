@@ -8,6 +8,7 @@ D. Eppstein, April 2004.
 import unittest
 from Graphs import isUndirected
 from Util import arbitrary_item
+from sets import Set
 
 def BiconnectedComponents(G):
     """
@@ -15,28 +16,44 @@ def BiconnectedComponents(G):
     such a way that "for v in G" loops through the vertices, and "G[v]"
     produces a list of the neighbors of v; for instance, G may be a
     dictionary mapping each vertex to its neighbor set.
-    The output is a sequence of lists of vertices of G.
+    The output is a list of subgraphs of G.
     """
     if not isUndirected(G):
         raise ValueError("BiconnectedComponents: input not undirected graph")
 
     dfsnumber = {}
     components = []
+    ancestors = {}    # DIRECTED subgraph from nodes to DFS ancestors
+    disconnected = object() # flag for component without articulation point
+
+    def make_component(start=0, articulation_point=disconnected):
+        """Make a new component, removing all active vertices from start onward."""
+        component = {}
+        if articulation_point is not disconnected:
+            component[articulation_point] = Set()
+        for v in active[start:]:
+            component[v] = Set()
+            for w in ancestors[v]:
+                component[v].add(w)
+                component[w].add(v)
+        del active[start:]
+        components.append(component)
 
     def traverse(v):
         """Perform depth-first traversal from v and return its low number."""
         low_v = dfsnumber[v] = len(dfsnumber)
         active.append(v)
+        ancestors[v] = Set()
         activelen = len(active)
         for w in G[v]:
             if w in dfsnumber:
-                low_v = min(low_v, dfsnumber[w])
+                if dfsnumber[w] < dfsnumber[v]:
+                    low_v = min(low_v, dfsnumber[w])
+                    ancestors[v].add(w)
             else:
                 low_w = traverse(w)
                 if low_w == dfsnumber[v]:
-                    components.append(active[activelen:])
-                    components[-1].append(v)
-                    del active[activelen:]
+                    make_component(activelen,v)
                 else:
                     low_v = min(low_v,low_w)
                     activelen = len(active)
@@ -47,7 +64,7 @@ def BiconnectedComponents(G):
             active = []
             traverse(v)
             if len(active) > 1 or len(G[v]) == 0:
-                components.append(active)
+                make_component()
 
     return components
 
@@ -116,10 +133,11 @@ class BiconnectivityTest(unittest.TestCase):
     def testBiconnectedComponents(self):
         """G2 has four biconnected components."""
         C = BiconnectedComponents(self.G2)
-        for comp in C:
+        CV = [component.keys() for component in C]
+        for comp in CV:
             comp.sort()
-        C.sort()
-        self.assertEqual(C,[[0,2,5],[1,3,6,8],[2,3],[4,7]])
+        CV.sort()
+        self.assertEqual(CV,[[0,2,5],[1,3,6,8],[2,3],[4,7]])
 
 if __name__ == "__main__":
     unittest.main()   
