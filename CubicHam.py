@@ -38,6 +38,9 @@ def HamiltonianCycles(G):
             
     # Collection of vertices with forced edges
     forced_vertices = {}
+    
+    # Reuse results of call to matching() to speed up subsequent calls
+    previous_matching = {}
 
     # The overall backtracking algorithm is implemented by means of
     # a stack of actions.  At each step we pop the most recent action
@@ -214,13 +217,22 @@ def HamiltonianCycles(G):
         if not isBiconnected(G):
             return None
             
-        # Non-forced edges must include a perfect matching
+        # If graph is Hamiltonian, unforced edges must have a perfect matching.
+        # We jump-start the matching algorithm with our previously computed
+        # matching (or as much of it as fits the current graph) since that is
+        # likely to be near-perfect.
         unforced = dict([(v,{}) for v in G])
         for v in G:
             for w in G[v]:
                 if w not in forced_in_current[v]:
                     unforced[v][w] = True
-        if len(matching(unforced)) != len(G):
+        for v in previous_matching.keys():
+            if v not in unforced or previous_matching[v] not in unforced[v]:
+                del previous_matching[v]
+        M = matching(unforced, previous_matching)
+        previous_matching.clear()
+        previous_matching.update(M)
+        if len(M) != len(G):
             return None
             
         # Here with a degree three graph in which the forced edges

@@ -13,7 +13,7 @@ if 'True' not in globals():
     globals()['True'] = not None
     globals()['False'] = not True
 
-def matching(G, initialMatching = {}):
+def matching(G, initialMatching = None):
     """Find a maximum cardinality matching in a graph G.
     G is represented in modified GvR form: iter(G) lists its vertices;
     iter(G[v]) lists the neighbors of v; w in G[v] tests adjacency.
@@ -201,7 +201,7 @@ def matching(G, initialMatching = {}):
 
     return matching
 
-def greedyMatching(G, initialMatching={}):
+def greedyMatching(G, initialMatching=None):
     """Near-linear-time greedy heuristic for creating high-cardinality matching.
     If there is any vertex with one unmatched neighbor, we match it.
     Otherwise, if there is a vertex with two unmatched neighbors, we contract
@@ -211,20 +211,27 @@ def greedyMatching(G, initialMatching={}):
     
     # Copy initial matching so we can use it nondestructively
     matching = {}
-    for x in initialMatching:
-        matching[x] = initialMatching[x]
+    if initialMatching:
+        for x in initialMatching:
+            matching[x] = initialMatching[x]
 
     # Copy graph to new subgraph of available edges
     # Representation: nested dictionary rep->rep->pair
     # where the reps are representative vertices for merged clusters
     # and the pair is an unmatched original pair of vertices
     avail = {}
+    has_edge = False
     for v in G:
         if v not in matching:
             avail[v] = {}
             for w in G[v]:
                 if w not in matching:
                     avail[v][w] = (v,w)
+                    has_edge = True
+            if not avail[v]:
+                del avail[v]
+    if not has_edge:
+        return matching
 
     # make sets of degree one and degree two vertices
     deg1 = Set([v for v in avail if len(avail[v]) == 1])
