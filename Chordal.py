@@ -9,7 +9,7 @@ D. Eppstein, November 2003.
 from LexBFS import LexBFS
 from sets import Set
 
-def Chordal(G):
+def PerfectEliminationOrdering(G):
     """Return a perfect elimination ordering, or None if G is not chordal.
     G should be represented in such a way that "for v in G" loops through
     the vertices, and "G[v]" produces a list of the neighbors of v; for
