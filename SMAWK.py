@@ -17,10 +17,10 @@ def smawk(rows,cols,lookup):
     returned as a dictionary mapping row i to the column j containing
     the largest value M[i,j].  Ties are broken in favor of earlier
     columns.  The number of calls to lookup is O(len(rows)+len(cols))."""
-	
+    
     # base case of recursion
     if not rows: return {}
-	
+    
     # reduce phase: make number of columns at most equal to number of rows
     stack = []
     for c in cols:
