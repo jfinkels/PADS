@@ -576,6 +576,7 @@ class RegExpTest(unittest.TestCase):
     ]
 
     def testMembership(self):
+        """membership tests for RegularLanguage(expression)"""
         for L,Li,Lx in self.languages:
             for S in Li:
                 self.assert_(S in L)
@@ -583,6 +584,7 @@ class RegExpTest(unittest.TestCase):
                 self.assert_(S not in L)
 
     def testComplement(self):
+        """membership tests for ~RegularLanguage"""
         for L,Li,Lx in self.languages:
             L = ~L
             for S in Lx:
@@ -591,11 +593,13 @@ class RegExpTest(unittest.TestCase):
                 self.assert_(S not in L)
 
     def testEquivalent(self):
+        """test that converting NFA->expr->NFA produces same language"""
         for L1,Li,Lx in self.languages:
             L2 = RegularLanguage(L1.recognizer.RegExp())
             self.assertEqual(L1,L2)
     
     def testInequivalent(self):
+        """test that different regular languages are recognized as different"""
         for i in range(len(self.languages)):
             for j in range(i):
                 self.assertNotEqual(self.languages[i][0],
