@@ -27,4 +27,4 @@ def minDegree(G):
 
 def copyGraph(G):
     """Make a copy of a graph G and return the copy."""
-    return dict([(v,dict([(w,G[w]) for w in G[v]])) for v in G])
+    return dict([(v,dict([(w,True) for w in G[v]])) for v in G])

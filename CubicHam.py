@@ -5,6 +5,7 @@ D. Eppstein, April 2004.
 """
 import unittest
 from Graphs import *
+from Biconnectivity import isBiconnected
 
 def HamiltonianCycles(G):
     """
@@ -187,6 +188,10 @@ def HamiltonianCycles(G):
         """
         if degree_two:
             return handle_degree_two()
+            
+        # Connectivity test to prune earlier when we make a mistake
+        if not isBiconnected(G):
+            return None
             
         # Here with a degree three graph in which the forced edges
         # form a matching.  Pick an unforced edge adjacent to a
