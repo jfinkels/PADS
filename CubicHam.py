@@ -3,24 +3,25 @@
 Generate all Hamiltonian cycles in graphs of maximum degree three.
 D. Eppstein, April 2004.
 """
+
 import unittest
 from Graphs import *
 from Biconnectivity import isBiconnected
+from CardinalityMatching import matching
 
 def HamiltonianCycles(G):
     """
-    Generate and return all Hamiltonian cycles in G.
+    Generate a sequence of all Hamiltonian cycles in graph G.
     G should be represented in such a way that "for v in G" loops through
-    the vertices, and "G[v]" produces a list of the neighbors of v; for
-    instance, G may be a dictionary mapping each vertex to its neighbor set.
-    Each cycle is returned as a graph in the same representation.
-    The cycle graph is reused for subsequent iterations, so it should not be
-    modified by the caller. Running time is O(2^{3n/8}) as analyzed in my
-    paper, The Traveling Salesman Problem for Cubic Graphs.)
+    the vertices, and "G[v]" produces a collection of neighbors of v; for
+    instance, G may be a dictionary mapping vertices to lists of neighbors.
+    Each cycle is returned as a graph in a similar representation, and
+    should not be modified by the caller.  Running time is O(2^{3n/8}) as
+    analyzed in my paper, The Traveling Salesman Problem for Cubic Graphs.
     """
 
     # Check input and copy it so we can modify the copy
-    if not isUndirected(G) or maxDegree(G) > 3:
+    if not G or not isUndirected(G) or maxDegree(G) > 3:
         raise ValueError("HamiltonianCycles input must be undirected degree three graph")
     if minDegree(G) < 2:
         return
@@ -40,8 +41,7 @@ def HamiltonianCycles(G):
 
     # The overall backtracking algorithm is implemented by means of
     # a stack of actions.  At each step we pop the most recent action
-    # off the stack and call it.  The functions defined below are used
-    # to implement this stack.  Each stacked function should return None or False
+    # off the stack and call it.  Each stacked function should return None or False
     # normally, or True to signal that we have found a Hamiltonian cycle.
     # Whenever we modify the graph, we push an action undoing that modification.
     # Below are definitions of actions and action-related functions.
@@ -100,9 +100,9 @@ def HamiltonianCycles(G):
         Returns True if successful, False if found a contradiction.
         """
         if w in forced_in_current[v]:
-            return True     # already forced
+            return True     # Already forced, nothing to do
         if len(forced_in_current[v]) > 2 or len(forced_in_current[w]) > 2:
-            return False    # three incident forced => no cycle exists
+            return False    # Three incident forced => no cycle exists
         assert w in G[v] and v in G[w]
         forced_in_current[v][w] = forced_in_current[w][v] = True
         not_previously_forced = [x for x in (v,w) if x not in forced_vertices]
@@ -122,7 +122,8 @@ def HamiltonianCycles(G):
 
         actions.append(unforce)
         return remove_third_leg(v) and remove_third_leg(w) and \
-            force_into_triangle(v,w) and force_into_triangle(w,v)
+            force_into_triangle(v,w) and force_into_triangle(w,v) and \
+            force_from_triangle(v,w)
             
     def force_into_triangle(v,w):
         """
@@ -137,6 +138,21 @@ def HamiltonianCycles(G):
             return True
         return force(x,y)
     
+    def force_from_triangle(v,w):
+        """
+        After v,w has been added to forced edges, check whether it
+        belongs to a triangle, and if so force the opposite edge.
+        Returns True if successful, False if found a contradiction.
+        """
+        for u in list(G[v]):    # Use list to avoid dict changes
+            if u in G[w]:
+                if len(G[u]) < 3:
+                    return len(G) == 3  # deg=2 only ok if 3 verts left
+                x = [y for y in G[u] if y != v and y != w][0]
+                if not force(u,x):
+                    return False
+        return True
+        
     def contract(v):
         """
         Contract out degree two vertex.
@@ -145,14 +161,14 @@ def HamiltonianCycles(G):
         """
         assert len(G[v]) == 2
         u,w = G[v]
-        if w in G[u]:           # about to create parallel edge?
-            if len(G) == 3:     # graph is a triangle?
+        if w in G[u]:           # About to create parallel edge?
+            if len(G) == 3:     # Graph is a triangle?
                 return force(u,v) and force(v,w) and force(u,w)
             if not safely_remove(u,w):
-                return None     # unable to remove uw, no cycles exist
+                return None     # Unable to remove uw, no cycles exist
         
         if not force(u,v) or not force(v,w):
-            return None     # forcing the edges led to a contradiction
+            return None     # Forcing the edges led to a contradiction
         remove(u,v)
         remove(v,w)
         G[u][w] = G[w][u] = False
@@ -166,7 +182,8 @@ def HamiltonianCycles(G):
             G[v] = {}
 
         actions.append(uncontract)
-        actions.append(main)    # search contracted graph recursively
+        if force_from_triangle(u,w):    # Contraction may have made a triangle
+            actions.append(main)        # Search contracted graph recursively
 
     def handle_degree_two():
         """
@@ -189,8 +206,21 @@ def HamiltonianCycles(G):
         if degree_two:
             return handle_degree_two()
             
-        # Connectivity test to prune earlier when we make a mistake
+        # At this point, we are going to branch, and if the time is really
+        # exponential in the size of the remaining graph we can afford some
+        # more expensive pruning steps first.
+        
+        # If graph is Hamiltonian it must be biconnected
         if not isBiconnected(G):
+            return None
+            
+        # Non-forced edges must include a perfect matching
+        unforced = dict([(v,{}) for v in G])
+        for v in G:
+            for w in G[v]:
+                if w not in forced_in_current[v]:
+                    unforced[v][w] = True
+        if len(matching(unforced)) != len(G):
             return None
             
         # Here with a degree three graph in which the forced edges
@@ -282,7 +312,7 @@ class CubicHamTest(unittest.TestCase):
         Sierpinski triangle like graphs formed by repeated truncation
         of K_4 should all have exactly three Hamiltonian cycles.
         """
-        G = self.twistedLadder(4)   # complete graph on four vertices
+        G = self.twistedLadder(4)   # Complete graph on four vertices
         for i in range(3):
             G = self.truncate(G)
             self.check(G,3)
