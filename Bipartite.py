@@ -5,6 +5,7 @@ D. Eppstein, May 2004.
 """
 
 from sets import Set
+from Biconnectivity import BiconnectedComponents
 
 class NonBipartite(Exception):
     pass
@@ -61,3 +62,14 @@ def BipartiteOrientation(G,adjacency_list_type=Set):
     """
     B = Bipartition(G)
     return dict([(v,adjacency_list_type(iter(G[v]))) for v in B])
+
+def OddCore(G):
+    """
+    Set of vertices that participate in odd cycles.
+    Aka, vertices that are part of a nonbipartite biconnected component.
+    """
+    core = Set()
+    for C in BiconnectedComponents(G):
+        if not isBipartite(C):
+            core.update(C)
+    return core
