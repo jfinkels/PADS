@@ -36,15 +36,15 @@ class RegularLanguage:
     logical combinations, and subset and equality testing.
     """
     def __init__(self,aut):
-        self._recognizer = aut
+        self.recognizer = aut
     
     def __contains__(self,inputsequence):
-        return self._recognizer(inputsequence)
+        return self.recognizer(inputsequence)
         
     def __eq__(self,other):
         if not isinstance(other,RegularLanguage):
             return None
-        return self._recognizer.minimize() == other._recognizer.minimize()
+        return self.recognizer.minimize() == other.recognizer.minimize()
         
     def __ne__(self,other):
         return not (self == other)
@@ -63,29 +63,29 @@ class RegularLanguage:
         
     def __invert__(self):
         """Complement (with respect to alphabet) of language."""
-        return Language(self._recognizer.complement())
+        return Language(self.recognizer.complement())
         
     def __and__(self,other):
         """Intersection of two languages with the same alphabet."""
         if not isinstance(other,RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
-        return Language(self._recognizer.intersection(other._recognizer))
+        return Language(self.recognizer.intersection(other.recognizer))
         
     def __or__(self,other):
         """Union of two languages with the same alphabet."""
         if not isinstance(other,RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
-        return Language(self._recognizer.union(other._recognizer))
+        return Language(self.recognizer.union(other.recognizer))
         
     def __xor__(self,other):
         """Symmetric difference of two languages with the same alphabet."""
         if not isinstance(other,RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
-        return Language(self._recognizer.symmetricDifference(other._recognizer))
+        return Language(self.recognizer.symmetricDifference(other.recognizer))
         
     def __nonzero__(self):
         """Is this the empty language?"""
-        M = self._recognizer.minimize()
+        M = self.recognizer.minimize()
         return len(M) > 1 or M.isfinal(M.initial)
 
 class FiniteAutomaton:
@@ -340,7 +340,11 @@ class _NFAfromDFA(NFA):
 
 Empty = ImmutableSet()
 
-class RegExp(NFA):
+def RegExp(expression):
+    """Convert regular expression to regular language."""
+    return Language(_RegExp(expression))
+
+class _RegExp(NFA):
     """Convert regular expression to NFA."""
 
     def __init__(self,expr):
@@ -571,7 +575,7 @@ class RegExpTest(unittest.TestCase):
 
     def testMembership(self):
         for R in self.RegExps:
-            L = Language(RegExp(R))
+            L = RegExp(R)
             for S in self.RegExps[R][0]:
                 self.assert_(S in L)
             for S in self.RegExps[R][1]:
@@ -579,7 +583,7 @@ class RegExpTest(unittest.TestCase):
 
     def testComplement(self):
         for R in self.RegExps:
-            L = ~Language(RegExp(R))
+            L = ~RegExp(R)
             for S in self.RegExps[R][0]:
                 self.assert_(S not in L)
             for S in self.RegExps[R][1]:
@@ -587,12 +591,12 @@ class RegExpTest(unittest.TestCase):
 
     def testEquivalent(self):
         for R in self.RegExps:
-            N1 = RegExp(R)
-            N2 = RegExp(N1.RegExp())
-            self.assertEqual(Language(N1),Language(N2))
+            L1 = RegExp(R)
+            L2 = RegExp(L1.recognizer.RegExp())
+            self.assertEqual(L1,L2)
     
     def testInequivalent(self):
-        langs = [Language(RegExp(R)) for R in self.RegExps]
+        langs = [RegExp(R) for R in self.RegExps]
         for i in range(len(langs)):
             for j in range(i):
                 self.assertNotEqual(langs[i],langs[j])

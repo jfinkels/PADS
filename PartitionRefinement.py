@@ -57,6 +57,8 @@ class PartitionRefinement:
         for each changed set.  Within each pair, A & S will be
         a newly created set, while A - S will be a modified
         version of an existing set in the partition.
+        Not a generator because we need to perform the partition
+        even if the caller doesn't iterate through the results.
         """
         hit = {}
         output = []
