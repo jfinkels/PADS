@@ -97,7 +97,7 @@ class BiconnectivityTester(DFS.Searcher):
     def __init__(self,G):
         """Search for biconnected components of graph G."""
         if not isUndirected(G):
-            raise ValueError("BiconnectedComponents: input not undirected graph") 
+            raise NotBiconnected 
         self._dfsnumber = {}
         self._low = {}
         self._rootedge = None
