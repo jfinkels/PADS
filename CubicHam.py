@@ -133,7 +133,7 @@ def HamiltonianCycles(G):
         if len(G[w]) != 3:
             return True
         x,y = [z for z in G[w] if z != v]
-        if y != G[x]:
+        if y not in G[x]:
             return True
         return force(x,y)
     
