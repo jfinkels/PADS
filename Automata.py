@@ -90,8 +90,11 @@ class RegularLanguage:
         
     def __nonzero__(self):
         """Is this the empty language?"""
-        M = self.recognizer.minimize()
-        return len(M) > 1 or M.isfinal(M.initial)
+        M = self.recognizer.asDFA()
+        for x in M.states():
+            if x.isfinal():
+                return True
+        return False
 
 class FiniteAutomaton:
     """Base class for DFA and NFA.  This class should not be instantiated
