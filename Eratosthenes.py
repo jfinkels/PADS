@@ -1,0 +1,47 @@
+"""Eratosthenes.py
+Space-efficient version of sieve of Eratosthenes.
+D. Eppstein, May 2004.
+
+The main storage of the algorithm is a hash table D with sqrt(n)
+nonempty entries for a total of O(sqrt n) space.  The time for the
+algorithm, up to output n, is O(n) + sum_{prime p <= sqrt(n)} O(n/p)
+= O(n log log n).  The algorithm also makes a recursive call, but the
+recursion only generates primes up to sqrt n so its time and space is
+negligible compared to the outer call.
+
+Thanks to Alex Martelli for the suggestion of keeping one prime
+per entry of D, rather than a list of all prime factors of D.
+"""
+
+def primes():
+    '''Yields the sequence of primes via the Sieve of Eratosthenes.'''
+    yield 2                 # Only even prime.  Sieve only odd numbers.
+    
+    # Generate recursively the sequence of primes up to sqrt(n).
+    # Each p from the sequence is used to initiate sieving at p*p.
+    roots = primes()
+    root = roots.next()
+    square = root*root
+    
+    # The main sieving loop.
+    # We use a hash table D such that D[n]=p for p a prime factor of n.
+    # Each prime p up to sqrt(n) appears once as a value in D, and is
+    # moved to successive odd multiples of p as the sieve progresses.
+    D = {}
+    n = 3
+    while True:
+        if n >= square:     # Time to include another square?
+            D[square] = root
+            root = roots.next()
+            square = root*root
+
+        if n not in D:      # Not witnessed, must be prime.
+            yield n
+        else:               # Move witness p to next free multiple.
+            q = n
+            p = D[n]
+            while q in D:
+                q += p+p
+            del D[n]
+            D[q] = p
+        n += 2              # Move on to next odd number.
