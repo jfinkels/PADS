@@ -14,3 +14,13 @@ def arbitrary_item(S):
         return iter(S).next()
     except StopIteration:
         raise IndexError("No items to select.")
+
+def map_to_constant(constant):
+    """
+    Return a factory that turns sequences into dictionaries, where the
+    dictionary maps each item in the sequence into the given constant.
+    Appropriate as the adjacency_list_type argument for Graphs.copyGraph.
+    """
+    def factory(seq):
+        return dict([(x,constant) for x in seq])
+    return factory

@@ -8,7 +8,7 @@ import unittest
 from Graphs import *
 from Biconnectivity import isBiconnected
 from CardinalityMatching import matching
-from Util import arbitrary_item
+from Util import arbitrary_item, map_to_constant
 
 def HamiltonianCycles(G):
     """
@@ -21,12 +21,14 @@ def HamiltonianCycles(G):
     analyzed in my paper, The Traveling Salesman Problem for Cubic Graphs.
     """
 
-    # Check input and copy it so we can modify the copy
+    # Check input and copy it so we can modify the copy.
+    # In the copied graph G, G[v][w] is True when vw is an original edge
+    # of the input, and False when it was produced by a contraction.
     if not G or not isUndirected(G) or maxDegree(G) > 3:
         raise ValueError("HamiltonianCycles input must be undirected degree three graph")
     if minDegree(G) < 2:
         return
-    G = copyGraph(G)
+    G = copyGraph(G,map_to_constant(True))
     
     # Subgraph of forced edges in the input
     forced_in_input = dict([(v,{}) for v in G])
