@@ -21,7 +21,7 @@ def HamiltonianCycles(G):
 
     # Check input and copy it so we can modify the copy
     if not isUndirected(G) or maxDegree(G) > 3:
-        raise InputError("HamiltonianCycles input must be undirected degree three graph")
+        raise ValueError("HamiltonianCycles input must be undirected degree three graph")
     if minDegree(G) < 2:
         return
     G = copyGraph(G)
@@ -273,12 +273,8 @@ class CubicHamTest(unittest.TestCase):
         T = {}
         for v in G:
             for w in G[v]:
-                T[(v,w)] = {(w,v):True}
-        for v in G:
-            for w in G[v]:
-                for u in G[v]:
-                    if u != w:
-                        T[(v,u)][(v,w)] = True
+                T[v,w] = dict([((v,u),True) for u in G[v] if u != w])
+                T[v,w][w,v] = True
         return T
                     
     def testSierpinski(self):

@@ -16,7 +16,7 @@ def BiconnectedComponents(G):
     The output is a sequence of lists of vertices of G.
     """
     if not isUndirected(G):
-        raise InputError("BiconnectedComponents: input not undirected graph")
+        raise ValueError("BiconnectedComponents: input not undirected graph")
 
     dfsnumber = {}
     low = {}
