@@ -107,7 +107,8 @@ def HamiltonianCycles(G):
             return True     # Already forced, nothing to do
         if len(forced_in_current[v]) > 2 or len(forced_in_current[w]) > 2:
             return False    # Three incident forced => no cycle exists
-        assert w in G[v] and v in G[w]
+        if w not in G[v] or v not in G[w]:
+            return False    # Removed from G after we decided to force it?
         forced_in_current[v][w] = forced_in_current[w][v] = True
         not_previously_forced = [x for x in (v,w) if x not in forced_vertices]
         for x in not_previously_forced:

@@ -5,7 +5,9 @@ DFS-based algorithm for computing biconnected components.
 D. Eppstein, April 2004.
 """
 
+import unittest
 from Graphs import isUndirected
+from Util import arbitrary_item
 
 def BiconnectedComponents(G):
     """
@@ -19,25 +21,26 @@ def BiconnectedComponents(G):
         raise ValueError("BiconnectedComponents: input not undirected graph")
 
     dfsnumber = {}
-    low = {}
     components = []
 
     def traverse(v):
-        desclow = low[v] = dfsnumber[v] = len(dfsnumber)
+        """Perform depth-first traversal from v and return its low number."""
+        low_v = dfsnumber[v] = len(dfsnumber)
         active.append(v)
         activelen = len(active)
         for w in G[v]:
             if w in dfsnumber:
-                low[v] = min(low[v], dfsnumber[w])
+                low_v = min(low_v, dfsnumber[w])
             else:
-                traverse(w)
-                if low[w] == dfsnumber[v]:
+                low_w = traverse(w)
+                if low_w == dfsnumber[v]:
                     components.append(active[activelen:])
                     components[-1].append(v)
                     del active[activelen:]
                 else:
-                    low[v] = min(low[v],low[w])
+                    low_v = min(low_v,low_w)
                     activelen = len(active)
+        return low_v
 
     for v in G:
         if v not in dfsnumber:
@@ -51,3 +54,23 @@ def BiconnectedComponents(G):
 def isBiconnected(G):
     """Return True if graph G is biconnected, False otherwise."""
     return len(BiconnectedComponents(G)) == 1
+    
+# If run as "python CubicHam.py", run tests on various small graphs
+# and check that the correct results are obtained.
+
+class BiconnectivityTest(unittest.TestCase):
+    G1 = {
+        0: [1,2,5],
+        1: [0,5],
+        2: [0,3,4],
+        3: [2,4,5,6],
+        4: [2,3,5,6],
+        5: [0,1,3,4],
+        6: [3,4],
+    }
+    
+    def test_isbc(self):
+        assert isBiconnected(self.G1)
+
+if __name__ == "__main__":
+    unittest.main()   
