@@ -90,8 +90,7 @@ class RegularLanguage:
         
     def __nonzero__(self):
         """Is this the empty language?"""
-        M = self.recognizer.asDFA()
-        for x in M.states():
+        for x in self.recognizer.states():
             if x.isfinal():
                 return True
         return False
