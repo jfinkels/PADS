@@ -47,6 +47,10 @@ class UnionFind:
         for ancestor in path:
             self.parents[ancestor] = root
         return root
+        
+    def __iter__(self):
+        """Iterate through all items ever found or unioned by this structure."""
+        return iter(self.parents)
 
     def union(self, *objects):
         """Find the sets containing the objects and merge them all."""
