@@ -63,15 +63,13 @@ class BiconnectedComponents(DFS.Searcher):
 
     def postorder(self,parent,child):
         if parent == child:
-            if len(self._active) > 1 or not self._components or \
-                    child not in self._components[-1]:
+            if not self._components or child not in self._components[-1]:
                 self._component()
+        elif self._low[child] == self._dfsnumber[parent]:
+            self._component(self._activelen[parent],parent)
         else:
-            if self._low[child] == self._dfsnumber[parent]:
-                self._component(self._activelen[parent],parent)
-            else:
-                self._low[parent] = min(self._low[parent],self._low[child])
-                self._activelen[parent] = len(self._active)
+            self._low[parent] = min(self._low[parent],self._low[child])
+            self._activelen[parent] = len(self._active)
 
     def _component(self,start=0, articulation_point=disconnected):
         """Make new component, removing active vertices from start onward."""
@@ -86,17 +84,52 @@ class BiconnectedComponents(DFS.Searcher):
         del self._active[start:]
         self._components.append(component)
 
+
 class NotBiconnected(Exception): pass
+
+class BiconnectivityTester(DFS.Searcher):
+    """
+    Stripped down version of BiconnectedComponents.
+    Either successfully inits or raises NotBiconnected.
+    Otherwise does nothing.
+    """
+    
+    def __init__(self,G):
+        """Search for biconnected components of graph G."""
+        if not isUndirected(G):
+            raise ValueError("BiconnectedComponents: input not undirected graph") 
+        self._dfsnumber = {}
+        self._low = {}
+        self._rootedge = None
+        DFS.Searcher.__init__(self,G)
+
+    def preorder(self,parent,child):
+        if parent == child and self._rootedge:
+            raise NotBiconnected    # two roots, not even connected
+        elif not self._rootedge and parent != child:
+            self._rootedge = (parent,child)
+        self._low[child] = self._dfsnumber[child] = len(self._dfsnumber)
+
+    def backedge(self,source,destination):
+        self._low[source] = min(self._low[source],self._dfsnumber[destination])
+
+    def postorder(self,parent,child):
+        if parent == child:
+            if not self._rootedge:  # flag start from isolated vertex
+                self._rootedge = parent,child
+        elif self._low[child] != self._dfsnumber[parent]:
+            self._low[parent] = min(self._low[parent],self._low[child])
+        elif (parent,child) != self._rootedge:
+            raise NotBiconnected    # articulation point
+
 
 def isBiconnected(G):
     """Return True if graph G is biconnected, False otherwise."""
-    it = iter(BiconnectedComponents(G))
     try:
-        it.next()
-        it.next()
-        return False
-    except StopIteration:
+        BiconnectivityTester(G)
         return True
+    except NotBiconnected:
+        return False
 
     
 # If run as "python CubicHam.py", run tests on various small graphs

@@ -19,7 +19,8 @@ def search(G):
     """
     Generate sequence of triples (v,w,edgetype) for DFS of graph G.
     The subsequence for each root of each tree in the DFS forest starts
-    with (root,root,forward) and ends with (root,root,reverse).    """
+    with (root,root,forward) and ends with (root,root,reverse).
+    """
     visited = Set()
     for v in G:
         if v not in visited:
