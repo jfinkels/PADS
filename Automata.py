@@ -123,7 +123,7 @@ class FiniteAutomaton:
         return RegularLanguage(self)
 
     def states(self):
-        """Generate sequence of all automaton states."""
+        """Generate all states reachable from initial state."""
         return self.asNFA().states()
 
     def pprint(self,output=sys.stdout):
