@@ -17,6 +17,10 @@ sqrt(n)} O(n/p) = O(n log log n).  The algorithm also makes a recursive
 call, but the recursion only generates primes up to sqrt n so its time
 and space is negligible compared to the outer call.
 
+If efficiency is a significant concern it may be better to combine
+this idea with segmentation and bitvectors, as in the code by
+T. Oliveira e Silva at http://www.ieeta.pt/~tos/software/prime_sieve.html
+
 Thanks to Alex Martelli for the suggestion of keeping one prime
 per entry of D, rather than a list of all prime factors of D.
 """
