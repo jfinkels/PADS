@@ -6,6 +6,8 @@ D. Eppstein, UC Irvine, September 6, 2003.
 """
 
 from UnionFind import UnionFind
+from sets import Set
+import sys
 
 if 'True' not in globals():
     globals()['True'] = not None
@@ -25,19 +27,8 @@ def matching(G, initialMatching = {}):
     """
 
     # Copy initial matching so we can use it nondestructively
-    matching = {}
-    for x in initialMatching:
-        matching[x] = initialMatching[x]
-
-
-    # Form greedy matching to avoid some iterations of augmentation
-    for v in G:
-        if v not in matching:
-            for w in G[v]:
-                if w not in matching:
-                    matching[v] = w
-                    matching[w] = v
-                    break
+    # and augment it greedily to reduce main loop iterations
+    matching = greedyMatching(G,initialMatching)
 
     def augment():
         """Search for a single augmenting path.
@@ -207,5 +198,114 @@ def matching(G, initialMatching = {}):
     # augment the matching until it is maximum
     while augment():
         pass
+
+    return matching
+
+def greedyMatching(G, initialMatching={}):
+    """Near-linear-time greedy heuristic for creating high-cardinality matching.
+    If there is any vertex with one unmatched neighbor, we match it.
+    Otherwise, if there is a vertex with two unmatched neighbors, we contract
+    it away and store the contraction on a stack for later matching.
+    If neither of these two cases applies, we match an arbitrary edge.
+    """
+    
+    # Copy initial matching so we can use it nondestructively
+    matching = {}
+    for x in initialMatching:
+        matching[x] = initialMatching[x]
+
+    # Copy graph to new subgraph of available edges
+    # Representation: nested dictionary rep->rep->pair
+    # where the reps are representative vertices for merged clusters
+    # and the pair is an unmatched original pair of vertices
+    avail = {}
+    for v in G:
+        if v not in matching:
+            avail[v] = {}
+            for w in G[v]:
+                if w not in matching:
+                    avail[v][w] = (v,w)
+
+    # make sets of degree one and degree two vertices
+    deg1 = Set([v for v in avail if len(avail[v]) == 1])
+    deg2 = Set([v for v in avail if len(avail[v]) == 2])
+    d2edges = []    
+    def updateDegree(v):
+        """Cluster degree changed, update sets."""
+        if v in deg1:
+            deg1.remove(v)
+        elif v in deg2:
+            deg2.remove(v)
+        if len(avail[v]) == 0:
+            del avail[v]
+        elif len(avail[v]) == 1:
+            deg1.add(v)
+        elif len(avail[v]) == 2:
+            deg2.add(v)
+    
+    def addMatch(v,w):
+        """Add edge connecting two given cluster reps, update avail."""
+        p,q = avail[v][w]
+        matching[p] = q
+        matching[q] = p
+        for x in avail[v].keys():
+            if x != w:
+                del avail[x][v]
+                updateDegree(x)
+        for x in avail[w].keys():
+            if x != v:
+                del avail[x][w]
+                updateDegree(x)
+        avail[v] = avail[w] = {}
+        updateDegree(v)
+        updateDegree(w)
+
+    def contract(v):
+        """Handle degree two vertex."""
+        u,w = avail[v]  # find reps for two neighbors
+        d2edges.extend([avail[v][u],avail[v][w]])
+        del avail[u][v]
+        del avail[w][v]
+        if len(avail[u]) > len(avail[w]):
+            u,w = w,u   # swap to preserve near-linear time bound
+        for x in avail[u].keys():
+            del avail[x][u]
+            if x in avail[w]:
+                updateDegree(x)
+            elif x != w:
+                avail[x][w] = avail[w][x] = avail[u][x]
+        avail[u] = avail[v] = {}
+        updateDegree(u)
+        updateDegree(v)
+        updateDegree(w)
+
+    # loop adding edges or contracting deg2 clusters
+    while avail:
+        if deg1:
+            v = iter(deg1).next()
+            w = iter(avail[v]).next()
+            addMatch(v,w)
+        elif deg2:
+            v = iter(deg2).next()
+            contract(v)
+        else:
+            v = iter(avail).next()
+            w = iter(avail[v]).next()
+            addMatch(v,w)
+
+    # at this point the edges listed in d2edges form a matchable tree
+    # repeat the degree one part of the algorithm only on those edges
+    avail = {}
+    d2edges = [(u,v) for u,v in d2edges if u not in matching and v not in matching]
+    for u,v in d2edges:
+        avail[u] = {}
+        avail[v] = {}
+    for u,v in d2edges:
+        avail[u][v] = avail[v][u] = (u,v)
+    deg1 = Set([v for v in avail if len(avail[v]) == 1])
+    while deg1:
+        v = iter(deg1).next()
+        w = iter(avail[v]).next()
+        addMatch(v,w)
 
     return matching
