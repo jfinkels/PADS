@@ -4,8 +4,10 @@ Two-color graphs and find related structures.
 D. Eppstein, May 2004.
 """
 
+import unittest
 from sets import Set
 from Biconnectivity import BiconnectedComponents
+import DFS
 
 class NonBipartite(Exception):
     pass
@@ -15,22 +17,13 @@ def TwoColor(G):
     Find a bipartition of G, if one exists.
     Raises NonBipartite or returns dict mapping vertices
     to two colors (True and False).
-    """   
-    def traverse(v,parity):
-        """Perform depth-first traversal from v and color it."""
-        color[v] = parity
-        parity = not parity
-        for w in G[v]:
-            if w in color:
-                if color[w] != parity:
-                    raise NonBipartite
-            else:
-                traverse(w,parity)
-
+    """
     color = {}
-    for v in G:
-        if v not in color:
-            traverse(v,True)
+    for v,w,edgetype in DFS.search(G):
+        if edgetype is DFS.forward:
+            color[w] = not color.get(v,False)
+        elif edgetype is DFS.nontree and color[v] == color[w]:
+            raise NonBipartite
     return color
 
 def Bipartition(G):
@@ -73,3 +66,21 @@ def OddCore(G):
         if not isBipartite(C):
             core.update(C)
     return core
+
+# If run as "python CubicHam.py", run tests on various small graphs
+# and check that the correct results are obtained.
+
+class BipartitenessTest(unittest.TestCase):
+    def cycle(self,n):
+        return dict([(i,[(i-1)%n,(i+1)%n]) for i in range(n)])
+
+    def testEvenCycles(self):
+        for i in range(4,12,2):
+            self.assertEqual(isBipartite(self.cycle(i)), True)
+            
+    def testOddCycles(self):
+        for i in range(3,12,2):
+            self.assertEqual(isBipartite(self.cycle(i)), False)
+
+if __name__ == "__main__":
+    unittest.main()   

@@ -9,96 +9,95 @@ import unittest
 from Graphs import isUndirected
 from Util import arbitrary_item
 from sets import Set
+import DFS
 
-def BiconnectedComponents(G):
+disconnected = object() # flag for BiconnectedComponents
+
+class BiconnectedComponents(DFS.Searcher):
     """
     Generate the biconnected components of G.  G should be represented in
     such a way that "for v in G" loops through the vertices, and "G[v]"
     produces a list of the neighbors of v; for instance, G may be a
     dictionary mapping each vertex to its neighbor set.
-    The output is a list of subgraphs of G.
+    The result of BiconnectedComponents(G) is a sequence of subgraphs of G.
     """
-    if not isUndirected(G):
-        raise ValueError("BiconnectedComponents: input not undirected graph")
+    
+    def __init__(self,G):
+        """Search for biconnected components of graph G."""
+        if not isUndirected(G):
+            raise ValueError("BiconnectedComponents: input not undirected graph")
+    
+        # set up data structures for DFS
+        self._components = []
+        self._dfsnumber = {}
+        self._activelen = {}
+        self._active = []
+        self._low = {}
+        self._ancestors = {} # directed subgraph from nodes to DFS ancestors
+        
+        # perform the Depth First Search
+        DFS.Searcher.__init__(self,G)
+        
+        # clean up now-useless data structures
+        del self._dfsnumber, self._activelen, self._active
+        del self._low, self._ancestors
 
-    dfsnumber = {}
-    components = []
-    ancestors = {}    # DIRECTED subgraph from nodes to DFS ancestors
-    disconnected = object() # flag for component without articulation point
+    def __iter__(self):
+        """Return iterator for sequence of biconnected components."""
+        return iter(self._components)
 
-    def make_component(start=0, articulation_point=disconnected):
-        """Make a new component, removing all active vertices from start onward."""
+    def preorder(self,parent,child):
+        if parent == child:
+            self._active = [child]
+        else:
+            self._active.append(child)
+        self._low[child] = self._dfsnumber[child] = len(self._dfsnumber)
+        self._ancestors[child] = Set()
+        self._activelen[child] = len(self._active)
+
+    def backedge(self,source,destination):
+        if self._dfsnumber[destination] < self._dfsnumber[source]:
+            self._low[source] = min(self._low[source],
+                                    self._dfsnumber[destination])
+            self._ancestors[source].add(destination)
+
+    def postorder(self,parent,child):
+        if parent == child:
+            if len(self._active) > 1 or not self._components or \
+                    child not in self._components[-1]:
+                self._component()
+        else:
+            if self._low[child] == self._dfsnumber[parent]:
+                self._component(self._activelen[parent],parent)
+            else:
+                self._low[parent] = min(self._low[parent],self._low[child])
+                self._activelen[parent] = len(self._active)
+
+    def _component(self,start=0, articulation_point=disconnected):
+        """Make new component, removing active vertices from start onward."""
         component = {}
         if articulation_point is not disconnected:
             component[articulation_point] = Set()
-        for v in active[start:]:
+        for v in self._active[start:]:
             component[v] = Set()
-            for w in ancestors[v]:
+            for w in self._ancestors[v]:
                 component[v].add(w)
                 component[w].add(v)
-        del active[start:]
-        components.append(component)
-
-    def traverse(v):
-        """Perform depth-first traversal from v and return its low number."""
-        low_v = dfsnumber[v] = len(dfsnumber)
-        active.append(v)
-        ancestors[v] = Set()
-        activelen = len(active)
-        for w in G[v]:
-            if w in dfsnumber:
-                if dfsnumber[w] < dfsnumber[v]:
-                    low_v = min(low_v, dfsnumber[w])
-                    ancestors[v].add(w)
-            else:
-                low_w = traverse(w)
-                if low_w == dfsnumber[v]:
-                    make_component(activelen,v)
-                else:
-                    low_v = min(low_v,low_w)
-                    activelen = len(active)
-        return low_v
-
-    for v in G:
-        if v not in dfsnumber:
-            active = []
-            traverse(v)
-            if len(active) > 1 or len(G[v]) == 0:
-                make_component()
-
-    return components
+        del self._active[start:]
+        self._components.append(component)
 
 class NotBiconnected(Exception): pass
 
 def isBiconnected(G):
     """Return True if graph G is biconnected, False otherwise."""
-
-    dfsnumber = {}
-    def traverse(v):
-        """Stripped down version of DFS from BiconnectedComponents."""
-        low_v = dfsnumber[v] = len(dfsnumber)
-        for w in G[v]:
-            if w in dfsnumber:
-                low_v = min(low_v, dfsnumber[w])
-            else:
-                low_w = traverse(w)
-                if low_w == dfsnumber[v] and dfsnumber[w] > 1:
-                    raise NotBiconnected
-                else:
-                    low_v = min(low_v,low_w)
-        return low_v
-
+    it = iter(BiconnectedComponents(G))
     try:
-        traverse(arbitrary_item(G))
-    except NotBiconnected:
+        it.next()
+        it.next()
         return False
+    except StopIteration:
+        return True
 
-    for v in G:
-        if v not in dfsnumber:
-            return False
-
-    return True
-    
     
 # If run as "python CubicHam.py", run tests on various small graphs
 # and check that the correct results are obtained.
@@ -127,8 +126,8 @@ class BiconnectivityTest(unittest.TestCase):
 
     def testIsBiconnected(self):
         """G1 is biconnected but G2 is not."""
-        assert isBiconnected(self.G1)
-        assert not isBiconnected(self.G2)
+        self.assertEqual(isBiconnected(self.G1), True)
+        self.assertEqual(isBiconnected(self.G2), False)
         
     def testBiconnectedComponents(self):
         """G2 has four biconnected components."""
