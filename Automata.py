@@ -9,18 +9,84 @@ D. Eppstein, UC Irvine, November 2003.
 from __future__ import generators
 
 import sys
+import operator
 import unittest
 
 from sets import Set,ImmutableSet
 from PartitionRefinement import PartitionRefinement
 from Sequence import Sequence
 
-class InputError(Exception): pass
+class LanguageError(Exception): pass
 
 # maintain Python 2.2 compatibility
 if 'True' not in globals():
     globals()['True'] = not None
     globals()['False'] = not True
+
+def Language(A):
+    """Convert automaton A into an object describing its language.
+    This is distinct from class RegularLanguage in case we
+    want to later add other types of automaton and nonregular languages.
+    """
+    return A.language()
+
+class RegularLanguage:
+    """Object representing the language recognized by a DFA or NFA.
+    Available operations are testing whether a string is in the language,
+    logical combinations, and subset and equality testing.
+    """
+    def __init__(self,aut):
+        self._recognizer = aut
+    
+    def __contains__(self,inputsequence):
+        return self._recognizer(inputsequence)
+        
+    def __eq__(self,other):
+        if not isinstance(other,RegularLanguage):
+            return None
+        return self._recognizer.minimize() == other._recognizer.minimize()
+        
+    def __ne__(self,other):
+        return not (self == other)
+        
+    def __le__(self,other):
+        return not(self &~ other)
+        
+    def __ge__(self,other):
+        return not(other &~ self)
+        
+    def __lt__(self,other):
+        return self <= other and self != other
+    
+    def __gt__(self,other):
+        return self >= other and self != other
+        
+    def __invert__(self):
+        """Complement (with respect to alphabet) of language."""
+        return Language(self._recognizer.complement())
+        
+    def __and__(self,other):
+        """Intersection of two languages with the same alphabet."""
+        if not isinstance(other,RegularLanguage):
+            raise LanguageError("Unable to intersect nonregular language")
+        return Language(self._recognizer.intersection(other._recognizer))
+        
+    def __or__(self,other):
+        """Union of two languages with the same alphabet."""
+        if not isinstance(other,RegularLanguage):
+            raise LanguageError("Unable to intersect nonregular language")
+        return Language(self._recognizer.union(other._recognizer))
+        
+    def __xor__(self,other):
+        """Symmetric difference of two languages with the same alphabet."""
+        if not isinstance(other,RegularLanguage):
+            raise LanguageError("Unable to intersect nonregular language")
+        return Language(self._recognizer.symmetricDifference(other._recognizer))
+        
+    def __nonzero__(self):
+        """Is this the empty language?"""
+        M = self._recognizer.minimize()
+        return len(M) > 1 or M.isfinal(M.initial)
 
 class FiniteAutomaton:
     """Base class for DFA and NFA.  This class should not be instantiated
@@ -33,7 +99,6 @@ class FiniteAutomaton:
      - x.transition(state,symbol): result of transition function,
        either a single state (for a DFA) or set of states (for an NFA)
      - x.isfinal(state): whether the state is an accepting state
-     - x.language(): return an equivalent language object
      - x.asDFA(): return an equivalent DFA
      - x.asNFA(): return an equivalent NFA
     """
@@ -73,32 +138,22 @@ class FiniteAutomaton:
     def RegExp(self):
         """Return equivalent regular expression."""
         return self.asNFA().RegExp()
-
-def Language(A):
-    """Convert automaton A into an object describing its language.
-    This is distinct from class RegularLanguage in case we
-    want to later add other types of automaton and nonregular languages.
-    """
-    return A.language()
-
-class RegularLanguage:
-    """Object representing the language recognized by a DFA or NFA.
-    Available operations are testing whether a string is in the language,
-    and testing whether two languages are equal.
-    """
-    def __init__(self,aut):
-        self._recognizer = aut
-    
-    def __contains__(self,inputsequence):
-        return self._recognizer(inputsequence)
         
-    def __eq__(self,other):
-        if not isinstance(other,RegularLanguage):
-            return None
-        return self._recognizer.minimize() == other._recognizer.minimize()
+    def complement(self):
+        """Make automaton recognizing complement of given automaton's language."""
+        return _ComplementDFA(self.asDFA())
         
-    def __ne__(self,other):
-        return not (self == other)
+    def union(self,other):
+        """Make automaton recognizing union of two automata's languages."""
+        return _ProductDFA(self.asDFA(),other.asDFA(),operator.or_)
+        
+    def intersection(self,other):
+        """Make automaton recognizing union of two automata's languages."""
+        return _ProductDFA(self.asDFA(),other.asDFA(),operator.and_)
+        
+    def symmetricDifference(self,other):
+        """Make automaton recognizing union of two automata's languages."""
+        return _ProductDFA(self.asDFA(),other.asDFA(),operator.xor)
 
 class DFA(FiniteAutomaton):
     """Base class for deterministic finite automaton.  Subclasses are
@@ -116,7 +171,7 @@ class DFA(FiniteAutomaton):
         state = self.initial
         for symbol in symbols:
             if symbol not in self.alphabet:
-                raise InputError("Symbol " + repr(symbol) +
+                raise LanguageError("Symbol " + repr(symbol) +
                                  " not in input alphabet")
             state = self.transition(state,symbol)
         return self.isfinal(state)
@@ -421,6 +476,28 @@ def _RenumberNFA(N,offset=0):
     final = [replacements[x] for x in N.states() if N.isfinal(x)]
     return LookupNFA(N.alphabet,initial,ttable,final)
 
+class _ProductDFA(DFA):
+    """DFA that simulates D1 and D2 and combines their outputs with op."""
+    def __init__(self,D1,D2,op):
+        if D1.alphabet != D2.alphabet:
+            raise LanguageError("DFAs have incompatible alphabets")
+        self.alphabet = D1.alphabet
+        self.initial = (D1.initial,D2.initial)
+        self.D1 = D1
+        self.D2 = D2
+        self.op = op
+    
+    def transition(self,state,symbol):
+        s1,s2 = state
+        return self.D1.transition(s1,symbol), \
+               self.D2.transition(s2,symbol)
+
+    def isfinal(self,state):
+        s1,s2 = state
+        f1 = self.D1.isfinal(s1) and 1 or 0
+        f2 = self.D2.isfinal(s2) and 1 or 0
+        return self.op(f1,f2)
+    
 def _ReverseNFA(N):
     """Construct NFA for reversal of original NFA's language."""
     initial = [s for s in N.states() if N.isfinal(s)]
@@ -430,6 +507,19 @@ def _ReverseNFA(N):
             for t in N.transition(s,c):
                 ttable[t,c].append(s)
     return LookupNFA(N.alphabet,initial,ttable,N.initial)
+
+class _ComplementDFA(DFA):
+    """DFA for complementary language."""
+    def __init__(self,D):
+        self.DFA = D
+        self.initial = D.initial
+        self.alphabet = D.alphabet
+    
+    def transition(self,state,symbol):
+        return self.DFA.transition(state,symbol)
+    
+    def isfinal(self,state):
+        return not self.DFA.isfinal(state)
 
 class _MinimumDFA(DFA):
     """Construct equivalent DFA with minimum number of states,
@@ -486,6 +576,14 @@ class RegExpTest(unittest.TestCase):
                 self.assert_(S in L)
             for S in self.RegExps[R][1]:
                 self.assert_(S not in L)
+
+    def testComplement(self):
+        for R in self.RegExps:
+            L = ~Language(RegExp(R))
+            for S in self.RegExps[R][0]:
+                self.assert_(S not in L)
+            for S in self.RegExps[R][1]:
+                self.assert_(S in L)
 
     def testEquivalent(self):
         for R in self.RegExps:
