@@ -48,6 +48,14 @@ def InducedSubgraph(V,G,adjacency_list_type=Set):
                 yield y
     return dict([(x,adjacency_list_type(neighbors(x))) for x in G if x in V])
 
+def union(*graphs):
+    """Return a graph having all edges from the argument graphs."""
+    out = {}
+    for G in graphs:
+        for v in G:
+            out.setdefault(v,Set()).update(list(G[v]))
+    return out
+
 def isIndependentSet(V,G):
     """
     True if V is an independent set of vertices in G, False otherwise.

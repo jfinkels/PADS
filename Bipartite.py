@@ -7,6 +7,7 @@ D. Eppstein, May 2004.
 import unittest
 from sets import Set
 from Biconnectivity import BiconnectedComponents
+import Graphs
 import DFS
 
 class NonBipartite(Exception):
@@ -58,14 +59,11 @@ def BipartiteOrientation(G,adjacency_list_type=Set):
 
 def OddCore(G):
     """
-    Set of vertices that participate in odd cycles.
-    Aka, vertices that are part of a nonbipartite biconnected component.
+    Subgraph of vertices and edges that participate in odd cycles.
+    Aka, the union of nonbipartite biconnected components.
     """
-    core = Set()
-    for C in BiconnectedComponents(G):
-        if not isBipartite(C):
-            core.update(C)
-    return core
+    return Graphs.union(*[C for C in BiconnectedComponents(G)
+                          if not isBipartite(C)])
 
 # If run as "python CubicHam.py", run tests on various small graphs
 # and check that the correct results are obtained.
