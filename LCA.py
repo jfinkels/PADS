@@ -14,6 +14,10 @@ it uses as a subroutine.
 D. Eppstein, November 2003.
 """
 
+import unittest,random
+from UnionFind import UnionFind
+from sets import Set
+
 # maintain Python 2.2 compatibility
 if 'True' not in globals():
     globals()['True'] = not None
@@ -66,43 +70,7 @@ class RangeMin:
         """Function to replace LCA when we have too little data."""
         return 0
 
-class LCA:
-    """Structure for finding least common ancestors in trees.
-    Tree nodes may be any hashable objects; a tree is specified
-    by a dictionary mapping nodes to their parents.
-    LCA(T)(x,y) finds the LCA of nodes x and y in tree T.
-    """
-    def __init__(self,parent):
-        """Construct LCA structure from tree parent relation."""
-        children = {}
-        for x in parent:
-            children.setdefault(parent[x],[]).append(x)
-        root = [x for x in children if x not in parent]
-        if len(root) != 1:
-            raise ValueError("LCA input is not a tree")
- 
-        levels = []
-        self._representatives = {}
-        self._visit(children,levels,root[0],0)
-        if [x for x in parent if x not in self._representatives]:
-            raise ValueError("LCA input is not a tree")
-        self._rangemin = _RestrictedRangeMin(levels)
-            
-    def __call__(self,*nodes):
-        """Find least common ancestor of a set of nodes."""
-        r = [self._representatives[x] for x in nodes]
-        return self._rangemin[min(r):max(r)+1][1]
-
-    def _visit(self,children,levels,node,level):
-        """Perform Euler traversal of tree."""
-        self._representatives[node] = len(levels)
-        pair = (level,node)
-        levels.append(pair)
-        for child in children.get(node,[]):
-            self._visit(children,levels,child,level+1)
-            levels.append(pair)
-
-class _RestrictedRangeMin:
+class RestrictedRangeMin:
     """Linear-space RangeMin for integer data obeying the constraint
         abs(X[i]-X[i-1])==1.
     We don't actually check this constraint, but results may be incorrect
@@ -130,8 +98,8 @@ class _RestrictedRangeMin:
         for i in range(0,len(X),blocklen):
             XX = X[i:i+blocklen]
             blockmin.append(min(XX))
-            self._prefix += _PrefixMinima(XX)
-            self._suffix += _PrefixMinima(XX,reversed=True)
+            self._prefix += PrefixMinima(XX)
+            self._suffix += PrefixMinima(XX,reversed=True)
             blockid = len(XX) < blocklen and -1 or self._blockid(XX)
             blocks.append(blockid)
             if blockid not in ids:
@@ -168,7 +136,7 @@ class PrecomputedRangeMin:
     """RangeMin solved in quadratic space by precomputing all solutions."""
 
     def __init__(self,X):
-        self._minima = [_PrefixMinima(X[i:]) for i in range(len(X))]
+        self._minima = [PrefixMinima(X[i:]) for i in range(len(X))]
     
     def __getslice__(self,x,y):
         return self._minima[x][y-x-1]
@@ -196,7 +164,92 @@ class LogarithmicRangeMin:
     def __len__(self):
         return len(self._minima[0])
 
-def _PrefixMinima(X,reversed=False):
+class LCA:
+    """Structure for finding least common ancestors in trees.
+    Tree nodes may be any hashable objects; a tree is specified
+    by a dictionary mapping nodes to their parents.
+    LCA(T)(x,y) finds the LCA of nodes x and y in tree T.
+    """
+    def __init__(self, parent, RangeMinFactory = RestrictedRangeMin):
+        """Construct LCA structure from tree parent relation."""
+        children = {}
+        for x in parent:
+            children.setdefault(parent[x],[]).append(x)
+        root = [x for x in children if x not in parent]
+        if len(root) != 1:
+            raise ValueError("LCA input is not a tree")
+ 
+        levels = []
+        self._representatives = {}
+        self._visit(children,levels,root[0],0)
+        if [x for x in parent if x not in self._representatives]:
+            raise ValueError("LCA input is not a tree")
+        self._rangemin = RangeMinFactory(levels)
+            
+    def __call__(self,*nodes):
+        """Find least common ancestor of a set of nodes."""
+        r = [self._representatives[x] for x in nodes]
+        return self._rangemin[min(r):max(r)+1][1]
+
+    def _visit(self,children,levels,node,level):
+        """Perform Euler traversal of tree."""
+        self._representatives[node] = len(levels)
+        pair = (level,node)
+        levels.append(pair)
+        for child in children.get(node,[]):
+            self._visit(children,levels,child,level+1)
+            levels.append(pair)
+
+class OfflineLCA(dict):
+    """Find LCAs of all pairs in a given sequence, using Union-Find."""
+
+    def __init__(self,parent,pairs):
+        """Set up to find LCAs of pairs in tree defined by parent.
+        LCA of any given pair x,y can then be found by self[x][y].
+        However unlike the online LCA structure we can not find LCAs
+        of pairs that are not supplied to us at startup time.
+        """
+
+        # set up dictionary where answers get stored
+        dict.__init__(self)
+        for u,v in pairs:
+            self.setdefault(u,{})[v] = self.setdefault(v,{})[u] = None
+
+        # set up data structure for finding node ancestor on search path
+        # self.descendants forms a collection of disjoint sets,
+        #    one set for the descendants of each search path node.
+        # self.ancestors maps disjoint set ids to the ancestors themselves.
+        self.descendants = UnionFind()
+        self.ancestors = {}
+        
+        # invert the parent relationship so we can traverse the tree
+        self.children = {}
+        for x,px in parent.iteritems():
+            self.children.setdefault(px,[]).append(x)
+        root = [x for x in self.children if x not in parent]
+        if len(root) != 1:
+            raise ValueError("LCA input is not a tree")
+        
+        # initiate depth first traversal
+        self.visited = Set()
+        self.traverse(root[0])
+
+    def traverse(self,node):
+        """Perform depth first traversal of tree."""
+        self.ancestors[self.descendants[node]] = node
+        for child in self.children.get(node,[]):
+            self.traverse(child)
+            self.descendants.union(child,node)
+            self.ancestors[self.descendants[node]] = node
+        self.visited.add(node)
+        for query in self[node]:
+            if query in self.visited:
+                lca = self.ancestors[self.descendants[query]]
+                self[node][query] = self[query][node] = lca
+
+# Various utility functions
+
+def PrefixMinima(X,reversed=False):
     """Compute table of prefix minima
     (or suffix minima, if reversed=True) of list X.
     """
@@ -226,25 +279,49 @@ def _log2(n):
         _logtable.extend([1+_logtable[-1]]*len(_logtable))
     return _logtable[n]
 
-# if run as "python lca.py", run tests on random data
+# if run as "python LCA.py", run tests on random data
 # and check that RangeMin's results are correct.
+
+class RandomRangeMinTest(unittest.TestCase):
+    def testRangeMin(self):
+        for trial in range(20):
+            data = [random.choice(xrange(1000000))
+                    for i in range(random.randint(1,100))]
+            R = RangeMin(data)
+            for sample in range(100):
+                i = random.randint(0,len(data)-1)
+                j = random.randint(i+1,len(data))
+                self.assertEqual(R[i:j],min(data[i:j]))
+
+class LCATest(unittest.TestCase):
+    parent = {'b':'a','c':'a','d':'a','e':'b','f':'b','g':'f','h':'g','i':'g'}
+    lcas = {
+        ('a','b'):'a',
+        ('b','c'):'a',
+        ('c','d'):'a',
+        ('d','e'):'a',
+        ('e','f'):'b',
+        ('e','g'):'b',
+        ('e','h'):'b',
+        ('c','i'):'a',
+        ('a','i'):'a',
+        ('f','i'):'f',
+    }
+    
+    def testLCA(self):
+        L = LCA(self.parent)
+        for k,v in self.lcas.iteritems():
+            self.assertEqual(L(*k),v)
+
+    def testLogLCA(self):
+        L = LCA(self.parent, LogarithmicRangeMin)
+        for k,v in self.lcas.iteritems():
+            self.assertEqual(L(*k),v)
+            
+    def testOfflineLCA(self):
+        L = OfflineLCA(self.parent, self.lcas.iterkeys())
+        for (p,q),v in self.lcas.iteritems():
+            self.assertEqual(L[p][q],v)
+
 if __name__ == "__main__":
-    import random
-    for trial in range(100):
-        data = [random.choice(xrange(1000000))
-                for i in range(random.randint(1,1000))]
-        R = RangeMin(data)
-        for sample in range(100):
-            i = random.randint(0,len(data)-1)
-            j = random.randint(i+1,len(data))
-            if R[i:j] != min(data[i:j]):
-                print "Failed to find correct minimum."
-                print "Position of minimum:",data.index(min(data[i:j]))
-                print "Value of minimum:",min(data[i:j])
-                print "Reported minimum:",R[i:j]
-                print "Length of data:",len(data)
-                print "Range:",i,":",j
-                print "Data:",data
-                raise SystemExit
-        print "Trial",trial,"complete."
-    print "Completed all trials without finding any bugs."
+    unittest.main()   
