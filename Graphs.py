@@ -37,3 +37,30 @@ def copyGraph(G,adjacency_list_type=Set):
     adjacency_list_type, dict is not -- use Util.map_to_constant instead.
     """
     return dict([(v,adjacency_list_type(iter(G[v]))) for v in G])
+
+def InducedSubgraph(V,G,adjacency_list_type=Set):
+    """
+    The subgraph consisting of all edges between pairs of vertices in V.
+    """
+    def neighbors(x):
+        for y in G[x]:
+            if y in V:
+                yield y
+    return dict([(x,adjacency_list_type(neighbors(x))) for x in G if x in V])
+
+def isIndependentSet(V,G):
+    """
+    True if V is an independent set of vertices in G, False otherwise.
+    """
+    class NonIndependent(Exception):
+        pass
+    
+    def TestIndependent(seq):
+        for x in seq:
+            raise NonIndependent
+
+    try:
+        InducedSubgraph(V,G,TestIndependent)
+        return True
+    except NonIndependent:
+        return False
