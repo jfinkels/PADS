@@ -35,8 +35,13 @@ class RegularLanguage:
     Available operations are testing whether a string is in the language,
     logical combinations, and subset and equality testing.
     """
-    def __init__(self,aut):
-        self.recognizer = aut
+    def __init__(self,arg):
+        if isinstance(arg,FiniteAutomaton):
+            self.recognizer = arg
+        elif isinstance(arg,(str,unicode)):
+            self.recognizer = RegExp(arg)
+        else:
+            raise LanguageError("Unrecognized constructor for RegularLanguage")
     
     def __contains__(self,inputsequence):
         return self.recognizer(inputsequence)
@@ -241,6 +246,7 @@ class NFA(FiniteAutomaton):
             for c in self.alphabet:
                 for neighbor in self.transition(state,c):
                     print >>output, "  --[" + str(c) + "]-->", neighbor
+
     def RegExp(self):
         """Convert to regular expression and return as a string.
         See Sipser for an explanation of this algorithm."""
@@ -340,11 +346,7 @@ class _NFAfromDFA(NFA):
 
 Empty = ImmutableSet()
 
-def RegExp(expression):
-    """Convert regular expression to regular language."""
-    return Language(_RegExp(expression))
-
-class _RegExp(NFA):
+class RegExp(NFA):
     """Convert regular expression to NFA."""
 
     def __init__(self,expr):
@@ -566,40 +568,38 @@ class _MinimumDFA(DFA):
 # If called as standalone routine, run some unit tests
 
 class RegExpTest(unittest.TestCase):
-    # dictionary of regexp:([strings in L],[strings not in L])
-    RegExps = {
-        "0": (["0"],["","00"]),
-        "(10+0)*": (["","0","010"],["1"]),
-        "(0+1)*1(0+1)(0+1)": (["000100"],["0011"]),
-    }
+    # tuples (L,[strings in L],[strings not in L])
+    languages = [
+        (RegularLanguage("0"), ["0"], ["","00"]),
+        (RegularLanguage("(10+0)*"), ["","0","010"], ["1"]),
+        (RegularLanguage("(0+1)*1(0+1)(0+1)"), ["000100"], ["0011"]),
+    ]
 
     def testMembership(self):
-        for R in self.RegExps:
-            L = RegExp(R)
-            for S in self.RegExps[R][0]:
+        for L,Li,Lx in self.languages:
+            for S in Li:
                 self.assert_(S in L)
-            for S in self.RegExps[R][1]:
+            for S in Lx:
                 self.assert_(S not in L)
 
     def testComplement(self):
-        for R in self.RegExps:
-            L = ~RegExp(R)
-            for S in self.RegExps[R][0]:
-                self.assert_(S not in L)
-            for S in self.RegExps[R][1]:
+        for L,Li,Lx in self.languages:
+            L = ~L
+            for S in Lx:
                 self.assert_(S in L)
+            for S in Li:
+                self.assert_(S not in L)
 
     def testEquivalent(self):
-        for R in self.RegExps:
-            L1 = RegExp(R)
-            L2 = RegExp(L1.recognizer.RegExp())
+        for L1,Li,Lx in self.languages:
+            L2 = RegularLanguage(L1.recognizer.RegExp())
             self.assertEqual(L1,L2)
     
     def testInequivalent(self):
-        langs = [RegExp(R) for R in self.RegExps]
-        for i in range(len(langs)):
+        for i in range(len(self.languages)):
             for j in range(i):
-                self.assertNotEqual(langs[i],langs[j])
+                self.assertNotEqual(self.languages[i][0],
+                                    self.languages[j][0])
                 
 if __name__ == "__main__":
     unittest.main()   
