@@ -22,26 +22,7 @@ if 'True' not in globals():
     globals()['True'] = not None
     globals()['False'] = not True
 
-class Language:
-    """Object representing the language recognized by a DFA or NFA.
-    Available operations are testing whether a string is in the language,
-    and testing whether two languages are equal.
-    """
-    def __init__(self,aut):
-        self._recognizer = aut
-    
-    def __contains__(self,inputsequence):
-        return self._recognizer(inputsequence)
-        
-    def __eq__(self,other):
-        if not isinstance(other,language):
-            return None
-        return self._recognizer.minimize() == other._recognizer.minimize()
-        
-    def __ne__(self,other):
-        return not (self == other)
-
-class Automaton:
+class FiniteAutomaton:
     """Base class for DFA and NFA.  This class should not be instantiated
     on its own, but dispatches methods that are appropriate to both types
     of automaton by calling .asDFA() or .asNFA() to convert the automaton
@@ -52,6 +33,7 @@ class Automaton:
      - x.transition(state,symbol): result of transition function,
        either a single state (for a DFA) or set of states (for an NFA)
      - x.isfinal(state): whether the state is an accepting state
+     - x.language(): return an equivalent language object
      - x.asDFA(): return an equivalent DFA
      - x.asNFA(): return an equivalent NFA
     """
@@ -64,6 +46,10 @@ class Automaton:
         """Test whether sequence of symbols is accepted by the DFA."""
         return self.asDFA()(symbols)
     
+    def language(self):
+        """Form language object for language recognized by automaton."""
+        return RegularLanguage(self)
+
     def states(self):
         """Generate sequence of all automaton states."""
         return self.asNFA().states()
@@ -88,7 +74,33 @@ class Automaton:
         """Return equivalent regular expression."""
         return self.asNFA().RegExp()
 
-class DFA(Automaton):
+def Language(A):
+    """Convert automaton A into an object describing its language.
+    This is distinct from class RegularLanguage in case we
+    want to later add other types of automaton and nonregular languages.
+    """
+    return A.language()
+
+class RegularLanguage:
+    """Object representing the language recognized by a DFA or NFA.
+    Available operations are testing whether a string is in the language,
+    and testing whether two languages are equal.
+    """
+    def __init__(self,aut):
+        self._recognizer = aut
+    
+    def __contains__(self,inputsequence):
+        return self._recognizer(inputsequence)
+        
+    def __eq__(self,other):
+        if not isinstance(other,RegularLanguage):
+            return None
+        return self._recognizer.minimize() == other._recognizer.minimize()
+        
+    def __ne__(self,other):
+        return not (self == other)
+
+class DFA(FiniteAutomaton):
     """Base class for deterministic finite automaton.  Subclasses are
     responsible for filling out the details of the initial state, alphabet,
     and transition function.
@@ -133,7 +145,7 @@ class DFA(Automaton):
         """Report whether these two DFAs have equivalent states."""
         return not (self == other)
 
-class NFA(Automaton):
+class NFA(FiniteAutomaton):
     """Base class for nondeterministic finite automaton.  Subclasses are
     responsible for filling out the details of the initial state, alphabet,
     and transition function.  Note that the NFAs defined here do not allow
@@ -479,13 +491,13 @@ class RegExpTest(unittest.TestCase):
         for R in self.RegExps:
             N1 = RegExp(R)
             N2 = RegExp(N1.RegExp())
-            self.assertEqual(N1.minimize(),N2.minimize())
+            self.assertEqual(Language(N1),Language(N2))
     
     def testInequivalent(self):
-        automata = [RegExp(R).minimize() for R in self.RegExps]
-        for i in range(len(automata)):
+        langs = [Language(RegExp(R)) for R in self.RegExps]
+        for i in range(len(langs)):
             for j in range(i):
-                self.assertNotEqual(automata[i],automata[j])
+                self.assertNotEqual(langs[i],langs[j])
                 
 if __name__ == "__main__":
     unittest.main()   
