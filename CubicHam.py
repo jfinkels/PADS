@@ -4,6 +4,7 @@ Generate all Hamiltonian cycles in graphs of maximum degree three.
 D. Eppstein, April 2004.
 """
 import unittest
+from Graphs import *
 
 def HamiltonianCycles(G):
     """
@@ -17,18 +18,12 @@ def HamiltonianCycles(G):
     paper, The Traveling Salesman Problem for Cubic Graphs.)
     """
 
-    # Make a copy of G so we can destructively modify it
-    # G[v][w] is true iff v-w is an original edge of G
-    # (rather than an edge created by a contraction of G).
-    copy = {}
-    for v in G:
-        if len(G[v]) < 2:
-            return      # Isolated or degree one vertex, no cycles exist
-        copy[v] = {}
-        for w in G[v]:
-            assert v in G[w]
-            copy[v][w] = True
-    G = copy
+    # Check input and copy it so we can modify the copy
+    if not isUndirected(G) or maxDegree(G) > 3:
+        raise InputError("HamiltonianCycles input must be undirected degree three graph")
+    if minDegree(G) < 2:
+        return
+    G = copyGraph(G)
     
     # Subgraph of forced edges in the input
     forced_in_input = dict([(v,{}) for v in G])
