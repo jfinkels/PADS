@@ -62,14 +62,13 @@ class BiconnectedComponents(DFS.Searcher):
             self._ancestors[source].add(destination)
 
     def postorder(self,parent,child):
-        if parent == child:
-            if not self._components or child not in self._components[-1]:
-                self._component()
-        elif self._low[child] == self._dfsnumber[parent]:
-            self._component(self._activelen[parent],parent)
-        else:
+        if self._low[child] != self._dfsnumber[parent]:
             self._low[parent] = min(self._low[parent],self._low[child])
             self._activelen[parent] = len(self._active)
+        elif parent != child:
+            self._component(self._activelen[parent],parent)
+        elif not self._components or child not in self._components[-1]:
+            self._component()
 
     def _component(self,start=0, articulation_point=disconnected):
         """Make new component, removing active vertices from start onward."""
@@ -114,13 +113,14 @@ class BiconnectivityTester(DFS.Searcher):
         self._low[source] = min(self._low[source],self._dfsnumber[destination])
 
     def postorder(self,parent,child):
-        if parent == child:
-            if not self._rootedge:  # flag start from isolated vertex
-                self._rootedge = parent,child
-        elif self._low[child] != self._dfsnumber[parent]:
+        if self._low[child] != self._dfsnumber[parent]:
             self._low[parent] = min(self._low[parent],self._low[child])
-        elif (parent,child) != self._rootedge:
+        elif (parent,child) == self._rootedge:
+            pass                    # end of first component, >1 vertices
+        elif parent != child:
             raise NotBiconnected    # articulation point
+        elif not self._rootedge:
+            self._rootedge = parent,child   # end of first component, isolani
 
 
 def isBiconnected(G):
