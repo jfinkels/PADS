@@ -17,7 +17,7 @@ def PerfectEliminationOrdering(G):
     G should be represented in such a way that "for v in G" loops through
     the vertices, and "G[v]" produces a list of the neighbors of v; for
     instance, G may be a dictionary mapping each vertex to its neighbor set.
-    Running time is O(n+m) and additional space usage over G is O(n).
+    Running time is O(n+m) and additional space usage over G is O(n+m).
     """
     alreadyProcessed = Set()
     B = list(LexBFS(G))
