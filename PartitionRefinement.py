@@ -10,8 +10,11 @@ D. Eppstein, November 2003.
 from sets import Set
 
 class PartitionRefinement:
-    """Maintain and refine a partition of a set of items into subsets."""
-    
+    """Maintain and refine a partition of a set of items into subsets.
+    Space usage for a partition of n items is O(n), and each refine
+    operation takes time proportional to the size of its argument.
+    """
+
     def __init__(self,items):
         """Create a new partition refinement data structure for the given
         items.  Initially, all items belong to the same subset.

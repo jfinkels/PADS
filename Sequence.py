@@ -13,7 +13,9 @@ import sys
 class SequenceError(Exception): pass
 
 class Sequence:
-    """Maintain a sequence of items subject to insertions and removals."""
+    """Maintain a sequence of items subject to insertions and removals.
+    All sequence operations take constant time.
+    """
 
     def __init__(self, iterable=[], key=None):
         """We represent the sequence as a doubly-linked circular linked list,
