@@ -5,7 +5,7 @@ Find maximum cardinality matchings in general undirected graphs.
 D. Eppstein, UC Irvine, September 6, 2003.
 """
 
-from unionFind import unionFind
+from UnionFind import UnionFind
 
 if 'True' not in globals():
     globals()['True'] = not None
@@ -65,7 +65,7 @@ def matching(G, initialMatching = {}):
         # base[t] will be the pair (v,w) at the base of the blossom, where v and t
         # are on the same side of the blossom and w is on the other side.
 
-        leader = unionFind()
+        leader = UnionFind()
         S = {}
         T = {}
         unexplored = []
