@@ -110,6 +110,8 @@ class FiniteAutomaton:
      - x.asNFA(): return an equivalent NFA
     """
     
+    initial = alphabet = transition = isfinal = asDFA = asNFA = None
+    
     def __len__(self):
         """How many states does this automaton have?"""
         return len(list(self.states()))
@@ -140,7 +142,7 @@ class FiniteAutomaton:
 
     def renumber(self,offset=0):
         """Replace complicated state objects by small integers."""
-        return _RenumberNFA(self.asNFA())
+        return _RenumberNFA(self.asNFA(),offset=offset)
         
     def RegExp(self):
         """Return equivalent regular expression."""
@@ -405,7 +407,7 @@ class RegExp(NFA):
             self.pos += 1
             ret = self.expression()
             if self.pos == len(self.expr) or self.expr[self.pos] != ')':
-                raise RegExpError("Close paren expected at char " + str(self.pos))
+                raise LanguageError("Close paren expected at char " + str(self.pos))
             self.pos += 1
             return ret
         if self.expr[self.pos] == '\\':

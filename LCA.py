@@ -132,10 +132,10 @@ class _RestrictedRangeMin:
             blockmin.append(min(XX))
             self._prefix += _PrefixMinima(XX)
             self._suffix += _PrefixMinima(XX,reversed=True)
-            id = len(XX) < blocklen and -1 or self._blockid(XX)
-            blocks.append(id)
-            if id not in ids:
-                ids[id] = PrecomputedRangeMin(_pairs(XX))
+            blockid = len(XX) < blocklen and -1 or self._blockid(XX)
+            blocks.append(blockid)
+            if blockid not in ids:
+                ids[blockid] = PrecomputedRangeMin(_pairs(XX))
         self._blocks = [ids[b] for b in blocks]
         
         # Build data structure for interblock queries
@@ -159,10 +159,10 @@ class _RestrictedRangeMin:
         """Return value such that all blocks with the same
         pattern of increments and decrements get the same id.
         """
-        id = 0
+        blockid = 0
         for i in range(1,len(XX)):
-            id = id*2 + (XX[i] > XX[i-1])
-        return id
+            blockid = blockid*2 + (XX[i] > XX[i-1])
+        return blockid
 
 class PrecomputedRangeMin:
     """RangeMin solved in quadratic space by precomputing all solutions."""

@@ -100,7 +100,6 @@ class Sequence:
         """Add y before x in the sequence."""
         y = self.key(y)
         x = self.key(x)
-        oldfirst = self._first
         self._insafter(self._prev[x],y)
         if self._first == x:
             self._first = y

@@ -6,6 +6,11 @@ independent set for bipartite graphs.
 D. Eppstein, April 2002.
 """
 
+# maintain Python 2.2 compatibility
+if 'True' not in globals():
+    globals()['True'] = not None
+    globals()['False'] = not True
+
 def matching(graph):
     """Find maximum cardinality matching of a bipartite graph (U,V,E).
     The input format is a dictionary mapping members of U to lists
@@ -24,7 +29,7 @@ def matching(graph):
                 matching[v] = u
                 break
     
-    while 1:
+    while True:
         # structure residual graph into layers
         # pred[u] gives the neighbor in the previous layer for u in U
         # preds[v] gives a list of neighbors in the previous layer for v in V
