@@ -22,5 +22,5 @@ def map_to_constant(constant):
     Appropriate as the adjacency_list_type argument for Graphs.copyGraph.
     """
     def factory(seq):
-        return dict([(x,constant) for x in seq])
+        return dict.fromkeys(seq,constant)
     return factory
