@@ -14,21 +14,17 @@ from Sequence import Sequence
 def LexBFS(G):
     """Find lexicographic breadth-first-search traversal order of a graph.
     G should be represented in such a way that "for v in G" loops through
-    the vertices, and "G[v]" produces a list of the neighbors of v; for
+    the vertices, and "G[v]" produces a sequence of the neighbors of v; for
     instance, G may be a dictionary mapping each vertex to its neighbor set.
     """
     P = PartitionRefinement(G)
-    set = iter(P).next()
-    ids = {id(set):set}   # complicated by inability of set to belong to dict
-    S = Sequence([id(set)])
+    S = Sequence([iter(P).next()], key=id)
     while S:
-        set = ids[iter(S).next()]
-        v = iter(set).next()
+        set = iter(S).next()    # find first set in ordered partition
+        v = iter(set).next()    # and first remaining vertex in that set
         yield v
         P.remove(v)
         if not set:
-            S.remove(id(set))
-            del ids[id(set)]
+            S.remove(set)
         for new,old in P.refine(G[v]):
-            S.insertBefore(id(old),id(new))
-            ids[id(new)] = new
+            S.insertBefore(old,new)

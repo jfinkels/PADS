@@ -20,29 +20,31 @@ class SimpleOrderedSequence(Sequence):
     to use this data structure only for sequences of very few items.
     """
 
-    def __init__(self,iterable=[]):
+    def __init__(self,iterable=[],key=None):
         """The only additional data we maintain over a vanilla Sequence
         is a dictionary self._tag mapping sequence items to integers,
         such that an item is earlier than another iff its tag is smaller.
         """
         self._tag = {}
-        Sequence.__init__(self,iterable)
+        Sequence.__init__(self,iterable,key=key)
 
     def cmp(self,x,y):
         """Compare the positions of x and y in the sequence."""
-        return cmp(self._tag[x],self._tag[y])
+        return cmp(self._tag[self.key(x)],self._tag[self.key(y)])
     
     def append(self,x):
         """Add x to the end of the sequence."""
         if not self._next:  # add to empty sequence
             Sequence.append(self,x)
-            self._tag[x] = sys.maxint//2
+            self._tag[self.key(x)] = sys.maxint//2
         else:
             self.insertAfter(self._prev[self._first],x)
 
     def insertAfter(self,x,y):
         """Add y after x and compute a tag for it."""
         Sequence.insertAfter(self,x,y)
+        x = self.key(x)
+        y = self.key(y)
         next = self._next[y]
         if next == self._first:
             nexttag = sys.maxint
@@ -56,6 +58,8 @@ class SimpleOrderedSequence(Sequence):
     def insertBefore(self,x,y):
         """Add y before x in the sequence."""
         Sequence.insertBefore(self,x,y)
+        x = self.key(x)
+        y = self.key(y)
         if self._first == y:
             self._tag[y] = self._tag[x]//2
             if self._tag[y] == self._tag[x]:
