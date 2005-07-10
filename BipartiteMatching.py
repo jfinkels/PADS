@@ -6,13 +6,16 @@ independent set for bipartite graphs.
 D. Eppstein, April 2002.
 """
 
+from StrongConnectivity import StronglyConnectedComponents
+
 # maintain Python 2.2 compatibility
 if 'True' not in globals():
     globals()['True'] = not None
     globals()['False'] = not True
 
 def matching(graph):
-    """Find maximum cardinality matching of a bipartite graph (U,V,E).
+    """
+    Find maximum cardinality matching of a bipartite graph (U,V,E).
     The input format is a dictionary mapping members of U to lists
     of their neighbors in V.  The output is a triple (M,A,B) where M is a
     dictionary mapping members of V to their matches in U, A is the part
@@ -83,3 +86,35 @@ def matching(graph):
             return 0
 
         for v in unmatched: recurse(v)
+
+def imperfections(graph):
+    """
+    Find edges that do not belong to any perfect matching of G.
+    The input format is the same as for matching(), and the output
+    is a subgraph of the input graph in the same format.
+    """
+    M,A,B = matching(graph)
+    if len(M) != len(graph):
+        return graph    # whole graph is imperfect
+
+    orientation = {}
+    for v in graph:
+        orientation[v,True]=[]
+        for w in graph[v]:
+            if M[w] == v:
+                orientation[w,False]=[(v,True)]
+            else:
+                orientation[v,True].append((w,False))
+
+    components = {}
+    for C in StronglyConnectedComponents(orientation):
+        for v in C:
+            components[v] = C
+
+    imperfections = {}
+    for v in graph:
+        imperfections[v] = [w for w in graph[v]
+                            if M[w] != v and
+                            components[v,True] != components[w,False]]
+    
+    return imperfections
