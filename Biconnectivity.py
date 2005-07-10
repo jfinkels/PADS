@@ -132,7 +132,7 @@ def isBiconnected(G):
         return False
 
 
-# If run as "python CubicHam.py", run tests on various small graphs
+# If run as "python Biconnectivity.py", run tests on various small graphs
 # and check that the correct results are obtained.
 
 class BiconnectivityTest(unittest.TestCase):
