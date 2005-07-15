@@ -21,7 +21,7 @@ import sys
 from optparse import OptionParser
 from BipartiteMatching import imperfections
 from StrongConnectivity import StronglyConnectedComponents
-from DFS import reachable
+import DFS
 
 try:
     set
@@ -126,6 +126,8 @@ class Sudoku:
         - repgraph is a directed graph representing nonrepetitive paths
           and cycles among bilocated digits, as constructed by the cycle
           rule and used by the repeat rule.
+          
+        - verbose is used to enable or disable solution step logging.
         """
         self.contents = [0]*81
         self.locations = [None]+[(1L<<81)-1]*9
@@ -133,6 +135,7 @@ class Sudoku:
         self.progress = False
         self.pairs = None
         self.repgraph = None
+        self.verbose = False
 
         if initial_placements:
             cell = 0
@@ -175,16 +178,35 @@ class Sudoku:
         bit = 1L << cell
         for d in digits:
             if d != digit:
-                self.unplace(d,bit)
+                self.unplace(d,bit,False)
             else:
-                self.unplace(d,neighbors[cell])
+                self.unplace(d,neighbors[cell],False)
         self.mark_progress()
+        if self.verbose:
+            print >>sys.stderr,"Placing digit",digit,"in cell",cell
 
-    def unplace(self,digit,mask):
-        """Eliminate the masked positions as possible locations for digit."""
+    def unplace(self,digit,mask,log=True):
+        """
+        Eliminate the masked positions as possible locations for digit.
+        The log argument should be true for external callers, but false
+        when called by Sudoku.place; it is used to disable verbose output
+        that would be redundant to the output from place.
+        """
         if digit != int(digit) or not 1 <= digit <= 9:
             raise ValueError("unplace(%d): digit out of range" % digit)
         if self.locations[digit] & mask:
+            if log and self.verbose:
+                unbits = self.locations[digit] & mask
+                unmarked = []
+                while unbits:
+                    bit = unbits &~ (unbits - 1)
+                    unmarked.append(unmask[bit])
+                    unbits &=~ bit
+                print >>sys.stderr,"Preventing digit",digit,"from",
+                if len(unmarked) == 1:
+                    print >>sys.stderr,"cell",unmarked[0]
+                else:
+                    print >>sys.stderr,"cells",unmarked
             self.locations[digit] &=~ mask
             self.mark_progress()
 
@@ -400,8 +422,34 @@ def repeat(grid):
     for cell in range(81):
         if not grid.contents[cell]:
             for d in grid.choices(cell):
-                if reachable(grid.repgraph,(cell,d,False),(cell,d,True)):
+                start = (cell,d,False)
+                if len(grid.repgraph[start]) > 1 and \
+                        DFS.reachable(grid.repgraph,start,(cell,d,True)):
                     grid.place(d,cell)
+
+def conflict(grid):
+    """
+    Look for conflicting paths of bilocated vertices.
+    In the same graph used by the cycle and repeat rules, if there exist
+    two paths that start with the same cell and digit, and that end with
+    equal digits in different cells of the same row, column, or square,
+    then the start cell must contain the starting digit for otherwise
+    it would cause the end cells to conflict with each other.
+    """
+    if not grid.repgraph:
+        return
+    for cell in range(81):
+        if not grid.contents[cell]:
+            for d in grid.choices(cell):
+                start = (cell,d,False)
+                if len(grid.repgraph[start]) > 1:
+                    conflicts = [0]*10
+                    for (reached,dd,bit) in DFS.preorder(grid.repgraph,start):
+                        if bit and 1 <= dd <= 9:
+                            if (1L<<reached) & conflicts[dd]:
+                                grid.place(d,cell)
+                            else:
+                                conflicts[dd] |= neighbors[reached]
 
 # triples of name, rule, difficulty level
 rules = [
@@ -414,6 +462,7 @@ rules = [
     ("subproblem",subproblem,3),
     ("cycle",cycle,3),
     ("repeat",repeat,3),
+    ("conflict",conflict,4),
 ]
 
 def step(grid, quick_and_dirty = False):
@@ -426,6 +475,8 @@ def step(grid, quick_and_dirty = False):
             rule(grid)
             if grid.progress:
                 grid.rules_used.add(name)
+                if grid.verbose:
+                    print >>sys.stderr,"Rule",name,"made progress"
                 return True
     return False
 
@@ -595,9 +646,14 @@ def all_solutions(grid):
         
         # try it both ways
         branch = Sudoku(grid)
+        if grid.verbose:
+            print >>sys.stderr,"Branching in backtracking search"
+            branch.verbose = True
         branch.place(d,c)
         for sol in all_solutions(branch):
             yield sol
+        if grid.verbose:
+            print >>sys.stderr,"Returned from backtracking branch"
         grid.rules_used.update(branch.rules_used)
         grid.rules_used.add("backtrack")
         grid.unplace(d,1L<<c)   #...and loop back to try again
@@ -627,7 +683,10 @@ parser.add_option("-r","--rules",dest="show_rules", action="store_true",
 parser.add_option("-l","--levels",dest="show_levels", action="store_true",
                   help = "show description of difficulty levels and exit")
 
-parser.add_option("-t","--translate",dest="translate", action="store_true",
+parser.add_option("-0", "--blank", dest="empty", action="store_true",
+                  help = "output blank sudoku grid and exit")
+
+parser.add_option("-t","--translate", dest="translate", action="store_true",
                   help = "translate format of input puzzle without solving")
 
 parser.add_option("-p","--permute",dest="permute", action="store_true",
@@ -641,6 +700,9 @@ parser.add_option("-a", "--asymmetric", dest="asymmetric", action="store_true",
 
 parser.add_option("-b", "--backtrack", dest="backtrack", action="store_true",
                   help = "enable trial and error search for all solutions")
+
+parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
+                  help = "output description of each step in puzzle solution")
 
 parser.add_option("-x", "--empty", dest="emptychars", action="store",
                   type="string", default=".0",
@@ -689,6 +751,10 @@ find the solution.
         outputter = output_formats[options.format.lower()]
     except KeyError:
         print "Unrecognized output format."
+        sys.exit(0)
+
+    if options.empty:
+        outputter(Sudoku())
         sys.exit(0)
 
 # ======================================================================
@@ -761,6 +827,7 @@ if __name__ == '__main__':
         print_solution = options.output_both or not options.translate
     if options.permute:
         puzzle = permute(puzzle, not options.asymmetric)
+    puzzle.verbose = options.verbose
 
 # ======================================================================
 #   Main program: print and solve puzzle
