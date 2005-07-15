@@ -15,14 +15,22 @@ forward = 1     # traversing edge (v,w) from v to w
 reverse = -1    # returning backwards on (v,w) from w to v
 nontree = 0     # edge (v,w) is not part of the DFS tree
 
-def search(G):
+whole_graph = object()  # special flag object, do not use as a graph vertex
+
+def search(G,initial_vertex = whole_graph):
     """
     Generate sequence of triples (v,w,edgetype) for DFS of graph G.
     The subsequence for each root of each tree in the DFS forest starts
     with (root,root,forward) and ends with (root,root,reverse).
+    If the initial vertex is given, it is used as the root and vertices
+    not reachable from it are not searched.
     """
     visited = Set()
-    for v in G:
+    if initial_vertex == whole_graph:
+        initials = G
+    else:
+        initials = [initial_vertex]
+    for v in initials:
         if v not in visited:
             yield v,v,forward
             visited.add(v)
@@ -43,17 +51,21 @@ def search(G):
                         yield stack[-1][0],parent,reverse
             yield v,v,reverse
 
-def preorder(G):
+def preorder(G,initial_vertex = whole_graph):
     """Generate all vertices of graph G in depth-first preorder."""
-    for v,w,edgetype in search(G):
+    for v,w,edgetype in search(G,initial_vertex):
         if edgetype is forward:
             yield w
 
-def postorder(G):
+def postorder(G,initial_vertex = whole_graph):
     """Generate all vertices of graph G in depth-first postorder."""
-    for v,w,edgetype in search(G):
+    for v,w,edgetype in search(G,initial_vertex):
         if edgetype is reverse:
             yield w
+
+def reachable(G,v,w):
+    """Can we get from v to w in graph G?"""
+    return w in preorder(G,v)
 
 class Searcher:
     """
