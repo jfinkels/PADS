@@ -21,7 +21,7 @@ import sys
 from optparse import OptionParser
 from BipartiteMatching import imperfections
 from StrongConnectivity import StronglyConnectedComponents
-import DFS
+from Repetitivity import NonrepetitiveGraph
 
 try:
     set
@@ -81,23 +81,17 @@ for square in sqrs:
     for group in rows+cols:
         triads.append((square.mask & group.mask,square,group))
 
-# Graph in which each (digit,True) can reach each (digit,False)
-# except for pairs in which both digits are equal
-cycle_gadget = {}
-for x in [1,4,7,10]:
-    for y in [0,1,2]:
-        cycle_gadget[(x+y,True)] = [(x+((y+1)%3),False),(x+((y+2)%3),False)]
-        cycle_gadget[(x+y,False)] = []
-        if x == 10:
-            for z in [1,2,3]:
-                cycle_gadget[(3*y+z,True)].append((x+y,True))
-                cycle_gadget[(x+y,False)].append((3*y+z,False))
-
 # ======================================================================
 #   State for puzzle solver
 # ======================================================================
 
 class Sudoku:
+    """
+    Data structure for storing and manipulating Sudoku puzzles.
+    The actual rules for solving the puzzles are implemented
+    separately from this class.
+    """
+
     def __init__(self,initial_placements = None):
         """
         Initialize a new Sudoku grid.
@@ -123,9 +117,9 @@ class Sudoku:
           lists of digits that must be located in that pair, as set up
           by the pair rule and used by other later rules.
           
-        - repgraph is a directed graph representing nonrepetitive paths
+        - bilocation is a directed graph representing nonrepetitive paths
           and cycles among bilocated digits, as constructed by the cycle
-          rule and used by the repeat rule.
+          rule and used by the repeat and conflict rule.
           
         - verbose is used to enable or disable solution step logging.
         """
@@ -134,7 +128,7 @@ class Sudoku:
         self.rules_used = set()
         self.progress = False
         self.pairs = None
-        self.repgraph = None
+        self.bilocation = None
         self.verbose = False
 
         if initial_placements:
@@ -354,7 +348,7 @@ def subproblem(grid):
                 mask |= bit
             grid.unplace(d,mask)
 
-def cycle(grid):
+def bilocal(grid):
     """
     Look for nonrepetitive cycles among bilocated digits.
     Despite the sesquipedalian summary line above, this is a form of
@@ -368,15 +362,8 @@ def cycle(grid):
     if not grid.pairs:
         return  # can only run after pair rule finds edges
 
-    # Start by making a gadget per cell, which connects the incoming
-    # vertex (cell,digit,True) to each outgoing vertex (cell,digit,False)
-    # except for the ones connecting equal incoming and outgoing digits.
-    grid.repgraph = graph = {}
-    for cell in range(81):
-        for v in cycle_gadget:
-            graph[(cell,)+v] = [(cell,)+w for w in cycle_gadget[v]]
-
-    # Add edges for each bilocated digit in grid.pairs.
+    # Make labeled graph of pairs
+    graph = dict([(i,{}) for i in range(81)])
     for pair in grid.pairs:
         digs = grid.pairs[pair]
         bit = pair &~ (pair-1)
@@ -384,24 +371,21 @@ def cycle(grid):
         if pair:
             v = unmask[bit]
             w = unmask[pair]
-            for digit in digs:
-                graph[(v,digit,False)].append((w,digit,True))
-                graph[(w,digit,False)].append((v,digit,True))
-
-    # Use strong connectivity analysis to find forced pairs of digits
-    forced = [[] for i in range(81)]
-    for component in StronglyConnectedComponents(graph):
-        if len(component) > 1:
-            for (cell,digit,bit) in component:
-                if 1 <= digit <= 9 and bit:
-                    forced[cell].append(digit)
+            graph[v][w] = graph[w][v] = digs
+    
+    # Apply repetitivity analysis to collect cyclic labels at each cell
+    grid.bilocation = nrg = NonrepetitiveGraph(graph)
+    forced = [set() for i in range(81)]
+    for v,w,L in nrg.cyclic():
+        forced[v].add(L)
+        forced[w].add(L)
 
     # Carry out forces indicated by our analysis
     for cell in range(81):
         if len(forced[cell]) > 2:
             raise BadSudoku(
-                "triple threat in cycle analysis: cell %s, digits %s" %
-                (cell, forced[cell]))
+                "triple threat in bilocal analysis: cell %s, digits %s" %
+                (cell, list(forced[cell])))
         if len(forced[cell]) == 2:
             mask = 1L<<cell
             for d in digits:
@@ -417,39 +401,35 @@ def repeat(grid):
     digits, then the repeated digit must be placed at the cell where
     the two same-labeled edges meet.
     """
-    if not grid.repgraph:
+    if not grid.bilocation:
         return
     for cell in range(81):
         if not grid.contents[cell]:
             for d in grid.choices(cell):
-                start = (cell,d,False)
-                if len(grid.repgraph[start]) > 1 and \
-                        DFS.reachable(grid.repgraph,start,(cell,d,True)):
+                if (cell,d) in grid.bilocation.reachable(cell,d):
                     grid.place(d,cell)
 
 def conflict(grid):
     """
     Look for conflicting paths of bilocated vertices.
-    In the same graph used by the cycle and repeat rules, if there exist
+    In the same graph used by the bilocal and repeat rules, if there exist
     two paths that start with the same cell and digit, and that end with
     equal digits in different cells of the same row, column, or square,
     then the start cell must contain the starting digit for otherwise
     it would cause the end cells to conflict with each other.
     """
-    if not grid.repgraph:
+    if not grid.bilocation:
         return
     for cell in range(81):
         if not grid.contents[cell]:
             for d in grid.choices(cell):
-                start = (cell,d,False)
-                if len(grid.repgraph[start]) > 1:
-                    conflicts = [0]*10
-                    for (reached,dd,bit) in DFS.preorder(grid.repgraph,start):
-                        if bit and 1 <= dd <= 9:
-                            if (1L<<reached) & conflicts[dd]:
-                                grid.place(d,cell)
-                            else:
-                                conflicts[dd] |= neighbors[reached]
+                conflicts = [0]*10
+                for reached,dd in grid.bilocation.reachable(cell,d):
+                    if (1L<<reached) & conflicts[dd]:
+                        grid.place(d,cell)
+                        break
+                    else:
+                        conflicts[dd] |= neighbors[reached]
 
 # triples of name, rule, difficulty level
 rules = [
@@ -460,7 +440,7 @@ rules = [
     ("pair",pair,2),
     ("digit",digit,3),
     ("subproblem",subproblem,3),
-    ("cycle",cycle,3),
+    ("bilocal",bilocal,3),
     ("repeat",repeat,3),
     ("conflict",conflict,4),
 ]
