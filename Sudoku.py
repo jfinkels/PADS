@@ -117,10 +117,17 @@ class Sudoku:
           lists of digits that must be located in that pair, as set up
           by the pair rule and used by other later rules.
           
-        - bilocation is a directed graph representing nonrepetitive paths
-          and cycles among bilocated digits, as constructed by the cycle
-          rule and used by the repeat and conflict rule.
+        - bilocation is a NonrepetitiveGraph representing paths and
+          cycles among bilocated digits, as constructed by the bilocal
+          rule and used by the repeat and conflict rules.
+        
+        - bivalues is a NonrepetitiveGraph representing paths and
+          cycles among bivalued cells, as constructed by the bivalue
+          rule and used by the repeat and conflict rules.
           
+        - otherbv maps pairs (cell,digit) in the bivalue graph to the
+          other digit available at the same cell
+        
         - verbose is used to enable or disable solution step logging.
         """
         self.contents = [0]*81
@@ -392,33 +399,92 @@ def bilocal(grid):
                 if d not in forced[cell]:
                     grid.unplace(d,mask)
 
+def bivalue(grid):
+    """
+    Look for nonrepetitive cycles among bivalued cells.
+    We draw a graph connecting two cells whenever both can only
+    contain two digits, one of those digits is the same for both
+    cells, and both cells belong to the same row, column, or square.
+    Edges are labeled by the digit(s) the two cells share.
+    If any edge of this graph is contained in a cycle with no two
+    consecutive edges having equal labels, then the digit labelling
+    that edge must be placed on one of its two endpoints, and can
+    not be placed in any other cell of the row, column, or square
+    containing the edge.
+    """
+    
+    # Find and make bitmask per digit of bivalued cells
+    graph = {}
+    grid.otherbv = otherbv = {}
+    tvmask = [0]*10
+    for c in range(81):
+        ch = grid.choices(c)
+        if len(ch) == 2:
+            graph[c] = {}
+            tvmask[ch[0]] |= 1L<<c
+            tvmask[ch[1]] |= 1L<<c
+            otherbv[c,ch[0]] = ch[1]
+            otherbv[c,ch[1]] = ch[0]
+    edgegroup = {}
+    
+    # Form edges and map back to their groups
+    for g in groups:
+        for d in digits:
+            mask = tvmask[d] & g.mask
+            dgcells = []
+            while mask:
+                bit = mask &~ (mask - 1)
+                dgcells.append(unmask[bit])
+                mask &=~ bit
+            for v in dgcells:
+                for w in dgcells:
+                    if v != w:
+                        edgegroup.setdefault((v,w),[]).append(g)
+                        graph[v].setdefault(w,set()).add(d)
+
+    # Apply repetitivity analysis to collect cyclic labels at each cell
+    # and eliminate that label from other cells of the same group
+    grid.bivalues = nrg = NonrepetitiveGraph(graph)
+    for v,w,digit in nrg.cyclic():
+        mask = 0
+        for g in edgegroup[v,w]:
+            mask |= g.mask
+        mask &=~ (1L << v)
+        mask &=~ (1L << w)
+        grid.unplace(digit,mask)
+
 def repeat(grid):
     """
-    Look for cycles of bilocated vertices with a single repetition.
-    We use the same graph described for the cycle rule; if it contains
-    a cycle in which some two adjacent edges are labeled by the same
-    digit, and all other adjacent pairs of cycle edges have differing
-    digits, then the repeated digit must be placed at the cell where
-    the two same-labeled edges meet.
+    Look for cycles of bilocated or bivalued vertices with one repetition.
+    We use the same graphs described for the bilocal and bivalue rules;
+    if there exists a cycle in which some two adjacent edges are labeled
+    by the same digit, and all other adjacent pairs of cycle edges have
+    differing digits, then the repeated digit must be placed at the cell
+    where the two same-labeled edges meet (in the case of the bilocal graph)
+    or can be eliminated from that cell (in the case of the bivalue graph).
     """
-    if not grid.bilocation:
+    if not grid.bilocation or not grid.bivalues:
         return
     for cell in range(81):
         if not grid.contents[cell]:
             for d in grid.choices(cell):
                 if (cell,d) in grid.bilocation.reachable(cell,d):
                     grid.place(d,cell)
+                elif (cell,d) in grid.bivalues.reachable(cell,d):
+                    grid.unplace(d,1L<<cell)
 
 def conflict(grid):
     """
-    Look for conflicting paths of bilocated vertices.
+    Look for conflicting paths of bilocated or bivalued cells.
     In the same graph used by the bilocal and repeat rules, if there exist
     two paths that start with the same cell and digit, and that end with
     equal digits in different cells of the same row, column, or square,
     then the start cell must contain the starting digit for otherwise
     it would cause the end cells to conflict with each other.
+    One or both paths can instead be in the bivalue graph, starting and
+    ending with the other digit than the one for the bilocal path.
     """
-    if not grid.bilocation:
+    if not grid.bilocation or not grid.bivalues:
         return
     for cell in range(81):
         if not grid.contents[cell]:
@@ -430,6 +496,15 @@ def conflict(grid):
                         break
                     else:
                         conflicts[dd] |= neighbors[reached]
+                if cell in grid.bivalues:
+                    for reached,dd in grid.bivalues.reachable(cell,
+                                                grid.otherbv[cell,d]):
+                        other = grid.otherbv[reached,dd]
+                        if (1L<<reached) & conflicts[other]:
+                            grid.place(d,cell)
+                            break
+                        else:
+                            conflicts[other] |= neighbors[reached]
 
 # triples of name, rule, difficulty level
 rules = [
@@ -441,7 +516,8 @@ rules = [
     ("digit",digit,3),
     ("subproblem",subproblem,3),
     ("bilocal",bilocal,3),
-    ("repeat",repeat,3),
+    ("bivalue",bivalue,3),
+    ("repeat",repeat,4),
     ("conflict",conflict,4),
 ]
 
