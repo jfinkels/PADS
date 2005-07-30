@@ -65,7 +65,7 @@ def OddCore(G):
     return Graphs.union(*[C for C in BiconnectedComponents(G)
                           if not isBipartite(C)])
 
-# If run as "python CubicHam.py", run tests on various small graphs
+# If run as "python Bipartite.py", run tests on various small graphs
 # and check that the correct results are obtained.
 
 class BipartitenessTest(unittest.TestCase):

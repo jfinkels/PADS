@@ -407,7 +407,7 @@ def bivalue(grid):
     cells, and both cells belong to the same row, column, or square.
     Edges are labeled by the digit(s) the two cells share.
     If any edge of this graph is contained in a cycle with no two
-    consecutive edges having equal labels, then the digit labelling
+    consecutive edges having equal labels, then the digit labeling
     that edge must be placed on one of its two endpoints, and can
     not be placed in any other cell of the row, column, or square
     containing the edge.
