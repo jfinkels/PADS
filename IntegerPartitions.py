@@ -77,6 +77,29 @@ def lex_partitions(n):
 
 partitions = revlex_partitions     # default partition generating algorithm
 
+def binary_partitions(n):
+    """
+    Generate partitions of n into powers of two, in revlex order.
+    Knuth exercise 7.2.1.4.64.
+    We use a modified version of the recursive generation algorithm above.
+    """
+    if n == 0:
+        yield []
+    if n <= 0:
+        return
+    for p in binary_partitions(n-1):
+        i = 0
+        s = 1
+        while len(p) > 0 and s == p[-1] and (len(p) == 1 or p[-1] != p[-2]):
+            s <<= 1
+            p.pop()
+        while s > 0:
+            p.append(s)
+            yield p
+            s >>= 1
+            p[-1] = s
+        p.pop()
+            
 def fixed_length_partitions(n,L):
     """
     Integer partitions of n into L parts, in colex order.
@@ -224,6 +247,18 @@ class PartitionTest(unittest.TestCase):
         for n in range(1,len(self.counts)):
             for p in partitions(n):
                 self.assertEqual(len(p),max(conjugate(p)))
+
+    def testBinary(self):
+        """Test that the binary partitions are generated correctly."""
+        for n in range(1,len(self.counts)):
+            binaries = []
+            for p in partitions(n):
+                for x in p:
+                    if x & (x - 1):
+                        break
+                else:
+                    binaries.append(list(p))
+            self.assertEqual(binaries,[list(p) for p in binary_partitions(n)])
 
 if __name__ == "__main__":
     unittest.main()
