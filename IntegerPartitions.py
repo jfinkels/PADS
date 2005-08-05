@@ -81,25 +81,41 @@ def binary_partitions(n):
     """
     Generate partitions of n into powers of two, in revlex order.
     Knuth exercise 7.2.1.4.64.
-    We use a modified version of the recursive generation algorithm above.
+    But this doesn't really solve the exercise, because it isn't loopless...
     """
-    if n == 0:
-        yield []
-    if n <= 0:
-        return
-    for p in binary_partitions(n-1):
-        i = 0
-        s = 1
-        while len(p) > 0 and s == p[-1] and (len(p) == 1 or p[-1] != p[-2]):
-            s <<= 1
-            p.pop()
-        while s > 0:
-            p.append(s)
-            yield p
-            s >>= 1
-            p[-1] = s
-        p.pop()
-            
+
+    # Generate the binary representation of n - (n%2)
+    pow = 1
+    sum = 0
+    while pow <= n:
+        pow <<= 1
+    partition = []
+    while pow > 1:
+        if sum+pow <= n:
+            partition.append(pow)
+            sum += pow
+        pow >>= 1
+    
+    # Find all partitions of numbers up to n into powers of two > 1,
+    # in revlex order, by repeatedly splitting the smallest power,
+    # and augment each into a partition of n by appending 1's.
+    while True:
+        L = len(partition)
+        partition += (n-sum)*[1]
+        yield partition
+        del partition[L:]
+        if not partition:
+            return
+        pow = partition.pop()
+        sum -= pow
+        pow >>= 1
+        while pow > 1:
+            if sum+pow <= n:
+                partition.append(pow)
+                sum += pow
+            else:
+                pow >>= 1
+
 def fixed_length_partitions(n,L):
     """
     Integer partitions of n into L parts, in colex order.
