@@ -81,6 +81,7 @@ def binary_partitions(n):
     """
     Generate partitions of n into powers of two, in revlex order.
     Knuth exercise 7.2.1.4.64.
+    The average time per output is constant.
     But this doesn't really solve the exercise, because it isn't loopless...
     """
 
@@ -100,6 +101,25 @@ def binary_partitions(n):
     # in revlex order, by repeatedly splitting the smallest nonunit power,
     # and replacing the following sequence of 1's by the first revlex
     # partition with maximum power less than the result of the split.
+    
+    # Time analysis:
+    #
+    # Each outer iteration increases len(partition) by at most one
+    # (only if the power being split is a 2) and each inner iteration
+    # in which some ones are replaced by x decreases len(partition),
+    # so the number of those inner iterations is less than one per
+    # output.
+    #
+    # Each time a power 2^k is split, it creates two or more 2^{k-1}'s,
+    # all of which must eventually be split as well.  So, it S_k denotes
+    # the number of times a 2^k is split, and X denotes the total
+    # number of outputs generated, then S_k <= X/2^{k-1}.
+    # On an outer iteration in which 2^k is split, there will be k
+    # inner iterations in which x is halved, so the total number
+    # of such inner iterations is <= sum_k k*X/2^{k-1} = O(X).
+    #
+    # Therefore the overall average time per output is constant.
+    
     last_nonunit = len(partition) - 1 - (partition[-1] == 1)
     while True:
         yield partition
