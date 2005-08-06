@@ -84,37 +84,43 @@ def binary_partitions(n):
     But this doesn't really solve the exercise, because it isn't loopless...
     """
 
-    # Generate the binary representation of n - (n%2)
+    # Generate the binary representation of n
     pow = 1
     sum = 0
     while pow <= n:
         pow <<= 1
     partition = []
-    while pow > 1:
+    while pow:
         if sum+pow <= n:
             partition.append(pow)
             sum += pow
         pow >>= 1
     
     # Find all partitions of numbers up to n into powers of two > 1,
-    # in revlex order, by repeatedly splitting the smallest power,
-    # and augment each into a partition of n by appending 1's.
+    # in revlex order, by repeatedly splitting the smallest nonunit power,
+    # and replacing the following sequence of 1's by the first revlex
+    # partition with maximum power less than the result of the split.
+    last_nonunit = len(partition) - 1 - (partition[-1] == 1)
     while True:
-        L = len(partition)
-        partition += (n-sum)*[1]
         yield partition
-        del partition[L:]
-        if not partition:
+        if last_nonunit < 0:
             return
-        pow = partition.pop()
-        sum -= pow
-        pow >>= 1
-        while pow > 1:
-            if sum+pow <= n:
-                partition.append(pow)
-                sum += pow
+        if partition[last_nonunit] == 2:
+            partition[last_nonunit] = 1
+            partition.append(1)
+            last_nonunit -= 1
+            continue
+        partition.append(1)
+        x = partition[last_nonunit] = partition[last_nonunit+1] = \
+            partition[last_nonunit] >> 1    # make the split!
+        last_nonunit += 1
+        while x > 1:
+            if len(partition) - last_nonunit - 1 >= x:
+                del partition[-x+1:]
+                last_nonunit += 1
+                partition[last_nonunit] = x
             else:
-                pow >>= 1
+                x >>= 1
 
 def fixed_length_partitions(n,L):
     """
