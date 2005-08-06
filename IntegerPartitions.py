@@ -86,6 +86,8 @@ def binary_partitions(n):
     """
 
     # Generate the binary representation of n
+    if n < 0:
+        return
     pow = 1
     sum = 0
     while pow <= n:
@@ -120,7 +122,10 @@ def binary_partitions(n):
     #
     # Therefore the overall average time per output is constant.
     
-    last_nonunit = len(partition) - 1 - (partition[-1] == 1)
+    if n:
+        last_nonunit = len(partition) - 1 - (partition[-1] == 1)
+    else:
+        last_nonunit = -1
     while True:
         yield partition
         if last_nonunit < 0:
@@ -292,7 +297,7 @@ class PartitionTest(unittest.TestCase):
 
     def testBinary(self):
         """Test that the binary partitions are generated correctly."""
-        for n in range(1,len(self.counts)):
+        for n in range(len(self.counts)):
             binaries = []
             for p in partitions(n):
                 for x in p:
