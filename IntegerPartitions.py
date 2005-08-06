@@ -122,10 +122,7 @@ def binary_partitions(n):
     #
     # Therefore the overall average time per output is constant.
     
-    if n:
-        last_nonunit = len(partition) - 1 - (partition[-1] == 1)
-    else:
-        last_nonunit = -1
+    last_nonunit = len(partition) - 1 - (n&1)
     while True:
         yield partition
         if last_nonunit < 0:
