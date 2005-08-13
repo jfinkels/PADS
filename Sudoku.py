@@ -355,6 +355,45 @@ def subproblem(grid):
                 mask |= bit
             grid.unplace(d,mask)
 
+def remotepair(grid):
+    """
+    Find rectangles from cells that can only contain the same two digits.
+    If digits x and y are the only two digits that can occur in a sequence
+    of an even number (four or more) of cells, and each two consecutive
+    cells in the sequence belong to the same row, column, or square,
+    then we determine the rectangle having the two endpoints of the sequence
+    as corners, and eliminate x and y as possible values for the other
+    two corners of the rectangle.
+    """
+    bivalued = {}
+    for cell in range(81):
+        ch = grid.choices(cell)
+        if len(ch) == 2:
+            bivalued.setdefault(tuple(ch),[]).append(cell)
+    for pair in bivalued:
+        while len(bivalued[pair]) >= 4:
+            x,y = pair
+            mask = (1L<<x)|(1L<<y)
+            cell = bivalued[pair].pop()
+            bipartition = {cell:True}
+            unexplored = [cell]
+            while unexplored:
+                cell = unexplored.pop()
+                for neighbor in bivalued[pair]:
+                    if (1L<<neighbor) & neighbors[cell]:
+                        bipartition[neighbor] = not bipartition[cell]
+                        unexplored.append(neighbor)
+                bivalued[pair] = [c for c in bivalued[pair]
+                                  if c not in bipartition]
+            for cell in bipartition:
+                for other in bipartition:
+                    if bipartition[cell] != bipartition[other] and \
+                            not ((1L<<other) & neighbors[cell]):
+                        corners = (1L<<((cell//9)*9 + other%9)) | \
+                                  (1L<<((other//9)*9 + cell%9))
+                        grid.unplace(x,corners)                    
+                        grid.unplace(y,corners)                    
+
 def bilocal(grid):
     """
     Look for nonrepetitive cycles among bilocated digits.
@@ -515,6 +554,7 @@ rules = [
     ("pair",pair,2),
     ("digit",digit,3),
     ("subproblem",subproblem,3),
+    ("rectangle",remotepair,3),
     ("bilocal",bilocal,3),
     ("bivalue",bivalue,3),
     ("repeat",repeat,4),
