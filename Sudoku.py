@@ -512,6 +512,36 @@ def repeat(grid):
                 elif (cell,d) in grid.bivalues.reachable(cell,d):
                     grid.unplace(d,1L<<cell)
 
+def path(grid):
+    """
+    Look for paths of bilocated or bivalued cells with conflicting endpoints.
+    In the same graphs used by the bilocal and repeat rules, if there exists
+    a path that starts and ends with the same digit, in cells that
+    belong to the same row, column, or square, with no two consecutive edges
+    labeled by the same digit, then the digit ending the path can be placed
+    in no other cell of that row, column, or square.
+    """
+    if not grid.bilocation or not grid.bivalues:
+        return
+    for cell in range(81):
+        if not grid.contents[cell]:
+            for d in grid.choices(cell):
+                for neighbor,nd in grid.bilocation.reachable(cell,d):
+                    if nd == d and (1L<<neighbor)&neighbors[cell]:
+                        mask = (1L<<cell)|(1L<<neighbor)
+                        for g in groups:
+                            if mask & g.mask == mask:
+                                grid.unplace(d,g.mask &~ mask)
+                if cell in grid.bivalues:
+                    for neighbor,nd in grid.bivalues.reachable(cell,
+                                                grid.otherbv[cell,d]):
+                        if nd == grid.otherbv[neighbor,nd] and \
+                                        (1L<<neighbor)&neighbors[cell]:
+                            mask = (1L<<cell)|(1L<<neighbor)
+                            for g in groups:
+                                if mask & g.mask == mask:
+                                    grid.unplace(d,g.mask &~ mask)
+
 def conflict(grid):
     """
     Look for conflicting paths of bilocated or bivalued cells.
@@ -522,6 +552,9 @@ def conflict(grid):
     it would cause the end cells to conflict with each other.
     One or both paths can instead be in the bivalue graph, starting and
     ending with the other digit than the one for the bilocal path.
+    We also find similar pairs of paths that end in sets of cells that
+    together eliminate all positions for the end digit in another row,
+    column, or square of the grid.
     """
     if not grid.bilocation or not grid.bivalues:
         return
@@ -544,6 +577,11 @@ def conflict(grid):
                             break
                         else:
                             conflicts[other] |= neighbors[reached]
+                for g in groups:
+                    for dd in digits:
+                        if grid.locations[dd] & g.mask &~ conflicts[dd] == 0:
+                            grid.place(d,cell)
+                            break
 
 # triples of name, rule, difficulty level
 rules = [
@@ -559,6 +597,7 @@ rules = [
     ("bivalue",bivalue,3),
     ("repeat",repeat,4),
     ("conflict",conflict,4),
+    ("path",path,4),
 ]
 
 def step(grid, quick_and_dirty = False):
