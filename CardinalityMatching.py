@@ -52,7 +52,7 @@ def matching(G, initialMatching = None):
         # Dictionary keys are the vertices; T[x] is a vertex with an unmatched
         # edge to x.  To find the parent in the structure tree, use leader[T[x]].
         #
-        # unexplored: collection of unexplored vertices within leader of S
+        # unexplored: collection of unexplored vertices within blossoms of S
         #
         # base: if x was originally a T-vertex, but becomes part of a blossom,
         # base[t] will be the pair (v,w) at the base of the blossom, where v and t

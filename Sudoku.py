@@ -355,45 +355,6 @@ def subproblem(grid):
                 mask |= bit
             grid.unplace(d,mask)
 
-def remotepair(grid):
-    """
-    Find rectangles from cells that can only contain the same two digits.
-    If digits x and y are the only two digits that can occur in a sequence
-    of an even number (four or more) of cells, and each two consecutive
-    cells in the sequence belong to the same row, column, or square,
-    then we determine the rectangle having the two endpoints of the sequence
-    as corners, and eliminate x and y as possible values for the other
-    two corners of the rectangle.
-    """
-    bivalued = {}
-    for cell in range(81):
-        ch = grid.choices(cell)
-        if len(ch) == 2:
-            bivalued.setdefault(tuple(ch),[]).append(cell)
-    for pair in bivalued:
-        while len(bivalued[pair]) >= 4:
-            x,y = pair
-            mask = (1L<<x)|(1L<<y)
-            cell = bivalued[pair].pop()
-            bipartition = {cell:True}
-            unexplored = [cell]
-            while unexplored:
-                cell = unexplored.pop()
-                for neighbor in bivalued[pair]:
-                    if (1L<<neighbor) & neighbors[cell]:
-                        bipartition[neighbor] = not bipartition[cell]
-                        unexplored.append(neighbor)
-                bivalued[pair] = [c for c in bivalued[pair]
-                                  if c not in bipartition]
-            for cell in bipartition:
-                for other in bipartition:
-                    if bipartition[cell] != bipartition[other] and \
-                            not ((1L<<other) & neighbors[cell]):
-                        corners = (1L<<((cell//9)*9 + other%9)) | \
-                                  (1L<<((other//9)*9 + cell%9))
-                        grid.unplace(x,corners)                    
-                        grid.unplace(y,corners)                    
-
 def bilocal(grid):
     """
     Look for nonrepetitive cycles among bilocated digits.
@@ -583,6 +544,40 @@ def conflict(grid):
                             grid.place(d,cell)
                             break
 
+def rectangle(grid):
+    """
+    Find pairs of cells one of which must contain a digit, and eliminate
+    that digit from the other corners of the rectangle formed by the cells.
+    One of cells x and y must contain digit d if, within the graph
+    used by the bilocal or bivalue rule, there exists a nonrepetitive cycle
+    that has x as the clockwise endpoint of one edge labeled d and y as
+    the counterclockwise endpoint of another edge with the same label.
+    """
+    # make graph of equivalent triples (cell,digit1,digit2)
+    if not grid.bivalues:
+        return
+    equivalences = {}
+    for v,w,digit in grid.bivalues.cyclic():
+        equivalences.setdefault((v,digit,grid.otherbv[v,digit]),set()).add(
+            (w,grid.otherbv[w,digit],digit))
+        equivalences.setdefault((v,grid.otherbv[v,digit],digit),set()).add(
+            (w,digit,grid.otherbv[w,digit]))
+
+    # apply connectivity analysis to find cocyclic same-digit cells
+    for C in StronglyConnectedComponents(equivalences):
+        firsts = [[] for d in range(10)]
+        seconds = [[] for d in range(10)]
+        for v,d1,d2 in C:
+            firsts[d1].append(v)
+            seconds[d2].append(v)
+        for d in digits:
+            for v in firsts[d]:
+                for w in seconds[d]:
+                    x1,y1 = divmod(v,9)
+                    x2,y2 = divmod(w,9)
+                    if x1 != x2 and y1 != y2:
+                        grid.unplace(d,(1L<<(9*x1+y2))|(1L<<(9*x2+y1)))
+
 # triples of name, rule, difficulty level
 rules = [
     ("locate",locate,0),
@@ -592,12 +587,12 @@ rules = [
     ("pair",pair,2),
     ("digit",digit,3),
     ("subproblem",subproblem,3),
-    ("rectangle",remotepair,3),
     ("bilocal",bilocal,3),
     ("bivalue",bivalue,3),
     ("repeat",repeat,4),
     ("conflict",conflict,4),
     ("path",path,4),
+    ("rectangle",rectangle,4),
 ]
 
 def step(grid, quick_and_dirty = False):
