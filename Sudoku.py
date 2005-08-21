@@ -477,10 +477,13 @@ def path(grid):
     """
     Look for paths of bilocated or bivalued cells with conflicting endpoints.
     In the same graphs used by the bilocal and repeat rules, if there exists
-    a path that starts and ends with the same digit, in cells that
-    belong to the same row, column, or square, with no two consecutive edges
-    labeled by the same digit, then the digit ending the path can be placed
-    in no other cell of that row, column, or square.
+    a path that starts and ends with the same digit, with no two consecutive
+    edges labeled by the same digit, then the digit ending the path can be
+    placed in no cell that conflicts with both endpoints of the path.  If
+    the path endpoints belong to the same row, column, or square as each other,
+    this eliminates other placements within that row, column, or square;
+    otherwise, it eliminates placements at the other two corners of a
+    rectangle having the two path endpoints as opposite corners.
     """
     if not grid.bilocation or not grid.bivalues:
         return
@@ -488,20 +491,13 @@ def path(grid):
         if not grid.contents[cell]:
             for d in grid.choices(cell):
                 for neighbor,nd in grid.bilocation.reachable(cell,d):
-                    if nd == d and (1L<<neighbor)&neighbors[cell]:
-                        mask = (1L<<cell)|(1L<<neighbor)
-                        for g in groups:
-                            if mask & g.mask == mask:
-                                grid.unplace(d,g.mask &~ mask)
+                    if nd == d:
+                        grid.unplace(d,neighbors[cell]&neighbors[neighbor])
                 if cell in grid.bivalues:
                     for neighbor,nd in grid.bivalues.reachable(cell,
                                                 grid.otherbv[cell,d]):
-                        if nd == grid.otherbv[neighbor,nd] and \
-                                        (1L<<neighbor)&neighbors[cell]:
-                            mask = (1L<<cell)|(1L<<neighbor)
-                            for g in groups:
-                                if mask & g.mask == mask:
-                                    grid.unplace(d,g.mask &~ mask)
+                        if nd == grid.otherbv[neighbor,nd]:
+                            grid.unplace(d,neighbors[cell]&neighbors[neighbor])
 
 def conflict(grid):
     """
@@ -544,40 +540,6 @@ def conflict(grid):
                             grid.place(d,cell)
                             break
 
-def rectangle(grid):
-    """
-    Find pairs of cells one of which must contain a digit, and eliminate
-    that digit from the other corners of the rectangle formed by the cells.
-    One of cells x and y must contain digit d if, within the graph
-    used by the bilocal or bivalue rule, there exists a nonrepetitive cycle
-    that has x as the clockwise endpoint of one edge labeled d and y as
-    the counterclockwise endpoint of another edge with the same label.
-    """
-    # make graph of equivalent triples (cell,digit1,digit2)
-    if not grid.bivalues:
-        return
-    equivalences = {}
-    for v,w,digit in grid.bivalues.cyclic():
-        equivalences.setdefault((v,digit,grid.otherbv[v,digit]),set()).add(
-            (w,grid.otherbv[w,digit],digit))
-        equivalences.setdefault((v,grid.otherbv[v,digit],digit),set()).add(
-            (w,digit,grid.otherbv[w,digit]))
-
-    # apply connectivity analysis to find cocyclic same-digit cells
-    for C in StronglyConnectedComponents(equivalences):
-        firsts = [[] for d in range(10)]
-        seconds = [[] for d in range(10)]
-        for v,d1,d2 in C:
-            firsts[d1].append(v)
-            seconds[d2].append(v)
-        for d in digits:
-            for v in firsts[d]:
-                for w in seconds[d]:
-                    x1,y1 = divmod(v,9)
-                    x2,y2 = divmod(w,9)
-                    if x1 != x2 and y1 != y2:
-                        grid.unplace(d,(1L<<(9*x1+y2))|(1L<<(9*x2+y1)))
-
 # triples of name, rule, difficulty level
 rules = [
     ("locate",locate,0),
@@ -592,7 +554,6 @@ rules = [
     ("repeat",repeat,4),
     ("conflict",conflict,4),
     ("path",path,4),
-    ("rectangle",rectangle,4),
 ]
 
 def step(grid, quick_and_dirty = False):
