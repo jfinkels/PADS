@@ -146,7 +146,9 @@ class Sudoku:
         - otherbv maps pairs (cell,digit) in the bivalue graph to the
           other digit available at the same cell
         
-        - verbose is used to enable or disable solution step logging.
+        - logstream is a stream on which to log verbose descriptions
+          of the steps made by the solver (typically sys.stderr), or
+          None if verbose descriptions are not to be logged.
         
         - steps is used to count how many solver passes we've made so far.
         """
@@ -156,7 +158,7 @@ class Sudoku:
         self.progress = False
         self.pairs = None
         self.bilocation = None
-        self.verbose = False
+        self.logstream = False
         self.steps = 0
 
         if initial_placements:
@@ -191,7 +193,7 @@ class Sudoku:
         If explanation is not None, it is called as a function and
         the results appended to items.
         """
-        if not self.verbose:
+        if not self.logstream:
             return
         if isinstance(items,str):
             items = [items]
@@ -213,15 +215,15 @@ class Sudoku:
             word = words.pop()
             if line:
                 if linelen+1+len(word) > 72:
-                    print >>sys.stderr,' '.join(line)
+                    print >>self.logstream,' '.join(line)
                     line = []
                     linelen = 0
                 else:
                     linelen += 1
             line.append(word)
             linelen += len(word)
-        print >>sys.stderr,' '.join(line)
-        print >>sys.stderr
+        print >>self.logstream,' '.join(line)
+        print >>self.logstream
 
     def place(self,digit,cell,explanation=None):
         """Change the puzzle by filling the given cell with the given digit."""
@@ -255,7 +257,7 @@ class Sudoku:
         if digit != int(digit) or not 1 <= digit <= 9:
             raise ValueError("unplace(%d): digit out of range" % digit)
         if self.locations[digit] & mask:
-            if log and self.verbose:
+            if log and self.logstream:
                 items = ["Preventing",digit,"from being placed in",
                          namecells(self.locations[digit] & mask)+'.']
                 self.log(items,explanation)
@@ -326,10 +328,35 @@ def align(grid):
             if a in alignments:
                 s = [x for x in alignments[a] if x != g][0]
                 def explain():
-                    return ["This placement would conflict with",
-                            namecells(a)+",", "which are the only cells in",
-                            g.name,"that can contain that digit."]
+                    un = grid.locations[d] & s.mask &~ a
+                    if un & (un - 1):
+                        this = "These placements"
+                    else:
+                        this = "This placement"
+                    return [this, "would conflict with", namecells(a)+",",
+                            "which are the only cells in", g.name,
+                            "that can contain that digit."]
                 grid.unplace(d, s.mask &~ a, explain)
+
+enough_room = "To leave enough room for those digits, no other " \
+              "digits may be placed in those cells."
+
+def explain_pair(grid,digs,locs):
+    """Concoct explanation for application of pair rule."""
+    d1,d2 = digs
+    g1 = [g for g in groups if
+          grid.locations[d1] & g.mask == grid.locations[d1] & locs]
+    g2 = [g for g in groups if
+          grid.locations[d2] & g.mask == grid.locations[d2] & locs]
+    for g in g1:
+        if g in g2:
+            ing = ["In", g.name+",", "digits", d1, "and", d2]
+            break
+    else:
+        # unlikely to get here due to align rule applying before pair
+        ing = ["In",(g1 and g1[0].name or "no group")+",", "digit", str(d1)+",",
+               "and in",(g2 and g2[0].name or "no group")+",", "digit", str(d2)]
+    return ing+["may only be placed in",namecells(locs)+".", enough_room]
 
 def pair(grid):
     """
@@ -348,7 +375,9 @@ def pair(grid):
                     pairs[dglocs].append(d)
                     for e in digits:
                         if e not in pairs[dglocs]:
-                            grid.unplace(e, dglocs)
+                            def explain():
+                                return explain_pair(grid,pairs[dglocs],dglocs)
+                            grid.unplace(e, dglocs, explain)
 
 def triad(grid):
     """
@@ -367,7 +396,20 @@ def triad(grid):
         if len(forces) == 3:
             outside = (sqr.mask | grp.mask) &~ mask
             for d in digits:
-                grid.unplace(d, d in forces and outside or mask)
+                def explain():
+                    ing = ["In", grp.name, "and", sqr.name+",",
+                           "digits %d, %d, and %d" % tuple(forces),
+                           "may only be placed in", namecells(mask)+"."]
+                    if d not in forces:
+                        return ing+[enough_room]
+                    elif grid.locations[d]&sqr.mask == grid.locations[d]&mask:
+                        og = grp.name
+                    else:
+                        og = sqr.name
+                    return ing+["Therefore,", d, "may not be placed",
+                                "in any other cell of", og]
+
+                grid.unplace(d, d in forces and outside or mask, explain)
 
 def digit(grid):
     """
@@ -388,7 +430,10 @@ def digit(grid):
         for r in imp:
             for c in imp[r]:
                 mask |= rows[r].mask & cols[c].mask
-        grid.unplace(d,mask)
+        mask &= grid.locations[d]
+        that = (mask & (mask - 1)) and "Those cells" or "That cell"
+        grid.unplace(d,mask,[that,"cannot be part of a set of placements",
+                     "of that digit that covers all nine rows and columns."])
 
 def subproblem(grid):
     """
@@ -411,7 +456,10 @@ def subproblem(grid):
             mask = 0
             for bit in imp[d]:
                 mask |= bit
-            grid.unplace(d,mask)
+            mask &= grid.locations[d]
+            that = (mask & (mask - 1)) and "Those cells" or "That cell"
+            grid.unplace(d,mask,[that,"cannot contain",d,"in any placement",
+                                "of all nine digits within",g.name+"."])
 
 def bilocal(grid):
     """
@@ -602,9 +650,9 @@ def conflict(grid):
 rules = [
     ("locate",locate,0),
     ("eliminate",eliminate,1),
-    ("triad",triad,2),
     ("align",align,2),
     ("pair",pair,2),
+    ("triad",triad,2),
     ("digit",digit,3),
     ("subproblem",subproblem,3),
     ("bilocal",bilocal,3),
@@ -800,14 +848,12 @@ def all_solutions(grid):
         
         # try it both ways
         branch = Sudoku(grid)
-        if grid.verbose:
-            print >>sys.stderr,"Branching in backtracking search"
-            branch.verbose = True
+        grid.log("Branching in backtracking search")
+        branch.logstream = grid.logstream
         branch.place(d,c)
         for sol in all_solutions(branch):
             yield sol
-        if grid.verbose:
-            print >>sys.stderr,"Returned from backtracking branch"
+        grid.log("Returned from backtracking branch")
         grid.rules_used.update(branch.rules_used)
         grid.rules_used.add("backtrack")
         grid.unplace(d,1L<<c)   #...and loop back to try again
@@ -981,7 +1027,8 @@ if __name__ == '__main__':
         print_solution = options.output_both or not options.translate
     if options.permute:
         puzzle = permute(puzzle, not options.asymmetric)
-    puzzle.verbose = options.verbose
+    if options.verbose:
+        puzzle.logstream = sys.stderr
 
 # ======================================================================
 #   Main program: print and solve puzzle
