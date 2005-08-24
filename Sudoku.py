@@ -48,9 +48,9 @@ class group:
         self.pos = [None]*9
         self.name = "%s %d" % (name,x+3*y+1)
 
-cols = [group(0,1,x,y,"col") for x in range(3) for y in range(3)]
+cols = [group(0,1,x,y,"column") for x in range(3) for y in range(3)]
 rows = [group(2,3,x,y,"row") for x in range(3) for y in range(3)]
-sqrs = [group(1,3,x,y,"sqr") for x in range(3) for y in range(3)]
+sqrs = [group(1,3,x,y,"square") for x in range(3) for y in range(3)]
 groups = rows+cols+sqrs
 
 neighbors = [0]*81
@@ -80,6 +80,24 @@ triads = []
 for square in sqrs:
     for group in rows+cols:
         triads.append((square.mask & group.mask,square,group))
+
+cellnames = [None]*81
+for row in range(9):
+    for col in range(9):
+        cellnames[row*9+col] = ''.join(['R',str(row+1),'C',str(col+1)])
+
+def namecells(mask):
+    names = []
+    while mask:
+        bit = mask &~ (mask - 1)
+        names.append(cellnames[unmask[bit]])
+        mask &=~ bit
+    if len(names) == 1:
+        return names[0]
+    elif len(names) == 2:
+        return ' and '.join(names)
+    else:
+        return ', '.join(names[:-1]+['and '+names[-1]])
 
 # ======================================================================
 #   State for puzzle solver
@@ -129,6 +147,8 @@ class Sudoku:
           other digit available at the same cell
         
         - verbose is used to enable or disable solution step logging.
+        
+        - steps is used to count how many solver passes we've made so far.
         """
         self.contents = [0]*81
         self.locations = [None]+[(1L<<81)-1]*9
@@ -137,6 +157,7 @@ class Sudoku:
         self.pairs = None
         self.bilocation = None
         self.verbose = False
+        self.steps = 0
 
         if initial_placements:
             cell = 0
@@ -162,8 +183,47 @@ class Sudoku:
         """Set progress True and clear fields that depended on old state."""
         self.progress = True
         self.pairs = None
+        
+    def log(self,items,explanation=None):
+        """
+        Send a message for verbose output.
+        Items should be a string or list of strings in the message.
+        If explanation is not None, it is called as a function and
+        the results appended to items.
+        """
+        if not self.verbose:
+            return
+        if isinstance(items,str):
+            items = [items]
+        if explanation:
+            if isinstance(explanation,str) or isinstance(explanation,list):
+                x = explanation
+            else:
+                x = explanation()
+            if isinstance(x,str):
+                x = [x]
+        else:
+            x = []
+        text = ' '.join([str(i) for i in items+x])
+        words = text.split()
+        words.reverse()
+        line = []
+        linelen = 0
+        while words:
+            word = words.pop()
+            if line:
+                if linelen+1+len(word) > 72:
+                    print >>sys.stderr,' '.join(line)
+                    line = []
+                    linelen = 0
+                else:
+                    linelen += 1
+            line.append(word)
+            linelen += len(word)
+        print >>sys.stderr,' '.join(line)
+        print >>sys.stderr
 
-    def place(self,digit,cell):
+    def place(self,digit,cell,explanation=None):
         """Change the puzzle by filling the given cell with the given digit."""
         if digit != int(digit) or not 1 <= digit <= 9:
             raise ValueError("place(%d,%d): digit out of range" % (digit,cell))
@@ -179,14 +239,13 @@ class Sudoku:
         bit = 1L << cell
         for d in digits:
             if d != digit:
-                self.unplace(d,bit,False)
+                self.unplace(d,bit,explanation,False)
             else:
-                self.unplace(d,neighbors[cell],False)
+                self.unplace(d,neighbors[cell],explanation,False)
         self.mark_progress()
-        if self.verbose:
-            print >>sys.stderr,"Placing digit",digit,"in cell",cell
+        self.log(["Placing",digit,"in",cellnames[cell]+'.'],explanation)
 
-    def unplace(self,digit,mask,log=True):
+    def unplace(self,digit,mask,explanation=None,log=True):
         """
         Eliminate the masked positions as possible locations for digit.
         The log argument should be true for external callers, but false
@@ -197,17 +256,9 @@ class Sudoku:
             raise ValueError("unplace(%d): digit out of range" % digit)
         if self.locations[digit] & mask:
             if log and self.verbose:
-                unbits = self.locations[digit] & mask
-                unmarked = []
-                while unbits:
-                    bit = unbits &~ (unbits - 1)
-                    unmarked.append(unmask[bit])
-                    unbits &=~ bit
-                print >>sys.stderr,"Preventing digit",digit,"from",
-                if len(unmarked) == 1:
-                    print >>sys.stderr,"cell",unmarked[0]
-                else:
-                    print >>sys.stderr,"cells",unmarked
+                items = ["Preventing",digit,"from being placed in",
+                         namecells(self.locations[digit] & mask)+'.']
+                self.log(items,explanation)
             self.locations[digit] &=~ mask
             self.mark_progress()
 
@@ -239,7 +290,9 @@ def locate(grid):
             if dglocs & (dglocs-1) == 0:
                 if dglocs == 0:
                     raise BadSudoku("No place for %d in %s" %(d,g.name))
-                grid.place(d,unmask[dglocs])
+                grid.place(d,unmask[dglocs],
+                            ["It is the only cell in",g.name,
+                             "in which",d,"can be placed."])
 
 def eliminate(grid):
     """
@@ -254,7 +307,8 @@ def eliminate(grid):
             if len(allowed) == 0:
                 raise BadSudoku("No digit for cell %d" % cell)
             if len(allowed) == 1:
-                grid.place(allowed[0],cell)
+                grid.place(allowed[0],cell,
+                           "No other digit may be placed in that cell.")
 
 def align(grid):
     """
@@ -271,7 +325,11 @@ def align(grid):
             a = grid.locations[d] & g.mask
             if a in alignments:
                 s = [x for x in alignments[a] if x != g][0]
-                grid.unplace(d, s.mask &~ a)
+                def explain():
+                    return ["This placement would conflict with",
+                            namecells(a)+",", "which are the only cells in",
+                            g.name,"that can contain that digit."]
+                grid.unplace(d, s.mask &~ a, explain)
 
 def pair(grid):
     """
@@ -561,14 +619,19 @@ def step(grid, quick_and_dirty = False):
     if grid.complete():
         return False
     grid.progress = False
+    grid.steps += 1
+    grid.log(["Beginning solver iteration",str(grid.steps)+'.'])
     for name,rule,level in rules:
         if level <= 1 or not quick_and_dirty:
             rule(grid)
             if grid.progress:
                 grid.rules_used.add(name)
-                if grid.verbose:
-                    print >>sys.stderr,"Rule",name,"made progress"
+                grid.log(["Ending solver iteration",grid.steps,
+                          "after successful application of the",
+                          name,"rule."])
                 return True
+    grid.log(["Ending solver iteration",grid.steps,
+              "with no additional progress."])
     return False
 
 # ======================================================================
