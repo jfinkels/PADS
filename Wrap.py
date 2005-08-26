@@ -49,7 +49,7 @@ def wrap(text,                  # string or unicode to be wrapped
             total += overpenalty * (linemeasure - target)
         elif j < len(words) or longlast:
             total += (target - linemeasure)**2
-        if words[j-1][1]:
+        if not words[j-1][1]:
             total += hyphenpenalty
         return total
 
