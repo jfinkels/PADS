@@ -22,6 +22,7 @@ from optparse import OptionParser
 from BipartiteMatching import imperfections
 from StrongConnectivity import StronglyConnectedComponents
 from Repetitivity import NonrepetitiveGraph
+from Wrap import wrap
 
 try:
     set
@@ -51,7 +52,7 @@ class group:
 cols = [group(0,1,x,y,"column") for x in range(3) for y in range(3)]
 rows = [group(2,3,x,y,"row") for x in range(3) for y in range(3)]
 sqrs = [group(1,3,x,y,"square") for x in range(3) for y in range(3)]
-groups = rows+cols+sqrs
+groups = sqrs+rows+cols
 
 neighbors = [0]*81
 for i in range(81):
@@ -216,22 +217,8 @@ class Sudoku:
         else:
             x = []
         text = ' '.join([str(i) for i in items+x])
-        words = text.split()
-        words.reverse()
-        line = []
-        linelen = 0
-        while words:
-            word = words.pop()
-            if line:
-                if linelen+1+len(word) > 72:
-                    print >>self.logstream,' '.join(line)
-                    line = []
-                    linelen = 0
-                else:
-                    linelen += 1
-            line.append(word)
-            linelen += len(word)
-        print >>self.logstream,' '.join(line)
+        for line in wrap(text):
+            print >>self.logstream, line
         print >>self.logstream
 
     def place(self,digit,cell,explanation=None):

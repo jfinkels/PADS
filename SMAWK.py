@@ -18,7 +18,7 @@ def ConcaveMinima(RowIndices,ColIndices,Matrix):
     """
     Search for the minimum value in each column of a matrix.
     The return value is a dictionary mapping ColIndices to pairs
-    (value,rowindex).
+    (value,rowindex). We break ties in favor of earlier rows.
     
     The matrix is defined implicitly as a function, passed
     as the third argument to this routine, where Matrix(i,j)
@@ -27,13 +27,13 @@ def ConcaveMinima(RowIndices,ColIndices,Matrix):
         Matrix(i,j) > Matrix(i',j) => Matrix(i,j') > Matrix(i,j')
     for every i<i' and j<j'; that is, in every submatrix of
     the input matrix, the positions of the column minima
-    must be monotonically nondecreasing.  Ties are broken
-    in favor of earlier rows.
+    must be monotonically nondecreasing.
     
     The rows and columns of the matrix are labeled by the indices
     given in order by the first two arguments. In most applications,
     these arguments can simply be integer ranges.
     """
+
     # Base case of recursion
     if not ColIndices: return {}
     
@@ -90,8 +90,10 @@ class OnlineConcaveMinima:
     
     Matrix(i,j) should always return a value, rather than raising an
     exception, even for j larger than the range we expect to compute.
-    It is reasonable (and will not violate the matrix concavity
-    requirement) to always return some flag value such as None for large j.
+    If j is out of range, a suitable value to return that will not
+    violate concavity is Matrix(i,j) = -i.  It will not work correctly
+    to return a flag value such as None for large j, because the ties
+    formed by the equalities among such flags may violate concavity.
     """
     
     def __init__(self,Matrix,initial):
@@ -144,7 +146,7 @@ class OnlineConcaveMinima:
         # to the largest square submatrix that fits under the base.
         i = self._finished + 1
         if i > self._tentative:
-            rows = range(base,self._finished+1)
+            rows = range(self._base,self._finished+1)
             self._tentative = self._finished+len(rows)
             cols = range(self._finished+1,self._tentative+1)
             minima = ConcaveMinima(rows,cols,self._matrix)
@@ -165,7 +167,7 @@ class OnlineConcaveMinima:
         diag = self._matrix(i-1,i)
         if diag < self._values[i]:
             self._values[i] = diag
-            self._index[i] = self._base = i-1
+            self._indices[i] = self._base = i-1
             self._tentative = self._finished = i
             return
         
