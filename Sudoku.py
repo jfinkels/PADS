@@ -81,6 +81,11 @@ for square in sqrs:
     for group in rows+cols:
         triads.append((square.mask & group.mask,square,group))
 
+
+# ======================================================================
+#   Human-readable names for puzzle cells
+# ======================================================================
+
 cellnames = [None]*81
 for row in range(9):
     for col in range(9):
@@ -98,6 +103,10 @@ def namecells(mask):
         return ' and '.join(names)
     else:
         return ', '.join(names[:-1]+['and '+names[-1]])
+
+def pathname(cells):
+    return '-'.join([cellnames[c] for c in cells])
+
 
 # ======================================================================
 #   State for puzzle solver
@@ -557,7 +566,20 @@ def bivalue(grid):
             mask |= g.mask
         mask &=~ (1L << v)
         mask &=~ (1L << w)
-        grid.unplace(digit,mask)
+        def explain():
+            cycle = [(v,digit),(w,digit)] + \
+                    nrg.shortest(w,grid.otherbv[w,digit],
+                                 v,grid.otherbv[v,digit])
+            cycle = [u for u,L in cycle]
+            return ["In the cyclic sequence of cells", pathname(cycle)+",",
+                    "each cell's two possible digits are shared with",
+                    "its two neighbors in the cycle.",
+                    "This placement would conflict with placing", digit,
+                    "in", namecells((1L<<v)|(1L<<w))+",",
+                    "making it impossible to fill the cycle's",
+                    len(cycle)-1, "cells with the remaining",
+                    len(cycle)-2, "digits."]
+        grid.unplace(digit,mask,explain)
 
 def repeat(grid):
     """

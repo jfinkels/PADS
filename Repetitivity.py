@@ -31,6 +31,8 @@ class NonrepetitiveGraph:
     - reachable(v,label) generates a sequence of pairs
       (w,label) that can be reached by nonrepetitive
       paths starting from v with the given label.
+    - shortest(v,label,w,label) finds a shortest path between
+      the given vertex,label pairs.
     """
     
     def __init__(self,G):
@@ -124,3 +126,41 @@ class NonrepetitiveGraph:
         for w,LL,bit in DFS.preorder(self.nrg,(v,L,False)):
             if bit and LL in self[w]:
                 yield w,LL
+
+    def _flattenpath(self,path):
+        """Helper routine for shortest: convert output from internal format."""
+        output = []
+        while path:
+            output.append(path[0])
+            path = path[1]
+        output.reverse()
+        return output
+
+    def shortest(self,v,L,w,LL):
+        """
+        Breadth first search for shortest path from (v,L) to (w,LL).
+        The path is returned as a list of (vertex,label) pairs, omitting (v,L).
+        """
+        start = (v,L,False)
+        visited = set([start])
+        thislevel = [(start,None)]
+        nextlevel = []
+        levelindex = 0
+        while levelindex < len(thislevel) or nextlevel:
+            if levelindex >= len(thislevel):
+                thislevel = nextlevel
+                nextlevel = []
+                levelindex = 0
+            current,path = thislevel[levelindex]
+            levelindex += 1
+            for nrgnode in self.nrg[current]:
+                if nrgnode not in visited:
+                    if nrgnode[2] and not current[2]:   # non-gadget edge?
+                        newpath = (nrgnode[:2],path)
+                        if newpath[0] == (w,LL):
+                            return self._flattenpath(newpath)
+                        nextlevel.append((nrgnode,newpath))
+                    else:
+                        thislevel.append((nrgnode,path))
+                    visited.add(nrgnode)
+        raise ValueError("No such path exists")
