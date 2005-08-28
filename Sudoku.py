@@ -115,6 +115,11 @@ def namecells(mask,conjunction="and"):
 def pathname(cells):
     return '-'.join([cellnames[c] for c in cells])
 
+def plural(howmany,objectname):
+    if howmany == 1:
+        return objectname
+    else:
+        return "%d %ss" % (howmany,objectname)
 
 # ======================================================================
 #   State for puzzle solver
@@ -436,13 +441,28 @@ def digit(grid):
                         if rows[r].mask & cols[c].mask & locs]
         imp = imperfections(graph)
         mask = 0
+        forced = []
         for r in imp:
             for c in imp[r]:
                 mask |= rows[r].mask & cols[c].mask
+                if imp[r][c] not in forced:
+                    forced.append(imp[r][c])
         mask &= grid.locations[d]
-        that = (mask & (mask - 1)) and "Those cells" or "That cell"
-        grid.unplace(d,mask,[that,"cannot be part of a set of placements",
-                     "of that digit that covers all nine rows and columns."])
+        if not mask:
+            continue
+        def explain():
+            expl = []
+            for f in forced:
+                fr = [rows[r].name for r in f]
+                fr.sort()
+                fc = list(set([cols[c].name for r in f for c in f[r]]))
+                fc.sort()
+                expl += ["In", andlist(fr)+", digit", d,
+                         "can only be placed in", andlist(fc,"or")+"."]
+                return expl + ["Placing",d,"in",namecells(mask,"or"),
+                               "would leave too few columns for", d,
+                               "to be placed in all of these rows."]
+        grid.unplace(d,mask,explain)
 
 def subproblem(grid):
     """
@@ -775,6 +795,76 @@ def path(grid):
                             grid.unplace(d,neighbors[cell]&neighbors[neighbor],
                                          explain)
 
+def explain_conflict_path(grid,cell,d,why,reached,dd):
+    """Explain why either cell,d or reached,dd must be placed."""
+    if why[reached,dd]:
+        path = grid.bilocation.shortest(cell,d,reached,dd)
+        if len(path) == 2:
+            mask = (1L<<cell)|(1L<<reached)
+            for g in groups:
+                if g.mask & mask == mask:
+                    break
+            return [cellnames[cell],"and",cellnames[reached],
+                    "are the only cells in",g.name,
+                    "in which",d,"may be placed, so if",d,
+                    "were not placed in",cellnames[cell]+",",
+                    "it would have to be placed in",cellnames[reached]+"."]
+        return [inpath, pathname(path)+",", bilocal_explanation+".",
+                "If",d,"were not placed in",cellnames[cell]+",",
+                "then",dd,"would have to be placed in",cellnames[reached]+",",
+                "in order to make room for the remaining",
+                plural(len(path)-2,"digit"),"in the remaining",
+                plural(len(path)-2,"cell"),"of the sequence."]
+    path = grid.bivalues.shortest(cell,grid.otherbv[cell,d],
+                                 reached,grid.otherbv[reached,dd])
+    if len(path) == 2:
+        mask = (1L<<cell)|(1L<<reached)
+        return [cellnames[cell],"and",cellnames[reached],
+                "each have two possible values.",
+                "If",d,"were not placed in",cellnames[cell],
+                "it would have to contain",grid.otherbv[cell,d],
+                "instead, forcing",cellnames[reached],"to contain",str(dd)+"."]
+    return [inpath, pathname(path)+",", bivalue_explanation+".",
+            "If",d,"were not placed in",cellnames[cell]+",",
+            "then",dd,"would have to be placed in",cellnames[reached]+",",
+            "in order to make allow the remaining",plural(len(path)-1,"cell"),
+            "of the sequence to be filled by the remaining",
+            plural(len(path)-1,"digit")+"."]
+    
+
+def explain_conflict(grid,cell,d,why,reached,dd):
+    """Concoct explanation for pair of conflicting paths, one to reached."""
+    for neighbor,ddd in why:
+        if ddd == dd:
+            if (1L<<neighbor) & neighbors[reached]:
+                return explain_conflict_path(grid,cell,d,why,reached,dd) + \
+                       explain_conflict_path(grid,cell,d,why,neighbor,dd) + \
+                       [cellnames[reached],"and",cellnames[neighbor],
+                        "cannot both contain",str(dd)+",","so",cellnames[cell],
+                        "must contain",str(d)+"."]
+    return explain_conflict_path(grid,cell,d,why,reached,dd) + \
+        ["This conflicts with another path that has become lost."]
+
+def explain_conflict_group(grid,cell,d,why,g,dd):
+    """Conflict explanation for set of conflicting paths that cover a group."""
+    mask = g.mask & grid.locations[dd]
+    conflicts = []
+    confmask = 0
+    for reached,ddd in why:
+        if dd == ddd and neighbors[reached] & mask:
+            conflicts.append(reached)
+            confmask |= 1L<<reached
+            mask &=~ neighbors[reached]
+    conflicts.sort()
+    expl = []
+    for c in conflicts:
+        expl += explain_conflict_path(grid,cell,d,why,c,dd)
+    expl += ["In",g.name+",",namecells(g.mask&grid.locations[dd]),
+             "are the only cells in which",dd,"may be placed."]
+    return expl + ["Placing",dd,"in",namecells(confmask),
+                   "would prevent it from being placed anywhere in",g.name+",",
+                   "so",d,"must be placed in",cellnames[cell]+"."]
+
 def conflict(grid):
     """
     Look for conflicting paths of bilocated or bivalued cells.
@@ -795,26 +885,37 @@ def conflict(grid):
         if not grid.contents[cell]:
             for d in grid.choices(cell):
                 conflicts = [0]*10
+                why = {}
                 for reached,dd in grid.bilocation.reachable(cell,d):
+                    why[reached,dd] = True
                     if (1L<<reached) & conflicts[dd]:
-                        grid.place(d,cell)
-                        break
+                        def explain():
+                            return explain_conflict(grid,cell,d,why,reached,dd)
+                        grid.place(d,cell,explain)
+                        return  # allow changes to propagate
                     else:
                         conflicts[dd] |= neighbors[reached]
                 if cell in grid.bivalues:
                     for reached,dd in grid.bivalues.reachable(cell,
                                                 grid.otherbv[cell,d]):
                         other = grid.otherbv[reached,dd]
+                        why[reached,other] = False
                         if (1L<<reached) & conflicts[other]:
-                            grid.place(d,cell)
-                            break
+                            def explain():
+                                return explain_conflict(grid,cell,d,
+                                                        why,reached,other)
+                            grid.place(d,cell,explain)
+                            return  # allow changes to propagate
                         else:
                             conflicts[other] |= neighbors[reached]
                 for g in groups:
                     for dd in digits:
                         if grid.locations[dd] & g.mask &~ conflicts[dd] == 0:
-                            grid.place(d,cell)
-                            break
+                            def explain():
+                                return explain_conflict_group(grid,cell,d,
+                                                              why,g,dd)
+                            grid.place(d,cell,explain)
+                            return  # allow changes to propagate
 
 # triples of name, rule, difficulty level
 rules = [

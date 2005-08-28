@@ -20,7 +20,7 @@ def wrap(text,                  # string or unicode to be wrapped
          overpenalty = 1000,    # penalize long lines by overpen*(len-target)
          nlinepenalty = 1000,   # penalize more lines than optimal
          onewordpenalty = 25,   # penalize really short last line
-         hyphenpenalty = 75):   # penalize breaking hyphenated words
+         hyphenpenalty = 25):   # penalize breaking hyphenated words
     """Wrap the given text, returning a sequence of lines."""
 
     # Make sequence of tuples (word, spacing if no break, cum.measure).
