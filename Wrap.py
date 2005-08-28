@@ -13,29 +13,35 @@ D. Eppstein, August 2005.
 from SMAWK import OnlineConcaveMinima
 
 def wrap(text,                  # string or unicode to be wrapped
+         target = 76,           # maximum length of a wrapped line
          longlast = False,      # True if last line should be as long as others
-         target = 72,           # maximum length of a wrapped line
+         frenchspacing = False, # Single space instead of double after periods
          measure = len,         # how to measure the length of a word
-         overpenalty = 100000,  # penalize long lines by overpen*(len-target)
-         nlinepenalty = 100000, # penalize more lines than optimal
-         hyphenpenalty = 100):   # penalize breaking hyphenated words
+         overpenalty = 1000,    # penalize long lines by overpen*(len-target)
+         nlinepenalty = 1000,   # penalize more lines than optimal
+         onewordpenalty = 25,   # penalize really short last line
+         hyphenpenalty = 75):   # penalize breaking hyphenated words
     """Wrap the given text, returning a sequence of lines."""
 
-    # Make sequence of tuples (word, space if no break, cum.measure).
+    # Make sequence of tuples (word, spacing if no break, cum.measure).
     words = []
     total = 0
-    space = measure(' ')
+    spacings = [0, measure(' '), measure('  ')]
     for hyphenword in text.split():
-        if total:
-            total += space
+        if words:
+            total += spacings[words[-1][1]]
         parts = hyphenword.split('-')
         for word in parts[:-1]:
             word += '-'
             total += measure(word)
-            words.append((word,False,total))
+            words.append((word,0,total))
         word = parts[-1]
         total += measure(word)
-        words.append((word,True,total))
+        spacing = 1
+        if word.endswith('.') and (len(hyphenword) > 2 or
+                                   not hyphenword[0].isupper()):
+            spacing = 2 - frenchspacing
+        words.append((word,spacing,total))
 
     # Define penalty function for breaking on line words[i:j]
     # Below this definition we will set up cost[i] to be the
@@ -49,6 +55,8 @@ def wrap(text,                  # string or unicode to be wrapped
             total += overpenalty * (linemeasure - target)
         elif j < len(words) or longlast:
             total += (target - linemeasure)**2
+        elif i == j-1:
+            total += onewordpenalty
         if not words[j-1][1]:
             total += hyphenpenalty
         return total
@@ -63,7 +71,7 @@ def wrap(text,                  # string or unicode to be wrapped
         for i in range(breakpoint,pos):
             line.append(words[i][0])
             if i < pos-1 and words[i][1]:
-                line.append(' ')
+                line.append(' '*words[i][1])
         lines.append(''.join(line))
         pos = breakpoint
     lines.reverse()

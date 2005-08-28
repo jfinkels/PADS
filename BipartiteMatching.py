@@ -8,10 +8,10 @@ D. Eppstein, April 2002.
 
 from StrongConnectivity import StronglyConnectedComponents
 
-# maintain Python 2.2 compatibility
-if 'True' not in globals():
-    globals()['True'] = not None
-    globals()['False'] = not True
+try:
+    set
+except NameError:
+    from sets import Set as set
 
 def matching(graph):
     """
@@ -92,6 +92,11 @@ def imperfections(graph):
     Find edges that do not belong to any perfect matching of G.
     The input format is the same as for matching(), and the output
     is a subgraph of the input graph in the same format.
+    
+    For each edge v->w in the output subgraph, imperfections[v][w]
+    is itself a subgraph of the input, induced by a set of
+    vertices that must be matched to each other, including w but
+    not including v.
     """
     M,A,B = matching(graph)
     if len(M) != len(graph):
@@ -108,13 +113,18 @@ def imperfections(graph):
 
     components = {}
     for C in StronglyConnectedComponents(orientation):
+        induced = dict([(v,set([w for w,bit2 in C[v,bit]]))
+                        for v,bit in C if bit])
+        for v,bit in C:
+            if not bit:   # don't forget the matched edges!
+                induced.setdefault(M[v],set()).add(v)
         for v in C:
-            components[v] = C
+            components[v] = induced
 
     imperfections = {}
     for v in graph:
-        imperfections[v] = [w for w in graph[v]
-                            if M[w] != v and
-                            components[v,True] != components[w,False]]
+        imperfections[v] = dict([(w,components[w,False]) for w in graph[v]
+                                 if M[w] != v and
+                                 components[v,True] != components[w,False]])
     
     return imperfections

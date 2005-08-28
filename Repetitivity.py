@@ -139,11 +139,11 @@ class NonrepetitiveGraph:
     def shortest(self,v,L,w,LL):
         """
         Breadth first search for shortest path from (v,L) to (w,LL).
-        The path is returned as a list of (vertex,label) pairs, omitting (v,L).
+        The path is returned as a list of vertices.
         """
         start = (v,L,False)
         visited = set([start])
-        thislevel = [(start,None)]
+        thislevel = [(start,(v,None))]
         nextlevel = []
         levelindex = 0
         while levelindex < len(thislevel) or nextlevel:
@@ -156,8 +156,8 @@ class NonrepetitiveGraph:
             for nrgnode in self.nrg[current]:
                 if nrgnode not in visited:
                     if nrgnode[2] and not current[2]:   # non-gadget edge?
-                        newpath = (nrgnode[:2],path)
-                        if newpath[0] == (w,LL):
+                        newpath = (nrgnode[0],path)
+                        if nrgnode[:2] == (w,LL):
                             return self._flattenpath(newpath)
                         nextlevel.append((nrgnode,newpath))
                     else:
