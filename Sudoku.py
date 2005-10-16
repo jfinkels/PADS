@@ -173,6 +173,11 @@ class Sudoku:
           None if verbose descriptions are not to be logged.
         
         - steps is used to count how many solver passes we've made so far.
+        
+        - original_cells is a bitmask of cells that were originally nonempty.
+        
+        - assume_unique should be set true to enable solution rules
+          based on the assumption that there exists a unique solution
         """
         self.contents = [0]*81
         self.locations = [None]+[(1L<<81)-1]*9
@@ -182,6 +187,8 @@ class Sudoku:
         self.bilocation = None
         self.logstream = False
         self.steps = 0
+        self.original_cells = 0
+        self.assume_unique = False
 
         if initial_placements:
             cell = 0
@@ -192,6 +199,7 @@ class Sudoku:
                     digit,cell = item
                 if digit:
                     self.place(digit,cell)
+                    self.original_cells |= 1L << cell
                 cell += 1
         
     def __iter__(self):
@@ -917,6 +925,71 @@ def conflict(grid):
                             grid.place(d,cell,explain)
                             return  # allow changes to propagate
 
+nearby = {}
+for g in rows+cols:
+    nearby[g] = []
+for r1 in rows:
+    for s in sqrs:
+        if r1.mask & s.mask != 0:
+            for r2 in rows:
+                if r1 != r2 and r2.mask & s.mask != 0:
+                    nearby[r1].append(r2)
+            break
+for c1 in cols:
+    for s in sqrs:
+        if c1.mask & s.mask != 0:
+            for c2 in cols:
+                if c1.mask < c2.mask and c2.mask & s.mask != 0:
+                    nearby[c1].append(c2)
+            break
+
+def rectangles():
+    for r1 in rows:
+        for r2 in rows:
+            if r2 in nearby[r1]:
+                for c1 in range(9):
+                    for c2 in range(c1):
+                        yield r1,r2,cols[c1],cols[c2]
+            elif r1.mask < r2.mask:
+                for c1 in cols:
+                    for c2 in nearby[c1]:
+                        yield r1,r2,c1,c2
+
+def rectangle(grid):
+    """
+    Disallow placements that would form an ambiguous rectangle.
+    If digits x and y are the only digits that can be placed at the
+    corners of a rectangle of cells, these corners belong to exactly
+    two squares of the puzzle, and these corners were all blank in
+    the initial puzzle, then neither x nor y can be placed at the
+    fourth corner of the puzzle.  For, if either digit could be placed
+    there, we could obtain multiple solutions by swapping these
+    two digits for each other at the four corners, but we have assumed
+    that the puzzle has a unique solution.
+    """
+    for r1,r2,c1,c2 in rectangles():
+        mask = (r1.mask | r2.mask) & (c1.mask | c2.mask)
+        if not (mask & grid.original_cells):
+            safe_corners = 0
+            multiply_placable = []
+            for d in digits:
+                dmask = grid.locations[d] & mask
+                if dmask & (dmask - 1):
+                    multiply_placable.append(d)
+                else:
+                    safe_corners |= dmask
+            if len(multiply_placable) == 2 and \
+                    safe_corners & (safe_corners-1) == 0:
+                for d in multiply_placable:
+                    def explain():
+                        return ["This placement would create an ambiguous",
+                                "rectangle for digits",
+                                str(multiply_placable[0]),"and",
+                                str(multiply_placable[1]),"in",
+                                r1.name+",",r2.name+",",
+                                c1.name+",","and",c2.name+"."]
+                    grid.unplace(d,safe_corners,explain)
+
 # triples of name, rule, difficulty level
 rules = [
     ("locate",locate,0),
@@ -933,6 +1006,10 @@ rules = [
     ("conflict",conflict,4),
 ]
 
+urules = [
+    ("rectangle",rectangle,2),
+]
+
 def step(grid, quick_and_dirty = False):
     """Try the rules, return True if one succeeds."""
     if grid.complete():
@@ -940,7 +1017,11 @@ def step(grid, quick_and_dirty = False):
     grid.progress = False
     grid.steps += 1
     grid.log(["Beginning solver iteration",str(grid.steps)+'.'])
-    for name,rule,level in rules:
+    if grid.assume_unique:
+        our_rules = rules + urules
+    else:
+        our_rules = rules
+    for name,rule,level in our_rules:
         if level <= 1 or not quick_and_dirty:
             rule(grid)
             if grid.progress:
@@ -1126,6 +1207,7 @@ def all_solutions(grid, fastrules = True):
                  "creating a new backtracking search branch.")
         branch.logstream = grid.logstream
         branch.steps = grid.steps
+        branch.original_cells = grid.original_cells
         branch.place(d,c,"The backtracking search will try this placement"
                          " first. Then, after returning from this branch,"
                          " it will try preventing this placement.")
@@ -1179,6 +1261,9 @@ parser.add_option("-g","--generate", dest="generate", action="store_true",
 parser.add_option("-a", "--asymmetric", dest="asymmetric", action="store_true",
                   help = "allow asymmetry in generated puzzles")
 
+parser.add_option("-u", "--unique", dest="assume_unique", action="store_true",
+                  help = "use rules that assume puzzle has a unique solution")
+
 parser.add_option("-b", "--backtrack", dest="backtrack", action="store_true",
                   help = "enable trial and error search for all solutions")
 
@@ -1204,11 +1289,18 @@ if __name__ == '__main__':
         sys.exit(0)
     
     if options.show_rules:
-        print """This solver knows the following rules.  Rules occurring later
+        if options.assume_unique:
+            print """The following rules are based on the assumption that
+the puzzle has a unique solution.
+"""
+            our_rules = urules
+        else:
+            print """This solver knows the following rules.  Rules occurring later
 in the list are attempted only when all earlier rules have failed
 to make progress.
 """
-        for name,rule,difficulty in rules:
+            our_rules = rules
+        for name,rule,difficulty in our_rules:
             print name + ":" + rule.__doc__
         sys.exit(0)
 
@@ -1310,6 +1402,8 @@ if __name__ == '__main__':
         puzzle = permute(puzzle, not options.asymmetric)
     if options.verbose:
         puzzle.logstream = sys.stderr
+    if options.assume_unique:
+        puzzle.assume_unique = True
 
 # ======================================================================
 #   Main program: print and solve puzzle
@@ -1337,7 +1431,7 @@ if __name__ == '__main__':
 
     difficulty = 0
     used_names = []
-    for name,rule,level in rules:
+    for name,rule,level in rules+urules:
         if name in puzzle.rules_used:
             used_names.append(name)
             difficulty += 1<<level
