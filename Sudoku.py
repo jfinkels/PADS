@@ -82,6 +82,26 @@ for square in sqrs:
     for group in rows+cols:
         triads.append((square.mask & group.mask,square,group))
 
+# pairs of rows and columns that cross the same squares
+nearby = {}
+for g in rows+cols:
+    nearby[g] = []
+for r1 in rows:
+    for s in sqrs:
+        if r1.mask & s.mask != 0:
+            for r2 in rows:
+                if r1 != r2 and r2.mask & s.mask != 0:
+                    nearby[r1].append(r2)
+            break
+for c1 in cols:
+    for s in sqrs:
+        if c1.mask & s.mask != 0:
+            for c2 in cols:
+                if c1.mask < c2.mask and c2.mask & s.mask != 0:
+                    nearby[c1].append(c2)
+            break
+
+
 
 # ======================================================================
 #   Human-readable names for puzzle cells
@@ -471,6 +491,112 @@ def digit(grid):
                                "would leave too few columns for", d,
                                "to be placed in all of these rows."]
         grid.unplace(d,mask,explain)
+
+def rectangles():
+    """Generate pairs of rows and columns that form two-square rectangles."""
+    for r1 in rows:
+        for r2 in rows:
+            if r2 in nearby[r1]:
+                for c1 in range(9):
+                    for c2 in range(c1):
+                        yield r1,r2,cols[c1],cols[c2]
+            elif r1.mask < r2.mask:
+                for c1 in cols:
+                    for c2 in nearby[c1]:
+                        yield r1,r2,c1,c2
+
+def rectangle(grid):
+    """
+    Avoid the formation of an ambiguous rectangle.
+    That is, four corners of a rectangle within two squares, all four
+    corners initially blank, and containing only two digits. If this
+    situation occurred, the puzzle would necessarily have evenly many
+    solutions, because we could swap the two digits in the rectangle
+    corners in any solution to form a different solution, contradicting
+    the assumption that there is only one. Therefore, we make sure that
+    any such rectangle keeps at least three available values.
+    """
+    if not grid.assume_unique:
+        return
+    for r1,r2,c1,c2 in rectangles():
+        mask = (r1.mask | r2.mask) & (c1.mask | c2.mask)
+        if not (mask & grid.original_cells):
+            # First rectangle test
+            # If three cells are bivalued with the same two digits x,y
+            # then we can eliminate x and y on the fourth
+            safe_corners = 0
+            multiply_placable = []
+            for d in digits:
+                dmask = grid.locations[d] & mask
+                if dmask & (dmask - 1):
+                    multiply_placable.append(d)
+                else:
+                    safe_corners |= dmask
+            if len(multiply_placable) == 2 and \
+                    safe_corners & (safe_corners-1) == 0:
+                for d in multiply_placable:
+                    def explain():
+                        return ["This placement would create an ambiguous",
+                                "rectangle for digits",
+                                str(multiply_placable[0]),"and",
+                                str(multiply_placable[1]),"in",
+                                r1.name+",",r2.name+",",
+                                c1.name+",","and",c2.name+"."]
+                    grid.unplace(d,safe_corners,explain)
+
+            # Second rectangle test
+            # If only three digits can be placed in the rectangle,
+            # we eliminate placements that conflict with
+            # all positions of one of the digits.
+            placable = [d for d in digits if grid.locations[d] & mask]
+            if len(placable) == 3:
+                for d in placable:
+                    a = grid.locations[d] & mask
+                    conflicts = 0
+                    for g in groups:
+                        if grid.locations[d] & g.mask & a == a:
+                            conflicts |= g.mask
+                    def explain():
+                        un = conflicts &~ a
+                        if un & (un - 1):
+                            this = "These placements"
+                        else:
+                            this = "This placement"
+                        return ["The rectangle in", r1.name+",",
+                                r2.name+",", c1.name+", and", c2.name,
+                                "can only contain digits",
+                                andlist([str(dd) for dd in placable])+".",
+                                this, "would conflict with the placements",
+                                "of", str(d)+",", "creating an ambiguous",
+                                "rectangle on the remaining two digits."]
+                    grid.unplace(d, conflicts &~ a, explain)
+
+            # Third rectangle test
+            # If two cells are bivalued with digits x and y,
+            # and the other two cells are bilocal with x,
+            # then we can eliminate y from the two bilocal cells.
+            for x1,x2 in ((r1,r2), (r2,r1), (c1,c2), (c2,c1)):
+                xd = [d for d in digits if grid.locations[d] & mask & x1.mask]
+                if len(xd) == 2:    # found locked pair on x1's corners
+                    for d in xd:
+                        x2d = grid.locations[d] & x2.mask
+                        if x2d & mask == x2d:   # and bilocal on x2
+                            dd = xd[0]+xd[1]-d  # other digit
+                            def explain():
+                                return ["The rectangle in", r1.name+",",
+                                    r2.name+",", c1.name+", and", c2.name,
+                                    "can only contain digits",
+                                    str(xd[0]),"and",str(xd[1]),"in",
+                                    x1.name+".","In addition,"
+                                    "the only cells in",x2.name,
+                                    "that can contain",str(d),
+                                    "are in the rectangle.",
+                                    "Therefore, to avoid creating an",
+                                    "ambiguous rectangle, the",str(dd),
+                                    "in",x2.name,"must be placed",
+                                    "outside the rectangle."]
+                                pass
+                            grid.unplace(dd,x2d,explain)
 
 def subproblem(grid):
     """
@@ -925,71 +1051,6 @@ def conflict(grid):
                             grid.place(d,cell,explain)
                             return  # allow changes to propagate
 
-nearby = {}
-for g in rows+cols:
-    nearby[g] = []
-for r1 in rows:
-    for s in sqrs:
-        if r1.mask & s.mask != 0:
-            for r2 in rows:
-                if r1 != r2 and r2.mask & s.mask != 0:
-                    nearby[r1].append(r2)
-            break
-for c1 in cols:
-    for s in sqrs:
-        if c1.mask & s.mask != 0:
-            for c2 in cols:
-                if c1.mask < c2.mask and c2.mask & s.mask != 0:
-                    nearby[c1].append(c2)
-            break
-
-def rectangles():
-    for r1 in rows:
-        for r2 in rows:
-            if r2 in nearby[r1]:
-                for c1 in range(9):
-                    for c2 in range(c1):
-                        yield r1,r2,cols[c1],cols[c2]
-            elif r1.mask < r2.mask:
-                for c1 in cols:
-                    for c2 in nearby[c1]:
-                        yield r1,r2,c1,c2
-
-def rectangle(grid):
-    """
-    Disallow placements that would form an ambiguous rectangle.
-    If digits x and y are the only digits that can be placed at the
-    corners of a rectangle of cells, these corners belong to exactly
-    two squares of the puzzle, and these corners were all blank in
-    the initial puzzle, then neither x nor y can be placed at the
-    fourth corner of the puzzle.  For, if either digit could be placed
-    there, we could obtain multiple solutions by swapping these
-    two digits for each other at the four corners, but we have assumed
-    that the puzzle has a unique solution.
-    """
-    for r1,r2,c1,c2 in rectangles():
-        mask = (r1.mask | r2.mask) & (c1.mask | c2.mask)
-        if not (mask & grid.original_cells):
-            safe_corners = 0
-            multiply_placable = []
-            for d in digits:
-                dmask = grid.locations[d] & mask
-                if dmask & (dmask - 1):
-                    multiply_placable.append(d)
-                else:
-                    safe_corners |= dmask
-            if len(multiply_placable) == 2 and \
-                    safe_corners & (safe_corners-1) == 0:
-                for d in multiply_placable:
-                    def explain():
-                        return ["This placement would create an ambiguous",
-                                "rectangle for digits",
-                                str(multiply_placable[0]),"and",
-                                str(multiply_placable[1]),"in",
-                                r1.name+",",r2.name+",",
-                                c1.name+",","and",c2.name+"."]
-                    grid.unplace(d,safe_corners,explain)
-
 # triples of name, rule, difficulty level
 rules = [
     ("locate",locate,0),
@@ -997,6 +1058,7 @@ rules = [
     ("align",align,2),
     ("pair",pair,2),
     ("triad",triad,2),
+    ("rectangle",rectangle,2),
     ("subproblem",subproblem,3),
     ("digit",digit,3),
     ("bilocal",bilocal,3),
@@ -1006,10 +1068,6 @@ rules = [
     ("conflict",conflict,4),
 ]
 
-urules = [
-    ("rectangle",rectangle,2),
-]
-
 def step(grid, quick_and_dirty = False):
     """Try the rules, return True if one succeeds."""
     if grid.complete():
@@ -1017,11 +1075,7 @@ def step(grid, quick_and_dirty = False):
     grid.progress = False
     grid.steps += 1
     grid.log(["Beginning solver iteration",str(grid.steps)+'.'])
-    if grid.assume_unique:
-        our_rules = rules + urules
-    else:
-        our_rules = rules
-    for name,rule,level in our_rules:
+    for name,rule,level in rules:
         if level <= 1 or not quick_and_dirty:
             rule(grid)
             if grid.progress:
@@ -1289,18 +1343,11 @@ if __name__ == '__main__':
         sys.exit(0)
     
     if options.show_rules:
-        if options.assume_unique:
-            print """The following rules are based on the assumption that
-the puzzle has a unique solution.
-"""
-            our_rules = urules
-        else:
-            print """This solver knows the following rules.  Rules occurring later
+        print """This solver knows the following rules.  Rules occurring later
 in the list are attempted only when all earlier rules have failed
 to make progress.
 """
-            our_rules = rules
-        for name,rule,difficulty in our_rules:
+        for name,rule,difficulty in rules:
             print name + ":" + rule.__doc__
         sys.exit(0)
 
@@ -1431,7 +1478,7 @@ if __name__ == '__main__':
 
     difficulty = 0
     used_names = []
-    for name,rule,level in rules+urules:
+    for name,rule,level in rules:
         if name in puzzle.rules_used:
             used_names.append(name)
             difficulty += 1<<level
