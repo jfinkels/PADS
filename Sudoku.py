@@ -723,13 +723,13 @@ def bilocal(grid):
 
     # Carry out forces indicated by our analysis
     for cell in range(81):
-        if len(forced[cell]) > 2:
-            grid.log(["The bilocal rule found cycles involving three or more",
-                      "digits through",cellnames[cell]+"."])
-            raise BadSudoku(
-                "triple threat in bilocal analysis: cell %s, digits %s" %
-                (cell, list(forced[cell])))
         if len(forced[cell]) == 2:
+            # It's also possible for len(forced[cell]) to be > 2;
+            # in this case multiple cycles go through the same edge
+            # and cell must be filled with the digit labeling that edge.
+            # But for simplicity's sake we ignore that possibility;
+            # it doesn't happen very often and when it does the repetitive
+            # cycle rule will find it instead.
             mask = 1L<<cell
             for d in digits:
                 if d not in forced[cell]:
