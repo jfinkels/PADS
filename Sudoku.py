@@ -499,7 +499,8 @@ def rectangles():
             if r2 in nearby[r1]:
                 for c1 in range(9):
                     for c2 in range(c1):
-                        yield r1,r2,cols[c1],cols[c2]
+                        if cols[c1] not in nearby[cols[c2]]:
+                            yield r1,r2,cols[c2],cols[c1]
             elif r1.mask < r2.mask:
                 for c1 in cols:
                     for c2 in nearby[c1]:
@@ -597,6 +598,64 @@ def rectangle(grid):
                                     "outside the rectangle."]
                                 pass
                             grid.unplace(dd,x2d,explain)
+
+def trapezoid(grid):
+    """
+    Force pairs of digits to form trapezoids instead of rectangles.
+    If two digits can only be placed in five cells of two squares,
+    four of which form a rectangle, then they must be placed in
+    four cells that form a trapezoid out of those five.
+    We prevent those digits from being placed in cells not part of
+    a trapezoid, and prevent other digits from being placed in cells
+    that are part of all such trapezoids.
+    """
+    if not grid.assume_unique:
+        return
+    for r1,r2,c1,c2 in rectangles():
+        corners = (r1.mask | r2.mask) & (c1.mask | c2.mask)
+        if not (corners & grid.original_cells):
+            s1,s2 = [s for s in sqrs if s.mask & corners]
+            uncorner = (s1.mask | s2.mask) &~ corners
+            candidates = {}
+            universal = None
+            for d in digits:
+                if not grid.locations[d] & uncorner:
+                    universal = d   # can form five cells w/any other digit
+            for d in digits:
+                locs_for_d = grid.locations[d] & uncorner
+                if locs_for_d and not (locs_for_d & (locs_for_d - 1)):
+                    if universal != None or locs_for_d in candidates:
+                        # found another digit sharing same five cells w/d
+                        if universal != None:
+                            d1,d2 = universal,d
+                        else:
+                            d1,d2 = candidates[locs_for_d],d
+                        explanation = ["Digits",str(d1),"and",str(d2),
+                                       "must be placed in a trapezoid in",
+                                       s1.name,"and",s2.name+",",
+                                       "for if they were placed in a",
+                                       "rectangle, their locations",
+                                       "could be swapped, resulting",
+                                       "in multiple solutions",
+                                       "to the puzzle."]
+                        must = locs_for_d
+                        mustnt = 0
+                        if s2.mask & locs_for_d:
+                            s1,s2 = s2,s1   # swap so s1 contains extra cell
+                        must |= corners & s2.mask
+                        for line in r1.mask,r2.mask,c1.mask,c2.mask:
+                            if line & locs_for_d and line & s2.mask:
+                                # most informative case: the extra cell
+                                # lies on a line through both squares.
+                                must |= corners & (s1.mask &~ line)
+                                mustnt |= corners & (s1.mask & line)
+                        for d3 in digits:
+                            if d3 == d1 or d3 == d2:
+                                grid.unplace(d3,mustnt,explanation)
+                            else:
+                                grid.unplace(d3,must,explanation)
+                    else:
+                        candidates[locs_for_d] = d
 
 def subproblem(grid):
     """
@@ -1058,6 +1117,7 @@ rules = [
     ("align",align,2),
     ("pair",pair,2),
     ("triad",triad,2),
+    ("trapezoid",trapezoid,2),
     ("rectangle",rectangle,2),
     ("subproblem",subproblem,3),
     ("digit",digit,3),
@@ -1315,8 +1375,9 @@ parser.add_option("-g","--generate", dest="generate", action="store_true",
 parser.add_option("-a", "--asymmetric", dest="asymmetric", action="store_true",
                   help = "allow asymmetry in generated puzzles")
 
-parser.add_option("-u", "--unique", dest="assume_unique", action="store_true",
-                  help = "use rules that assume puzzle has a unique solution")
+parser.add_option("-u", "--unique", dest="assume_unique", action="store_false",
+                  help = "disallow rules that assume a unique solution",
+                  default = True)
 
 parser.add_option("-b", "--backtrack", dest="backtrack", action="store_true",
                   help = "enable trial and error search for all solutions")
