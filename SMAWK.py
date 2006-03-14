@@ -24,7 +24,7 @@ def ConcaveMinima(RowIndices,ColIndices,Matrix):
     as the third argument to this routine, where Matrix(i,j)
     gives the matrix value at row index i and column index j.
     The matrix must be concave, that is, satisfy the property
-        Matrix(i,j) > Matrix(i',j) => Matrix(i,j') > Matrix(i,j')
+        Matrix(i,j) > Matrix(i',j) => Matrix(i,j') > Matrix(i',j')
     for every i<i' and j<j'; that is, in every submatrix of
     the input matrix, the positions of the column minima
     must be monotonically nondecreasing.
