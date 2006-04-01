@@ -596,8 +596,34 @@ def rectangle(grid):
                                     "ambiguous rectangle, the",str(dd),
                                     "in",x2.name,"must be placed",
                                     "outside the rectangle."]
-                                pass
                             grid.unplace(dd,x2d,explain)
+
+            # Fourth rectangle test
+            # If two cells are bivalued with digits x and y,
+            # and a perpendicular side is bilocal with x,
+            # then we can eliminate y from the remaining cell
+            for x1,perp in ((r1,(c1,c2)),(r2,(c1,c2)),
+                            (c1,(r1,r2)),(c2,(r1,r2))):
+                xd = [d for d in digits if grid.locations[d] & mask & x1.mask]
+                if len(xd) == 2:    # found locked pair on x1's corners
+                    for x2 in perp:
+                        for d in xd:
+                            x2d = grid.locations[d] & x2.mask
+                            if x2d & mask == x2d:   # and bilocal on x2
+                                dd = xd[0]+xd[1]-d  # other digit
+                                def explain():
+                                    return ["For the rectangle in", r1.name+",",
+                                        r2.name+",", c1.name+", and", c2.name,
+                                        "the two corners in",
+                                        x1.name,"must contain both digits",
+                                        str(xd[0]),"and",str(xd[1]),
+                                        "and the two corners in",
+                                        x2.name,"must contain one",str(d)+".",
+                                        "Therefore, to avoid creating an",
+                                        "ambiguous rectangle, the",
+                                        "remaining corner must not contain",
+                                        str(dd)+"."]
+                                grid.unplace(dd,mask&~(x1.mask|x2.mask),explain)
 
 def trapezoid(grid):
     """
