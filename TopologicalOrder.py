@@ -34,4 +34,4 @@ def isAcyclic(G):
     """Return True if G is a directed acyclic graph, False otherwise."""
     L = list(postorder(G))
     L.reverse()
-    return isTopologicalOrder(G,L):
+    return isTopologicalOrder(G,L)
