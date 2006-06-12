@@ -9,6 +9,8 @@ import unittest
 from Graphs import isUndirected
 from Util import arbitrary_item
 from sets import Set
+from TopologicalOrder import TopologicalOrder
+
 import DFS
 
 disconnected = object() # flag for BiconnectedComponents
@@ -250,6 +252,17 @@ class BiconnectivityTest(unittest.TestCase):
             comp.sort()
         CV.sort()
         self.assertEqual(CV,[[0,2,5],[1,3,6,8],[2,3],[4,7]])
+    
+    def testSTOrientation(self):
+        STO = stOrientation(self.G1)
+        L = list(TopologicalOrder(STO))
+        indegree = dict([(v,0) for v in self.G1])
+        for v in L:
+            for w in STO[v]:
+                indegree[w] += 1
+        outdegree = dict([(v,len(STO[v])) for v in self.G1])
+        self.assertEqual(len([v for v in self.G1 if indegree[v] == 0]), 1)
+        self.assertEqual(len([v for v in self.G1 if outdegree[v] == 0]), 1)
 
 if __name__ == "__main__":
     unittest.main()   

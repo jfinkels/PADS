@@ -8,9 +8,9 @@ D. Eppstein, June 2006.
 
 from Graphs import isUndirected
 from TopologicalOrder import TopologicalOrder
-
 from Biconnectivity import stOrientation
 from sets import Set
+import unittest
 
 def CubicMatchPartitions(G):
     """Partition a biconnected cubic graph G into three matchings.
@@ -60,7 +60,10 @@ def CubicMatchPartitions(G):
                 # final vertex of topological ordering, still all consistent
                 yield out
 
-cube = dict([(v,[v^i for i in (1,2,4)]) for v in range(8)])
-for M in CubicMatchPartitions(cube):
-    print M
+class xyzGraphTest(unittest.TestCase):
+    cube = dict([(v,[v^i for i in (1,2,4)]) for v in range(8)])
+    def testCubicMatchPartitions(self):
+        self.assertEqual(len(list(CubicMatchPartitions(self.cube))),4)
 
+if __name__ == "__main__":
+    unittest.main()   
