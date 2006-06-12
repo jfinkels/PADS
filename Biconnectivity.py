@@ -132,6 +132,86 @@ def isBiconnected(G):
         return False
 
 
+class stOrienter(DFS.Searcher):
+    """
+    Subclass for st-orienting a biconnected graph.
+    """
+
+    def __init__(self,G):
+        """Relate edges for st-orientation."""
+        if not isUndirected(G):
+            raise ValueError("stOrienter: input not undirected graph")
+
+        # set up data structures for DFS
+        self._dfsnumber = {}
+        self._low = {}
+        self._down = {} # down[v] = child we're currently exploring from v
+        self._lowv = {} # lowv[n] = vertex with low number n
+        
+        # The main data structure!
+        # a dictionary mapping edges to lists of edges
+        # each of which should be oriented the same as the key.
+        self.orient = {}
+        self.roots = [] # edges with no predecessor
+
+        # perform the Depth First Search
+        DFS.Searcher.__init__(self,G)
+
+        # clean up now-useless data structures
+        del self._dfsnumber, self._low, self._down, self._lowv
+
+    def __iter__(self):
+        """Return iterator for sequence of biconnected components."""
+        return iter(self._components)
+
+    def preorder(self,parent,child):
+        self._low[child] = self._dfsnumber[child] = len(self._dfsnumber)
+        self._lowv[self._low[child]] = self._down[parent] = child
+
+    def backedge(self,source,destination):
+        if self._dfsnumber[destination] < self._dfsnumber[source]:
+            self._low[source] = min(self._low[source],
+                                    self._dfsnumber[destination])
+            if source != self._down[destination]:
+                self.addOrientation(destination,source,destination)
+
+    def postorder(self,parent,child):
+        if self._low[child] != self._dfsnumber[parent]:
+            self._low[parent] = min(self._low[parent],self._low[child])
+            self.addOrientation(child,parent,self._lowv[self._low[child]])
+        elif parent != child:
+            self.roots.append((parent,child))
+
+    def addOrientation(self,source,dest,anchor):
+        """Store orientation info for source->dest edge.
+        It should be oriented the same as the edge from the anchor
+        to the current child of the anchor."""
+        child = self._down[anchor]
+        L = self.orient.setdefault((anchor,child),[])
+        L.append((source,dest))
+
+def stOrientation(G):
+    """Find an acyclic orientation of G, with one source and one sink."""
+    stO = stOrienter(G)
+    if len(stO.roots) != 1:
+        raise NotBiconnected
+
+    source,dest = stO.roots[0]
+    G = dict([(v,Set()) for v in G])
+    orientable = []
+
+    while True:
+        G[source].add(dest)
+        for u,v in stO.orient.get((source,dest),[]):
+            orientable.append((u,v))
+        for v,u in stO.orient.get((dest,source),[]):
+            orientable.append((u,v))
+        if not orientable:
+            break
+        source,dest = orientable.pop()
+    
+    return G
+
 # If run as "python Biconnectivity.py", run tests on various small graphs
 # and check that the correct results are obtained.
 
