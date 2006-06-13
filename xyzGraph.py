@@ -1,7 +1,13 @@
 """xyzGraph.py
 
-Eventually, code to recognize xyz graphs will go here.
-For now, just listing all the ways of partitioning a graph into three matchings.
+An xyz graph is the graph formed by a set of points in R^3 such that any
+axis-parallel line intersects the set in zero or two points; we add an edge
+for the two points on any nonempty line. These graphs include all bipartite
+simple polyhedra, as well as some other nonplanar graphs; see
+http://11011110.livejournal.com/tag/xyz+graphs for more.
+
+We implement here an exponential-time algorithm for finding such
+representations of an arbitrary graph, when they exist.
 
 D. Eppstein, June 2006.
 """
