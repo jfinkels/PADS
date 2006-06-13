@@ -94,6 +94,7 @@ def xyzEmbeddings(G):
     """
     List all xyz graph embeddings of G.
     Each is returned as a dictionary mapping vertices to triples of points.
+    To get just the points, use D.itervalues().
     """
     for G in CubicMatchPartitions(G):
         xyz = [groupByCycles(G,i,j) for i,j in [(0,1),(0,2),(1,2)]]
