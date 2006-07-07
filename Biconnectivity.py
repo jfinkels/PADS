@@ -9,7 +9,7 @@ import unittest
 from Graphs import isUndirected
 from Util import arbitrary_item
 from sets import Set
-from TopologicalOrder import TopologicalOrder
+from PartialOrder import TopologicalOrder
 
 import DFS
 

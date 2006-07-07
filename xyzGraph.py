@@ -13,7 +13,7 @@ D. Eppstein, June 2006.
 """
 
 from Graphs import isUndirected
-from TopologicalOrder import TopologicalOrder
+from PartialOrder import TopologicalOrder
 from StrongConnectivity import StronglyConnectedComponents
 from Biconnectivity import stOrientation
 from sets import Set
