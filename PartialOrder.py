@@ -53,6 +53,39 @@ def TransitiveClosure(G):
     for v in G:
         TC[v].remove(v)
     return TC
+
+def TracePaths(G):
+    """
+    Turn a DAG with indegree and outdegree <= 1 into a sequence of lists.
+    """
+    L = []
+    for v in TopologicalOrder(G):
+        if L and v not in G[L[-1]]:
+            yield L
+            L = []
+        L.append(v)
+    if L:
+        yield L
+
+def MinimumPathDecomposition(G):
+    """
+    Cover a directed acyclic graph with a minimum number of paths.
+    """
+    M,A,B = BipartiteMatching.matching(G)
+    H = dict([(v,[]) for v in G])
+    for v in G:
+        if v in M:
+            H[M[v]] = (v,)
+    return TracePaths(H)
+
+def MinimumChainDecomposition(G):
+    """
+    Cover a partial order with a minimum number of chains.
+    By Dilworth's theorem the number of chains equals the size
+    of the largest antichain of the order. The input should be
+    a directed acyclic graph, not necessarily transitively closed.
+    """
+    return MinimumPathDecomposition(TransitiveClosure(G))
     
 def MaximumAntichain(G):
     """
@@ -82,6 +115,11 @@ class PartialOrderTest(unittest.TestCase):
     def testHypercubeAntichain(self):        
         A = MaximumAntichain(self.cube)
         self.assertEqual(A,set((3,5,6,9,10,12)))
+        
+    def testHypercubeDilworth(self):
+        CD = list(MinimumChainDecomposition(self.cube))
+        print CD
+        self.assertEqual(len(CD),6)
 
 if __name__ == "__main__":
     unittest.main()   
