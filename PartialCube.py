@@ -6,7 +6,7 @@ D. Eppstein, September 2005, rewritten May 2007 per arxiv:0705.1025.
 """
 
 import BFS
-from Medium import *
+import Medium
 from Bipartite import isBipartite
 from UnionFind import UnionFind
 from StrongConnectivity import StronglyConnectedComponents
@@ -41,17 +41,17 @@ def PartialCubeEdgeLabeling(G):
     n = len(CG)
     m = sum([len(CG[v]) for v in CG])
     if 1<<(m//n) > n:
-        raise MediumError("graph has too many edges")
+        raise Medium.MediumError("graph has too many edges")
 
     # Main contraction loop in place of the original algorithm's recursion
     while len(CG) > 1:
         if not isBipartite(CG):
-            raise MediumError("graph is not bipartite")
+            raise Medium.MediumError("graph is not bipartite")
 
         # Find max degree vertex in G, and update label limit
         deg,root = max([(len(CG[v]),v) for v in CG])
         if deg > NL:
-            raise MediumError("graph has too many equivalence classes")
+            raise Medium.MediumError("graph has too many equivalence classes")
         NL -= deg
 
         # Set up bitvectors on vertices
@@ -77,7 +77,7 @@ def PartialCubeEdgeLabeling(G):
                 if not diff or bitvec[w] &~ bitvec[v] == 0:
                     continue    # zero edge or wrong direction
                 if diff not in neighbors:
-                    raise MediumError("multiply-labeled edge")
+                    raise Medium.MediumError("multiply-labeled edge")
                 neighbor = neighbors[diff]
                 UF.union(CG[v][w],CG[root][neighbor])
                 UF.union(CG[w][v],CG[neighbor][root])
@@ -100,7 +100,7 @@ def PartialCubeEdgeLabeling(G):
                     vi = component[v]
                     wi = component[w]
                     if vi == wi:
-                        raise MediumError("self-loop in contracted graph")
+                        raise Medium.MediumError("self-loop in contracted graph")
                     if wi in NG[vi]:
                         UF.union(NG[vi][wi],CG[v][w])
                     else:
@@ -120,14 +120,14 @@ def MediumForPartialCube(G):
     Uses the O(n^2) time algorithm of arxiv:0705.1025.
     """
     L = PartialCubeEdgeLabeling(G)
-    M = LabeledGraphMedium(L)
-    RoutingTable(M)   # verification step per arxiv:0705.1025
+    M = Medium.LabeledGraphMedium(L)
+    Medium.RoutingTable(M)   # verification step per arxiv:0705.1025
     return M
 
 
 def PartialCubeLabeling(G):
     """Return vertex labels with Hamming distance = graph distance."""
-    return HypercubeEmbedding(MediumForPartialCube(G))
+    return Medium.HypercubeEmbedding(MediumForPartialCube(G))
 
 
 def isPartialCube(G):
@@ -135,7 +135,7 @@ def isPartialCube(G):
     try:
         MediumForPartialCube(G)
         return True
-    except MediumError:
+    except Medium.MediumError:
         return False
 
 
@@ -147,11 +147,11 @@ class PartialCubeTest(unittest.TestCase):
     # make medium from all five-bit numbers that have 2 or 3 bits lit
     twobits = [3,5,6,9,10,12,17,18,20,24]
     threebits = [31^x for x in twobits]
-    M523 = BitvectorMedium(twobits+threebits,5)
+    M523 = Medium.BitvectorMedium(twobits+threebits,5)
 
     def testIsPartialCube(self):
         M = PartialCubeTest.M523
-        G = StateTransitionGraph(M)
+        G = Medium.StateTransitionGraph(M)
         I = isPartialCube(G)
         self.assertEqual(I,True)
     
@@ -169,9 +169,9 @@ class PartialCubeTest(unittest.TestCase):
         # So, we need to check equality of graphs
         # rather than equality of media.
         M = PartialCubeTest.M523
-        G = StateTransitionGraph(M)
+        G = Medium.StateTransitionGraph(M)
         E = MediumForPartialCube(G)
-        H = StateTransitionGraph(E)
+        H = Medium.StateTransitionGraph(E)
         self.assertEqual(set(G),set(H))
         for v in G:
             self.assertEqual(set(G[v]),set(H[v]))
