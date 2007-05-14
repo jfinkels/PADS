@@ -2,71 +2,179 @@
 
 Test whether a graph is an isometric subgraph of a hypercube.
 
-D. Eppstein, September 2005.
+D. Eppstein, September 2005, rewritten May 2007 per arxiv:0705.1025.
 """
 
-def distancesFrom(G,start):
-    """Compute distances from start to each vertex in G via BFS."""
-    D = {start:0}
-    i = 0
-    sequence = [start]
-    while i < len(sequence):
-        v = sequence[i]
-        i += 1
-        for w in G[v]:
-            if w not in D:
-                D[w] = D[v] + 1
-                sequence.append(w)
-    return D
+import BFS
+from Medium import *
+from Bipartite import isBipartite
+from UnionFind import UnionFind
+from StrongConnectivity import StronglyConnectedComponents
+import unittest
+
+def PartialCubeEdgeLabeling(G):
+    """
+    Label edges of G by their equivalence classes in a partial cube structure.
+
+    We follow the algorithm of arxiv:0705.1025, in which a number of
+    equivalence classes equal to the maximum degree of G can be found
+    simultaneously by a single breadth first search, using bitvectors.
+    However, in order to avoid deep recursions (problematic in Python)
+    we use a union-find data structure to keep track of edge identifications
+    discovered so far. That is, we repeatedly contract our initial graph,
+    maintaining as we do the property that G[v][w] points to a union-find
+    set representing edges in the original graph that have been contracted
+    to the single edge v-w.
+    """
+    
+    # Set up data structures for algorithm:
+    # - UF: union find data structure representing known edge equivalences
+    # - CG: contracted graph at current stage of algorithm
+    # - LL: limit on number of remaining available labels
+    UF = UnionFind()
+    CG = dict([(v,dict([(w,(v,w)) for w in G[v]])) for v in G])
+    NL = len(CG)-1
+    
+    # Initial sanity check: are there few enough edges?
+    # Needed so that we don't try to use union-find on a dense
+    # graph and incur superquadratic runtimes.
+    n = len(CG)
+    m = sum([len(CG[v]) for v in CG])
+    if 1<<(m//n) > n:
+        raise MediumError("graph has too many edges")
+
+    # Main contraction loop in place of the original algorithm's recursion
+    while len(CG) > 1:
+        if not isBipartite(CG):
+            raise MediumError("graph is not bipartite")
+
+        # Find max degree vertex in G, and update label limit
+        deg,root = max([(len(CG[v]),v) for v in CG])
+        if deg > NL:
+            raise MediumError("graph has too many equivalence classes")
+        NL -= deg
+
+        # Set up bitvectors on vertices
+        bitvec = dict([(v,0) for v in CG])
+        neighbors = {}
+        i = 0
+        for neighbor in CG[root]:
+            bitvec[neighbor] = 1<<i
+            neighbors[1<<i] = neighbor
+            i += 1
+
+        # Breadth first search to propagate bitvectors to the rest of the graph
+        for LG in BFS.BreadthFirstLevels(CG,root):
+            for v in LG:
+                for w in LG[v]:
+                    bitvec[w] |= bitvec[v]
+
+        # Make graph of labeled edges and union them together
+        labeled = dict([(v,set()) for v in CG])
+        for v in CG:
+            for w in CG[v]:
+                diff = bitvec[v]^bitvec[w]
+                if not diff or bitvec[w] &~ bitvec[v] == 0:
+                    continue    # zero edge or wrong direction
+                if diff not in neighbors:
+                    raise MediumError("multiply-labeled edge")
+                neighbor = neighbors[diff]
+                UF.union(CG[v][w],CG[root][neighbor])
+                UF.union(CG[w][v],CG[neighbor][root])
+                labeled[v].add(w)
+                labeled[w].add(v)
+
+        # Map vertices to components of labeled-edge graph
+        component = {}
+        compnum = 0
+        for SCC in StronglyConnectedComponents(labeled):
+            for v in SCC:
+                component[v] = compnum
+            compnum += 1
+
+        # generate new compressed subgraph
+        NG = dict([(i,{}) for i in range(compnum)])
+        for v in CG:
+            for w in CG[v]:
+                if bitvec[v] == bitvec[w]:
+                    vi = component[v]
+                    wi = component[w]
+                    if vi == wi:
+                        raise MediumError("self-loop in contracted graph")
+                    if wi in NG[vi]:
+                        UF.union(NG[vi][wi],CG[v][w])
+                    else:
+                        NG[vi][wi] = CG[v][w]
+        
+        CG = NG
+
+    # Here with all edge equivalence classes represented by UF.
+    # Turn them into a labeled graph and return it.
+    return dict([(v,dict([(w,UF[v,w]) for w in G[v]])) for v in G])
+
+
+def MediumForPartialCube(G):
+    """
+    Find a medium corresponding to the partial cube G.
+    Raises MediumError if G is not a partial cube.
+    Uses the O(n^2) time algorithm of arxiv:0705.1025.
+    """
+    L = PartialCubeEdgeLabeling(G)
+    M = LabeledGraphMedium(L)
+    RoutingTable(M)   # verification step per arxiv:0705.1025
+    return M
+
 
 def PartialCubeLabeling(G):
     """Return vertex labels with Hamming distance = graph distance."""
-    label = dict([(v,0) for v in G])
-    bit = 1
-    
-    def unlabeledEdge():
-        for v in G:
-            for w in G[v]:
-                if label[v] == label[w]:
-                    return v,w
-        return None
+    return HypercubeEmbedding(MediumForPartialCube(G))
 
-    # make the labeling
-    while True:
-        e = unlabeledEdge()
-        if not e:
-            break
-        v,w = e
-        vD = distancesFrom(G,v)
-        wD = distancesFrom(G,w)
-        for x in G:
-            if vD[x] > wD[x]:
-                label[x] += bit
-        bit += bit
-
-    # check that labels across each edge differ by exactly one bit
-    # (so Hamming distance <= graph distance)
-    for v in G:
-        for w in G[v]:
-            x = label[v] ^ label[w]
-            if not x:
-                return None
-            if x & (x-1):
-                return None
-
-    # check that Hamming distances don't decrease along BFS edges
-    # (so Hamming distance >= graph distance)
-    for v in G:
-        D = distancesFrom(G,v)
-        for u in D:
-            for w in G[u]:
-                if D[w] > D[u]:
-                    bit = label[u] ^ label[w]
-                    if bit & label[w] == bit & label[v]:
-                        return None
-
-    # here with successful labeling
-    return label
 
 def isPartialCube(G):
-    return bool(PartialCubeLabeling(G))
+    """Test whether the given graph is a partial cube."""
+    try:
+        MediumForPartialCube(G)
+        return True
+    except MediumError:
+        return False
+
+
+
+# Perform some sanity checks if run standalone
+
+class PartialCubeTest(unittest.TestCase):
+
+    # make medium from all five-bit numbers that have 2 or 3 bits lit
+    twobits = [3,5,6,9,10,12,17,18,20,24]
+    threebits = [31^x for x in twobits]
+    M523 = BitvectorMedium(twobits+threebits,5)
+
+    def testIsPartialCube(self):
+        M = PartialCubeTest.M523
+        G = StateTransitionGraph(M)
+        I = isPartialCube(G)
+        self.assertEqual(I,True)
+    
+    def testK4(self):
+        G = dict([(i,[j for j in range(4) if j != i]) for i in range(4)])
+        self.assertEqual(isPartialCube(G),False)
+
+    def testK33(self):
+        G = {0:[3,4,5],1:[3,4,5],2:[3,4,5],3:[0,1,2],4:[0,1,2],5:[0,1,2]}
+        self.assertEqual(isPartialCube(G),False)
+
+    def testMediumForPartialCube(self):
+        """Check that we get an isomorphic medium via MediumForPartialCube."""
+        # Note that we do not get the same tokens.
+        # So, we need to check equality of graphs
+        # rather than equality of media.
+        M = PartialCubeTest.M523
+        G = StateTransitionGraph(M)
+        E = MediumForPartialCube(G)
+        H = StateTransitionGraph(E)
+        self.assertEqual(set(G),set(H))
+        for v in G:
+            self.assertEqual(set(G[v]),set(H[v]))
+
+if __name__ == "__main__":
+    unittest.main()
