@@ -194,5 +194,22 @@ class PartialCubeTest(unittest.TestCase):
             G[i,3] = [(i,2),((i-1)%6,0),((i-2)%6,0)]
         self.assertEqual(isPartialCube(G),False)
 
+    def test61150(self):
+        """
+        Another graph that can be labeled, but is not a partial cube.
+        Tests the code in RoutingTable that makes sure that only tokens
+        in a single direction belong to the initial list of active tokens.
+        """
+        G = {}
+        n,a,b,c,d = 6,1,1,5,0
+        for i in range(n):
+            G[i,0] = [(i,1),((i+a)%n,5),((i+b)%n,3)]
+            G[i,1] = [(i,0),(i,2),((i-d)%n,4)]
+            G[i,2] = [(i,1),(i,3),((i+c)%n,5)]
+            G[i,3] = [(i,2),(i,4),((i-b)%n,0)]
+            G[i,4] = [(i,3),(i,5),((i+d)%n,1)]
+            G[i,5] = [(i,4),((i-a)%n,0),((i-c)%n,2)]
+        self.assertEqual(isPartialCube(G),False)
+
 if __name__ == "__main__":
     unittest.main()

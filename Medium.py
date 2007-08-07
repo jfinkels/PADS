@@ -242,6 +242,9 @@ def RoutingTable(M):
         for v in LG:
             for w in LG[v]:
                 activeTokens.add(G[w][v])
+    for t in activeTokens:
+        if M.reverse(t) in activeTokens:
+            raise MediumError("shortest path to initial state is not concise")
     activeTokens = list(activeTokens)
     inactivated = object()  # flag object to mark inactive tokens
 
@@ -284,7 +287,7 @@ def RoutingTable(M):
             for S in statesForPos[activeForState[current]]:
                 if S != current:
                     scan(S)
-            
+
             # remember routing table as part of returned results
             if current not in visited:
                 for S in M:
