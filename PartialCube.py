@@ -185,13 +185,18 @@ class PartialCubeTest(unittest.TestCase):
             self.assertEqual(set(G[v]),set(H[v]))
 
     def test6212(self):
-        """A graph that can be labeled, but is not a partial cube."""
+        """
+        A graph that can be labeled, but is not a partial cube.
+        Tests the code in LabeledGraphMedium that checks for the
+        existence of multiple equally labeled edges at a vertex.
+        """
+        n,a,b,c = 6,2,1,2
         G = {}
-        for i in range(6):
-            G[i,0] = [(i,1),((i+1)%6,3),((i+2)%6,3)]
-            G[i,1] = [(i,0),(i,2),((i-2)%6,2)]
-            G[i,2] = [(i,1),(i,3),((i+2)%6,1)]
-            G[i,3] = [(i,2),((i-1)%6,0),((i-2)%6,0)]
+        for i in range(n):
+            G[i,0] = [(i,1),((i+b)%n,3),((i+c)%n,3)]
+            G[i,1] = [(i,0),(i,2),((i-a)%n,2)]
+            G[i,2] = [(i,1),(i,3),((i+a)%n,1)]
+            G[i,3] = [(i,2),((i-b)%n,0),((i-c)%n,0)]
         self.assertEqual(isPartialCube(G),False)
 
     def test61150(self):
