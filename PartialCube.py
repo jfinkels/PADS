@@ -10,6 +10,7 @@ import Medium
 from Bipartite import isBipartite
 from UnionFind import UnionFind
 from StrongConnectivity import StronglyConnectedComponents
+from Graphs import isUndirected
 import unittest
 
 def PartialCubeEdgeLabeling(G):
@@ -27,6 +28,13 @@ def PartialCubeEdgeLabeling(G):
     to the single edge v-w.
     """
     
+    # Some simple sanity checks
+    if not isUndirected(G):
+        raise Medium.MediumError("graph is not undirected")
+    L = list(StronglyConnectedComponents(G))
+    if len(L) != 1:
+        raise Medium.MediumError("graph is not connected")
+
     # Set up data structures for algorithm:
     # - UF: union find data structure representing known edge equivalences
     # - CG: contracted graph at current stage of algorithm
@@ -44,7 +52,7 @@ def PartialCubeEdgeLabeling(G):
         raise Medium.MediumError("graph has too many edges")
 
     # Main contraction loop in place of the original algorithm's recursion
-    while len(CG) > 1:
+    while len(CG) > 1:    
         if not isBipartite(CG):
             raise Medium.MediumError("graph is not bipartite")
 
@@ -175,6 +183,16 @@ class PartialCubeTest(unittest.TestCase):
         self.assertEqual(set(G),set(H))
         for v in G:
             self.assertEqual(set(G[v]),set(H[v]))
+
+    def test6212(self):
+        """A graph that can be labeled, but is not a partial cube."""
+        G = {}
+        for i in range(6):
+            G[i,0] = [(i,1),((i+1)%6,3),((i+2)%6,3)]
+            G[i,1] = [(i,0),(i,2),((i-2)%6,2)]
+            G[i,2] = [(i,1),(i,3),((i+2)%6,1)]
+            G[i,3] = [(i,2),((i-1)%6,0),((i-2)%6,0)]
+        self.assertEqual(isPartialCube(G),False)
 
 if __name__ == "__main__":
     unittest.main()
