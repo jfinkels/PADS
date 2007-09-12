@@ -127,6 +127,3 @@ class SieveTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-for x in PracticalNumbers():
-    print x
