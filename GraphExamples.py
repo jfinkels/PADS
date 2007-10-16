@@ -26,8 +26,17 @@ def GeneralizedCoxeterGraph(n,a,b):
 
 CoxeterGraph = GeneralizedCoxeterGraph(7,2,3)
 
-def LeviGraph():
-    G = {}
-    for i in range(30):
-        G[i] = (i-1)%30, (i+1)%30, (i+[7,-7,9,13,-13,-9][i%6])%30
-    return G
+def LCFNotation(L,n):
+    """
+    Construct the cubic Hamiltonian graph with LCF Notation L^n.
+    See http://mathworld.wolfram.com/LCFNotation.html
+    for a description of this notation.
+    """
+    n *= len(L)
+    return dict([(i,[(i-1)%n,(i+1)%n,(i+L[i%len(L)])%n]) for i in range(n)])
+
+McGeeGraph = LCFNotation([-12,7,-7],8)
+DyckGraph = LCFNotation([-13,5,-5,13],8)
+PappusGraph = LCFNotation([5,7,-7,7,-7,-5],3)
+TutteCoxeterGraph = LCFNotation([-13,-9,7,-7,9,13],5)
+GrayGraph = LCFNotation([-25,7,-7,13,-13,25],9)
