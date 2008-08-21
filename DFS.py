@@ -7,8 +7,6 @@ order to avoid Python's low recursion limit.
 D. Eppstein, July 2004.
 """
 
-from sets import Set
-
 # Types of edges in DFS traversal.
 # The numerical values are used in DepthFirstSearcher, change with care.
 forward = 1     # traversing edge (v,w) from v to w
@@ -25,7 +23,7 @@ def search(G,initial_vertex = whole_graph):
     If the initial vertex is given, it is used as the root and vertices
     not reachable from it are not searched.
     """
-    visited = Set()
+    visited = set()
     if initial_vertex == whole_graph:
         initials = G
     else:
