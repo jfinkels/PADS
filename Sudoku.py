@@ -1141,6 +1141,29 @@ def conflict(grid):
                             grid.place(d,cell,explain)
                             return  # allow changes to propagate
 
+def createimplication(mask,pos,digit,T):
+    """Add to 2SAT instance a constraint that the given digit in any mask position forces the same digit at pos."""
+    while mask:
+        bit = mask &~ (mask - 1)
+        mask &=~ bit
+        T[unmask[bit],digit].append((pos,digit))
+
+def pseudonishio(g1,g2,grid,T):
+    """Create 2SAT constraints for block-block interactions involving a single digit. If placing the digit in some cell of one block eliminates all but one of the potential locations for the same digit in another block, create an implication between the initial cell and the remaining location."""
+    if g1.mask & g2.mask == 0:
+        return
+    for d in digits:
+        dg1 = grid.locations[d] & g1.mask
+        dg2 = grid.locations[d] & g2.mask
+        diff1 = dg1 &~ dg2
+        diff2 = dg2 &~ dg1
+        conj = dg1 & dg2
+        if diff1 and diff2 and conj:
+            if diff1 & (diff1 - 1) == 0:    # single bit in diff1
+                createimplication(diff2,unmask[diff1],d,T)
+            if diff2 & (diff2 - 1) == 0:    # single bit in diff2
+                createimplication(diff1,unmask[diff2],d,T)
+
 def twosat(grid):
     """Apply a general-purpose two-satisfiability solver."""
 
@@ -1189,18 +1212,20 @@ def twosat(grid):
                 y = unmask[y]
                 T[Not((x,d))].append((y,d))
 
-    # Solve the system!
+    # Detect situations when a digit in one block knocks out all but one
+    # of the positions for that digit in another block
+    for s in sqrs:
+        for l in rows+cols:
+            pseudonishio(s,l,grid,T)
+
+    # Solve the system and interpret the results
     F = Forced(T)
-    
-    # Interpret the results
     if F != None:
         for cell,digit in F:
             if F[cell,digit]:
                 grid.place(digit,cell,twosat_explain)
             else:
                 grid.unplace(digit,1L<<cell,twosat_explain)
-
-    return
 
 # triples of name, rule, difficulty level
 rules = [
