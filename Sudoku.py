@@ -23,6 +23,8 @@ from BipartiteMatching import imperfections
 from StrongConnectivity import StronglyConnectedComponents
 from Repetitivity import NonrepetitiveGraph
 from Wrap import wrap
+from Not import Not
+from TwoSatisfiability import Forced
 
 try:
     set
@@ -198,6 +200,8 @@ class Sudoku:
         
         - assume_unique should be set true to enable solution rules
           based on the assumption that there exists a unique solution
+          
+        - twosat should be set true to enable a 2SAT-based solution rule
         """
         self.contents = [0]*81
         self.locations = [None]+[(1L<<81)-1]*9
@@ -209,6 +213,7 @@ class Sudoku:
         self.steps = 0
         self.original_cells = 0
         self.assume_unique = False
+        self.twosat = False
 
         if initial_placements:
             cell = 0
@@ -1136,6 +1141,67 @@ def conflict(grid):
                             grid.place(d,cell,explain)
                             return  # allow changes to propagate
 
+def twosat(grid):
+    """Apply a general-purpose two-satisfiability solver."""
+
+    # Check whether this sort of rule is allowed
+    if not grid.twosat:
+        return
+
+    def twosat_explain():
+        return "From conversion of the puzzle to a 2-satisfiability instance."
+    T = {}
+    
+    # If a cell has value d, it can't also have value e
+    for cell in range(81):
+        if len(grid.choices(cell)) > 1:
+            for d in grid.choices(cell):
+                T[(cell,d)] = [Not((cell,e))
+                                for e in grid.choices(cell)
+                                if d != e]
+                T[Not((cell,d))] = []
+    
+    # If a cell has value d, its neighbors can't have the same value
+    for cell in range(81):
+        if len(grid.choices(cell)) > 1:
+            for neighbor in range(81):
+                if cell != neighbor and (1L<<neighbor) & neighbors[cell]:
+                    for d in grid.choices(cell):
+                        if d in grid.choices(neighbor):
+                            T[(cell,d)].append(Not((neighbor,d)))
+
+    # If a cell has only two possible values, one of them must be chosen
+    for cell in range(81):
+        if len(grid.choices(cell)) == 2:
+            x,y = grid.choices(cell)
+            T[Not((cell,x))].append((cell,y))
+
+    # If a group has only two locations for a digit, one of them must be chosen
+    for d in digits:
+        for g in groups:
+            dglocs = grid.locations[d] & g.mask
+            x = dglocs &~ (dglocs - 1)
+            dglocs &=~ x
+            y = dglocs &~ (dglocs - 1)
+            dglocs &=~ y
+            if x and y and not dglocs:
+                x = unmask[x]
+                y = unmask[y]
+                T[Not((x,d))].append((y,d))
+
+    # Solve the system!
+    F = Forced(T)
+    
+    # Interpret the results
+    if F != None:
+        for cell,digit in F:
+            if F[cell,digit]:
+                grid.place(digit,cell,twosat_explain)
+            else:
+                grid.unplace(digit,1L<<cell,twosat_explain)
+
+    return
+
 # triples of name, rule, difficulty level
 rules = [
     ("locate",locate,0),
@@ -1152,6 +1218,7 @@ rules = [
     ("repeat",repeat,4),
     ("path",path,4),
     ("conflict",conflict,4),
+    ("twosat",twosat,5)
 ]
 
 def step(grid, quick_and_dirty = False):
@@ -1405,6 +1472,9 @@ parser.add_option("-u", "--unique", dest="assume_unique", action="store_false",
                   help = "disallow rules that assume a unique solution",
                   default = True)
 
+parser.add_option("-s", "--satisfiability", dest="twosat", action="store_true",
+                  help = "enable 2-satisfiability solver")
+
 parser.add_option("-b", "--backtrack", dest="backtrack", action="store_true",
                   help = "enable trial and error search for all solutions")
 
@@ -1538,6 +1608,8 @@ if __name__ == '__main__':
         puzzle.logstream = sys.stderr
     if options.assume_unique:
         puzzle.assume_unique = True
+    if options.twosat:
+        puzzle.twosat = True
 
 # ======================================================================
 #   Main program: print and solve puzzle

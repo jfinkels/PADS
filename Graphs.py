@@ -7,8 +7,6 @@ Each function's input graph G should be represented in such a way that "for v in
 D. Eppstein, April 2004.
 """
 
-from sets import Set
-
 def isUndirected(G):
     """Check that G represents a simple undirected graph."""
     for v in G:
@@ -27,7 +25,7 @@ def minDegree(G):
     """Return the minimum vertex (out)degree of graph G."""
     return min([len(G[v]) for v in G])
 
-def copyGraph(G,adjacency_list_type=Set):
+def copyGraph(G,adjacency_list_type=set):
     """
     Make a copy of a graph G and return the copy.
     Any information stored in edges G[v][w] is discarded.
@@ -38,7 +36,7 @@ def copyGraph(G,adjacency_list_type=Set):
     """
     return dict([(v,adjacency_list_type(iter(G[v]))) for v in G])
 
-def InducedSubgraph(V,G,adjacency_list_type=Set):
+def InducedSubgraph(V,G,adjacency_list_type=set):
     """
     The subgraph consisting of all edges between pairs of vertices in V.
     """
@@ -53,7 +51,7 @@ def union(*graphs):
     out = {}
     for G in graphs:
         for v in G:
-            out.setdefault(v,Set()).update(list(G[v]))
+            out.setdefault(v,set()).update(list(G[v]))
     return out
 
 def isIndependentSet(V,G):

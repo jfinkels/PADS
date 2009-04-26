@@ -74,15 +74,35 @@ class StronglyConnectedComponents(DFS.Searcher):
         else:
             self._low[parent] = min(self._low[parent],self._low[child])
 
+def Condensation(G):
+    """Return a DAG with vertices equal to sets of vertices in SCCs of G."""
+    components = {}
+    GtoC = {}
+    for C in StronglyConnectedComponents(G):
+        C = frozenset(C)
+        for v in C:
+            GtoC[v] = C
+        components[C] = set()
+    for v in G:
+        for w in G[v]:
+            if GtoC[v] != GtoC[w]:
+                components[GtoC[v]].add(GtoC[w])
+    return components
+    
 # If run as "python StrongConnectivity.py", run tests on various small graphs
 # and check that the correct results are obtained.
 
 class StrongConnectivityTest(unittest.TestCase):
     G1 = { 0:[1], 1:[2,3], 2:[4,5], 3:[4,5], 4:[6], 5:[], 6:[] }
     C1 = [[0],[1],[2],[3],[4],[5],[6]]
+    f = [frozenset([i]) for i in G1]
+    Con1 = dict([(f[v],set([f[w] for w in G1[v]])) for v in G1])
     
     G2 = { 0:[1], 1:[2,3,4], 2:[0,3], 3:[4], 4:[3] }
     C2 = [[0,1,2],[3,4]]
+    f012 = frozenset([0,1,2])
+    f34 = frozenset([3,4])
+    Con2 = {f012:set([f34]), f34:set()}
     
     knownpairs = [(G1,C1),(G2,C2)]
 
@@ -104,5 +124,11 @@ class StrongConnectivityTest(unittest.TestCase):
                     for w in graph:
                         self.assertEqual(w in graph[v] and w in C, w in C[v])
 
+    def testCondensation(self):
+        """Check that the condensations are what we expect."""
+        self.assertEqual(Condensation(self.G1),self.Con1)
+        self.assertEqual(Condensation(self.G2),self.Con2)
+
 if __name__ == "__main__":
     unittest.main()   
+
