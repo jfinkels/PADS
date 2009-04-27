@@ -2,6 +2,15 @@
 
 Bit-parallel algorithm for testing which vertices can reach which other vertices in a DAG.
 
+Usage:
+    R = Reachability(G)
+    ...
+    R.reachable(source,destination)
+returns a boolean value: True if G contains a path from the source vertex
+to the destination vertex, and False otherwise. The initialization of R
+performs a linear number of bitvector operations, after which each reachability
+test takes constant time to perform.
+
 D. Eppstein, April 2009.
 """
 
