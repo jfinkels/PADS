@@ -2,6 +2,14 @@
 
 DFS-based algorithm for computing strongly connected components.
 
+If G is a graph, then
+- StronglyConnectedComponents(G) returns a list of
+  its components, each represented as a subgraph of G
+- Condensation(G) returns a directed acyclic graph, the
+  vertices of which are strongly connected components of G.
+  Each vertex of the condensation is represented as a frozenset
+  of the vertices of G within a single strongly connected component.
+
 D. Eppstein, July 2005.
 """
 
