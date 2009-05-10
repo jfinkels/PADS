@@ -1194,12 +1194,38 @@ def twosat(grid):
                             T[(cell,d)].append(Not((neighbor,d)))
 
     # If a cell has only two possible values, one of them must be chosen
+    # (one-step lookahead of eliminate rule)
     for cell in range(81):
         if len(grid.choices(cell)) == 2:
             x,y = grid.choices(cell)
             T[Not((cell,x))].append((cell,y))
 
+            # Detect situations where one cell has two choices, and a neighbor
+            # has a superset of three choices. The third choice of the neighbor
+            # determines whether these two cells form a locked pair.
+            # (one-step lookahead of pair rule)
+            bothxy = grid.locations[x] & grid.locations[y] &~ (1L<<cell)
+            for g in groups:
+                if g.mask & (1L<<cell):
+                    candidates = g.mask & bothxy
+                    while candidates:
+                        cellmask = candidates &~ (candidates - 1)
+                        candidates &=~ cellmask
+                        candidate = unmask[cellmask]
+                        ch = grid.choices(candidate)
+                        if len(ch) == 3:
+                            thirdchoice = [z for z in ch if z not in [x,y]][0]
+                            for dd in [x,y]:
+                                other = grid.locations[dd] & g.mask &~ (1L<<cell) &~ (1L<<candidate)
+                                while other:
+                                    cellmask = other &~ (other - 1)
+                                    other &=~ cellmask
+                                    interference = unmask[cellmask]
+                                    T[Not((candidate,thirdchoice))].append(
+                                        Not((interference,dd)))
+
     # If a group has only two locations for a digit, one of them must be chosen
+    # (one-step lookahead of locate rule)
     for d in digits:
         for g in groups:
             dglocs = grid.locations[d] & g.mask
@@ -1211,9 +1237,10 @@ def twosat(grid):
                 x = unmask[x]
                 y = unmask[y]
                 T[Not((x,d))].append((y,d))
-
+                
     # Detect situations when a digit in one block knocks out all but one
     # of the positions for that digit in another block
+    # (one-step lookahead of align rule)
     for s in sqrs:
         for l in rows+cols:
             pseudonishio(s,l,grid,T)
@@ -1221,27 +1248,28 @@ def twosat(grid):
     # Solve the system and interpret the results
     F = Forced(T)
     if F != None:
-        for cell,digit in F:
+        for cell,digit in F:    # Do place first for fewer explanations
             if F[cell,digit]:
                 grid.place(digit,cell,twosat_explain)
-            else:
+        for cell,digit in F:    # Now the unplaces
+            if not F[cell,digit]:
                 grid.unplace(digit,1L<<cell,twosat_explain)
 
 # triples of name, rule, difficulty level
 rules = [
     ("locate",locate,0),
-    ("eliminate",eliminate,1),
-    ("align",align,2),
-    ("pair",pair,2),
-    ("triad",triad,2),
-    ("trapezoid",trapezoid,2),
-    ("rectangle",rectangle,2),
-    ("subproblem",subproblem,3),
-    ("digit",digit,3),
+    ("eliminate",eliminate,0),
+    ("align",align,1),
+    ("pair",pair,1),
+    ("triad",triad,1),
+    ("trapezoid",trapezoid,1),
+    ("rectangle",rectangle,1),
+    ("subproblem",subproblem,2),
+    ("digit",digit,2),
     ("bilocal",bilocal,3),
     ("bivalue",bivalue,3),
-    ("repeat",repeat,4),
-    ("path",path,4),
+    ("repeat",repeat,3),
+    ("path",path,3),
     ("conflict",conflict,4),
     ("twosat",twosat,5)
 ]
@@ -1665,7 +1693,7 @@ if __name__ == '__main__':
     for name,rule,level in rules:
         if name in puzzle.rules_used:
             used_names.append(name)
-            difficulty += 1<<level
+            difficulty += (1<<level - 1)
     if "backtrack" in puzzle.rules_used:
         used_names.append("backtrack")
     if print_level:
