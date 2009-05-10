@@ -1693,7 +1693,7 @@ if __name__ == '__main__':
     for name,rule,level in rules:
         if name in puzzle.rules_used:
             used_names.append(name)
-            difficulty += (1<<level - 1)
+            difficulty += (1<<level) - 1
     if "backtrack" in puzzle.rules_used:
         used_names.append("backtrack")
     if print_level:
