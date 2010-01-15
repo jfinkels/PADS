@@ -1702,7 +1702,7 @@ if __name__ == '__main__':
             print "Number of solutions:",nsolns
         if not puzzle.complete() or "backtrack" in puzzle.rules_used:
             print "Level: impossible"
-        elif difficulty <= 1:
+        elif difficulty <= 0:
             print "Level: easy"
         elif difficulty <= 5:
             print "Level: moderate"

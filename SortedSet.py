@@ -5,9 +5,10 @@ Set data structure augmented by a method to list all items in the set in sorted 
 Two naive methods to do this would be
   (1) just use a Python set type and sort when requested, or
   (2) use a skip list or balanced binary search tree to store the items.
-Our solution is almost as simple as (1) but has the same amortized efficiency as (2):
-store a list of the items in the sorted order they were most recently output as, together with
-small lists of the changes to the set since then, and handle requests to list all items by
+Our solution is almost as simple as (1) but has the same amortized
+efficiency as (2): store a list of the items in the sorted order they
+were most recently output as, together with small lists of the changes
+to the set since then, and handle requests to list all items by
 sorting the change lists and merging with the larger sorted list.
 
 D. Eppstein, August 2008.
@@ -21,12 +22,12 @@ class SortedSet:
     with an update() method that tells the set that a single item's position in the order might
     have changed."""
     
-    def __init__(self,comparison=None):
+    def __init__(self,iterable=[],comparison=None):
         """Create a new sorted set with the given comparison function."""
         self._comparison = comparison
-        self._set = set()
+        self._set = set(iterable)
         self._previous = None
-    
+
     def __len__(self):
         """How many items do we have?"""
         return len(self._set)
@@ -89,6 +90,7 @@ if __name__ == "__main__":
             S.remove(2)
             S.add(1)
             self.assertEqual(list(S),[1,3,5,7,9])
+            self.assertEqual(list(SortedSet([1,3,6,7])),[1,3,6,7])
 
     print "Testing SortedSet.py"
     unittest.main()   
