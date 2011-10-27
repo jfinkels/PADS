@@ -68,15 +68,15 @@ def CountLyndonWords(s,n):
 class LyndonTest(unittest.TestCase):    
     def testCount(self):
         """Test that we count Lyndon words correctly."""
-        for s in range(2,6):
-            for n in range(1,5):
+        for s in range(2,7):
+            for n in range(1,6):
                 self.assertEqual(CountLyndonWords(s,n),
                     len(list(LyndonWordsWithLength(s,n))))
 
     def testOrder(self):
         """Test that we generate Lyndon words in lexicographic order."""
-        for s in range(2,6):
-            for n in range(1,5):
+        for s in range(2,7):
+            for n in range(1,6):
                 prev = None
                 for x in LengthLimitedLyndonWords(s,n):
                     self.assert_(prev < x)
@@ -84,8 +84,8 @@ class LyndonTest(unittest.TestCase):
 
     def testSubsequence(self):
         """Test that words of length n-1 are a subsequence of length n."""
-        for s in range(2,6):
-            for n in range(2,5):
+        for s in range(2,7):
+            for n in range(2,6):
                 smaller = LengthLimitedLyndonWords(s,n-1)
                 for x in LengthLimitedLyndonWords(s,n):
                     if len(x) < n:
@@ -93,8 +93,8 @@ class LyndonTest(unittest.TestCase):
 
     def testDeBruijn(self):
         """Test that the De Bruijn sequence is correct."""
-        for s in range(2,6):
-            for n in range(2,5):
+        for s in range(2,7):
+            for n in range(1,6):
                 db = DeBruijnSequence(s,n)
                 self.assertEqual(len(db), s**n)
                 db = db + db    # duplicate so we can wrap easier
