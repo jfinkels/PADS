@@ -94,6 +94,23 @@ def FactoredIntegers():
             del factorization[i]
         i += 1
 
+def MoebiusSequence():
+    """The sequence of values of the Moebius function, OEIS A008683."""
+    for n,F in FactoredIntegers():
+        if n > 1 and set(F.values()) != set([1]):
+            yield 0
+        else:
+            yield (-1)**len(F)
+
+MoebiusFunctionValues = [None]
+MoebiusFunctionIterator = MoebiusSequence()
+def MoebiusFunction(n):
+    """A functional version of the Moebius sequence.
+    Efficient only for small values of n."""
+    while n >= len(MoebiusFunctionValues):
+        MoebiusFunctionValues.append(MoebiusFunctionIterator.next())
+    return MoebiusFunctionValues[n]
+
 def isPracticalFactorization(f):
     """Test whether f is the factorization of a practical number."""
     f = f.items()
