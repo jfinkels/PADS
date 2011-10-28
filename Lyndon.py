@@ -91,6 +91,26 @@ def ChenFoxLyndon(s):
         yield s[old:k]
         old = k
 
+def SmallestSuffix(s):
+    """Find the suffix of s that is smallest in lexicographic order."""
+    for w in ChenFoxLyndon(s):
+        pass
+    return w
+
+def SmallestRotation(s):
+    """Find the rotation of s that is smallest in lexicographic order.
+    Duval 1983 describes how to modify his algorithm to do so but I think
+    it's cleaner and more general to work from the ChenFoxLyndon output."""
+    prev,rep = None,0
+    for w in ChenFoxLyndon(s+s):
+        if w == prev:
+            rep += 1
+        else:
+            prev,rep = w,1
+        if len(w)*rep == len(s):
+            return w*rep
+    raise Exception("Reached end of factorization with no shortest rotation")
+
 def isLyndonWord(s):
     """Is the given sequence a Lyndon word?"""
     if len(s) == 0:
