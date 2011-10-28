@@ -50,6 +50,36 @@ def SteinhausJohnsonTrotter(x):
         perm[x],perm[x+1] = perm[x+1],perm[x]
         yield perm
 
+def DoublePlainChanges(n):
+    """Generate the swaps for double permutations."""
+    if n < 1:
+        return
+    up = xrange(1,2*n-1)
+    down = xrange(2*n-2,0,-1)
+    recur = DoublePlainChanges(n-1)
+    try:
+        while True:
+            for x in up:
+                yield x
+            yield recur.next() + 1
+            for x in down:
+                yield x
+            yield recur.next() + 2
+    except StopIteration:
+        pass
+
+def DoubleSteinhausJohnsonTrotter(n):
+    """Generate all double permutations of the range 0 through n-1"""
+    perm = []
+    for i in range(n):
+        perm += [i,i]
+
+    # run through the sequence of swaps
+    yield perm
+    for x in DoublePlainChanges(n):
+        perm[x],perm[x+1] = perm[x+1],perm[x]
+        yield perm
+
 # If run standalone, perform unit tests
 class PermutationTest(unittest.TestCase):    
     def testChanges(self):
