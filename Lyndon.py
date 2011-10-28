@@ -91,8 +91,14 @@ def ChenFoxLyndon(s):
         yield s[old:k]
         old = k
 
+def isLyndonWord(s):
+    """Is the given sequence a Lyndon word?"""
+    if len(s) == 0:
+        return True
+    return ChenFoxLyndonBreakpoints(s).next() == len(s)
+
 # If run standalone, perform unit tests
-class LyndonTest(unittest.TestCase):    
+class LyndonTest(unittest.TestCase):
     def testCount(self):
         """Test that we count Lyndon words correctly."""
         for s in range(2,7):
@@ -117,6 +123,18 @@ class LyndonTest(unittest.TestCase):
                 for x in LengthLimitedLyndonWords(s,n):
                     if len(x) < n:
                         self.assertEqual(x,smaller.next())
+    
+    def testIsLyndon(self):
+        """Test that the words we generate are Lyndon words."""
+        for s in range(2,7):
+            for n in range(2,6):
+                for w in LengthLimitedLyndonWords(s,n):
+                    self.assertEqual(isLyndonWord(w), True)
+    
+    def testNotLyndon(self):
+        """Test that words that are not Lyndon words aren't claimed to be."""
+        nl = sum(1 for i in range(8**4) if isLyndonWord("%04o" % i))
+        self.assertEqual(nl,CountLyndonWords(8,4))
 
     def testDeBruijn(self):
         """Test that the De Bruijn sequence is correct."""
