@@ -20,12 +20,17 @@ def CirclePack(internal,external):
     surrounding circles; the external argument maps each external circle
     to its desired radius. The return function is a mapping from circle
     keys to pairs (center,radius) where center is a complex number."""
+    
+    # Some sanity checks and preprocessing
+    if min(external.values()) <= 0:
+        raise ValueError("CirclePack: external radii must be positive")
     radii = dict(external)
     for k in internal:
         if k in external:
-            raise Exception("CirclePack: keys are not disjoint")
+            raise ValueError("CirclePack: keys are not disjoint")
         radii[k] = 1
 
+    # The main iteration for finding the correct set of radii
     lastChange = 2
     while lastChange > tolerance:
         lastChange = 1
@@ -37,6 +42,7 @@ def CirclePack(internal,external):
             lastChange = max(lastChange,kc)
             radii[k] = newrad
 
+    # Recursively place all the circles
     placements = {}
     k1 = iter(internal).next()  # pick one internal circle
     placements[k1] = 0j         # place it at the origin
