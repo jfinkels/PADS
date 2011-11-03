@@ -79,8 +79,13 @@ def NormalizePacking(packing,k):
     return dict((kk,(zz/r,rr/r)) for kk,(zz,rr) in packing.iteritems())
 
 def InvertAround(packing,k):
-    """Invert surrounding a specified circle.
-    Searches for the inversion center that maximizes the minimum radius."""
+    """Invert so that the specified circle surrounds all the others.
+    Searches for the inversion center that maximizes the minimum radius.
+    
+    This can be expressed as a quasiconvex program, but in a related
+    hyperbolic space, so rather than applying QCP methods it seems
+    simpler to use a numerical hill-climbing approach, relying on the
+    theory of QCP to tell us there are no local maxima to get stuck in."""
     z,r = packing[k]
     q,g = z,r*0.4
     for i in range(40):
