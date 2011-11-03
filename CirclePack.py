@@ -146,32 +146,3 @@ def testgrid(packing,k,z,r,q,g):
                 newpack = NormalizePacking(newpack,k)
                 minrad = min(r for z,r in newpack.values())
                 yield minrad,i,j,center
-
-
-# ======================================================
-#   Test code, should be replaced by unit tests
-# ======================================================
-
-from pyx import canvas,path,color
-external = {0:1, 1:1, 2:1}
-internal = {
-    3: (0,13,4,8,2),
-    4: (13,5,8,3),
-    5: (0,6,7,8,4,13),
-    6: (0,12,7,5),
-    7: (5,6,12,11,10,9,8),
-    8: (2,3,4,5,7,9),
-    9: (1,2,8,7,10),
-    10: (0,1,9,7,11),
-    11: (0,10,7,12),
-    12: (0,11,7,6),
-    13: (0,5,4,3),
-}
-pack = CirclePack(internal,external)
-pack = InvertAround(pack,0)
-pack = NormalizePacking(pack,target=0.5)
-c = canvas.canvas()
-for z,r in pack.values():
-    x,y = z.real,z.imag
-    c.stroke(path.circle(x,y,r),[color.rgb.black])
-c.writePDFfile("Circle packing")
