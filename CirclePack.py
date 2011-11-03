@@ -28,20 +28,15 @@ def CirclePack(internal,external):
 
     lastChange = 2
     while lastChange > tolerance:
-        newrad = {}
         lastChange = 1
         for k in internal:
             theta = flower(radii,k,internal[k])
             hat = radii[k]/(1/sin(theta/(2*len(internal[k])))-1)
-            q = 1/(sin(pi/len(internal[k]))) - 1
-            newrad[k] = hat*q
-            kc = max(newrad[k]/radii[k],radii[k]/newrad[k])
-            if kc < 0:
-                kc = 2
+            newrad = hat * (1/(sin(pi/len(internal[k]))) - 1)
+            kc = max(newrad/radii[k],radii[k]/newrad)
             lastChange = max(lastChange,kc)
-        for k in internal:
-            radii[k] = newrad[k]
-    
+            radii[k] = newrad
+
     placements = {}
     k1 = iter(internal).next()  # pick one internal circle
     placements[k1] = 0j         # place it at the origin
