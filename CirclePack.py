@@ -92,10 +92,9 @@ def InvertAround(packing,k):
     while abs(g) > r*(tolerance-1) or ratio > tolerance:
         rr,ignore1,ignore2,q = max(list(testgrid(packing,k,z,r,q,g)))
         if oldrad:
-            print rr,oldrad
             ratio = rr/oldrad
         oldrad = rr
-        g *= 0.73+0.1j  # rotate so not always axis-aligned
+        g *= 0.53+0.1j  # rotate so not always axis-aligned
     return InvertPacking(packing,q)  
 
 
@@ -141,6 +140,11 @@ def testgrid(packing,k,z,r,q,g):
                 newpack = NormalizePacking(newpack,k)
                 minrad = min(r for z,r in newpack.values())
                 yield minrad,i,j,center
+
+
+# ======================================================
+#   Test code, should be replaced by unit tests
+# ======================================================
 
 from pyx import canvas,path,color
 pack = CirclePack({3:(0,4,5,7,1),4:(0,6,5,3),5:(3,4,6,7),6:(0,2,7,5,4),7:(1,3,5,6,2)},{0:1,1:1,2:1})
