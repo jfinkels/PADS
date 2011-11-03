@@ -88,9 +88,14 @@ def InvertAround(packing,k):
     theory of QCP to tell us there are no local maxima to get stuck in."""
     z,r = packing[k]
     q,g = z,r*0.4
-    for i in range(40):
+    oldrad,ratio = None,2
+    while abs(g) > r*(tolerance-1) or ratio > tolerance:
         rr,ignore1,ignore2,q = max(list(testgrid(packing,k,z,r,q,g)))
-        g *= 0.7
+        if oldrad:
+            print rr,oldrad
+            ratio = rr/oldrad
+        oldrad = rr
+        g *= 0.73+0.1j  # rotate so not always axis-aligned
     return InvertPacking(packing,q)  
 
 
