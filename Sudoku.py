@@ -103,6 +103,25 @@ for c1 in cols:
                     nearby[c1].append(c2)
             break
 
+FullPlacementGraph = {}
+
+def searchPlacements(node,census):
+    if node in FullPlacementGraph:
+        return
+    FullPlacementGraph[node] = {}
+    for i in range(9):
+        b = 1<<i
+        if node & b:
+            continue    # row already used, can't use it again
+        if census[i//3] > min(census):
+            continue    # block already filled, can't use this row now
+        FullPlacementGraph[node][node|b] = 1<<(9*i+sum(census))   # found edge
+        census[i//3] += 1
+        searchPlacements(node|b,census)   # recurse
+        census[i//3] -= 1
+
+searchPlacements(0,[0,0,0])
+
 
 
 # ======================================================================
@@ -458,44 +477,52 @@ def triad(grid):
 
                 grid.unplace(d, d in forces and outside or mask, explain)
 
-def digit(grid):
+def nishio(grid):
     """
     Remove incompatible positions of a single digit.
     If the placement of digit x in cell y can not be extended to a
-    placement of nine copies of x covering each row and column of the
-    grid exactly once, we eliminate cell y from consideration as
-    a placement for x.
+    placement of nine copies of x covering each row, column, and
+    square of the grid exactly once, we eliminate cell y from
+    consideration as a placement for x.
     """
+    def reachable(graph,start,reached):
+        """Simple recursive DFS to compute a set of reachable vertices"""
+        reached.add(start)
+        for v in graph[start]:
+            reachable(graph,v,reached)
+        return reached
+    
     for d in digits:
-        graph = {}
+        forward = {}
+        reverse = {}
         locs = grid.locations[d]
-        for r in range(9):
-            graph[r] = [c for c in range(9)
-                        if rows[r].mask & cols[c].mask & locs]
-        imp = imperfections(graph)
+        for v in FullPlacementGraph:
+            forward[v] = []
+            reverse[v] = []
+        edges = 0
+        for v in FullPlacementGraph:
+            for w in FullPlacementGraph[v]:
+                if locs & FullPlacementGraph[v][w]:
+                    forward[v].append(w)
+                    reverse[w].append(v)
+                    edges += 1
+        freach = reachable(forward,0,set())
+        rreach = reachable(reverse,511,set())
         mask = 0
-        forced = []
-        for r in imp:
-            for c in imp[r]:
-                mask |= rows[r].mask & cols[c].mask
-                if imp[r][c] not in forced:
-                    forced.append(imp[r][c])
-        mask &= grid.locations[d]
-        if not mask:
-            continue
-        def explain():
-            expl = []
-            for f in forced:
-                fr = [rows[r].name for r in f]
-                fr.sort()
-                fc = list(set([cols[c].name for r in f for c in f[r]]))
-                fc.sort()
-                expl += ["In", andlist(fr)+", digit", d,
-                         "can only be placed in", andlist(fc,"or")+"."]
-                return expl + ["Placing",d,"in",namecells(mask,"or"),
-                               "would leave too few columns for", d,
-                               "to be placed in all of these rows."]
-        grid.unplace(d,mask,explain)
+        for v in freach:
+            for w in forward[v]:
+                if w in rreach:
+                    mask |= FullPlacementGraph[v][w]
+        if locs != mask:
+            def explain():
+                masked = locs &~ mask
+                if masked &~ (masked - 1):
+                    ex = "These cells are"
+                else:
+                    ex = "This cell is"
+                return ex + " not part of any valid placement of this digit that covers each row, column and 3x3 square exactly once."
+
+            grid.unplace(d, locs &~ mask, explain)
 
 def rectangles():
     """Generate pairs of rows and columns that form two-square rectangles."""
@@ -1265,7 +1292,7 @@ rules = [
     ("trapezoid",trapezoid,1),
     ("rectangle",rectangle,1),
     ("subproblem",subproblem,2),
-    ("digit",digit,2),
+    ("nishio",nishio,2),
     ("bilocal",bilocal,3),
     ("bivalue",bivalue,3),
     ("repeat",repeat,3),
