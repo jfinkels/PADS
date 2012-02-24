@@ -485,34 +485,27 @@ def nishio(grid):
     square of the grid exactly once, we eliminate cell y from
     consideration as a placement for x.
     """
-    def reachable(graph,start,reached):
-        """Simple recursive DFS to compute a set of reachable vertices"""
-        reached.add(start)
-        for v in graph[start]:
-            reachable(graph,v,reached)
-        return reached
-    
+
+    def search(v):
+        """Simple recursive DFS to compute a set of reachable vertices.
+        Uses sets of visible and completable nodes in parent function,
+        and returns the union of edge labels on placement graph paths."""
+        visited.add(v)
+        result = 0
+        for w in FullPlacementGraph[v]:         # for each potential neighbor
+            if locs & FullPlacementGraph[v][w]: # is it really a neighbor?
+                if w not in visited:
+                    result |= search(w)
+                if w in completable:
+                    completable.add(v)
+                    result |= FullPlacementGraph[v][w]
+        return result
+
     for d in digits:
-        forward = {}
-        reverse = {}
+        visited = set([511])      # nodes no longer needing to be searched
+        completable = set([511])  # nodes with paths to the all-ones matrix
         locs = grid.locations[d]
-        for v in FullPlacementGraph:
-            forward[v] = []
-            reverse[v] = []
-        edges = 0
-        for v in FullPlacementGraph:
-            for w in FullPlacementGraph[v]:
-                if locs & FullPlacementGraph[v][w]:
-                    forward[v].append(w)
-                    reverse[w].append(v)
-                    edges += 1
-        freach = reachable(forward,0,set())
-        rreach = reachable(reverse,511,set())
-        mask = 0
-        for v in freach:
-            for w in forward[v]:
-                if w in rreach:
-                    mask |= FullPlacementGraph[v][w]
+        mask = search(0)          # bitmask of cells in valid placements
         if locs != mask:
             def explain():
                 masked = locs &~ mask
