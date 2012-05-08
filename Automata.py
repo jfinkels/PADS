@@ -6,23 +6,16 @@ deterministic finite automata, and nondeterministic finite automata.
 D. Eppstein, UC Irvine, November 2003.
 """
 
-from __future__ import generators
 from Util import arbitrary_item
 
 import sys
 import operator
 import unittest
 
-from sets import Set,ImmutableSet
 from PartitionRefinement import PartitionRefinement
 from Sequence import Sequence
 
 class LanguageError(Exception): pass
-
-# maintain Python 2.2 compatibility
-if 'True' not in globals():
-    globals()['True'] = not None
-    globals()['False'] = not True
 
 def Language(A):
     """Convert automaton A into an object describing its language.
@@ -215,7 +208,7 @@ class NFA(FiniteAutomaton):
     responsible for filling out the details of the initial state, alphabet,
     and transition function.  Note that the NFAs defined here do not allow
     epsilon-transitions.  Results of self.initial and self.transition are
-    assumed to be represented as ImmutableSet instances.
+    assumed to be represented as frozenset instances.
     """
     def asNFA(self):
         return self
@@ -224,8 +217,8 @@ class NFA(FiniteAutomaton):
         return _DFAfromNFA(self)
 
     def states(self):
-        visited = Set()
-        unvisited = Set(self.initial)
+        visited = set()
+        unvisited = set(self.initial)
         while unvisited:
             state = arbitrary_item(unvisited)
             yield state
@@ -259,7 +252,7 @@ class NFA(FiniteAutomaton):
         # create artificial initial and final states
         initial = object()
         final = object()
-        states = Set([initial,final]) | Set(self.states())
+        states = {initial,final} | set(self.states())
 
         # 2d matrix of expressions connecting each pair of states
         expr = {}
@@ -318,15 +311,15 @@ class _DFAfromNFA(DFA):
     union of the transition functions of the NFA states it contains.
     """
     def __init__(self,N):
-        self.initial = N.initial
+        self.initial = frozenset(N.initial)
         self.alphabet = N.alphabet
         self.NFA = N
 
     def transition(self,stateset,symbol):
-        output = Set()
+        result = set()
         for state in stateset:
-            output |= self.NFA.transition(state,symbol)
-        return ImmutableSet(output)
+            result |= self.NFA.transition(state,symbol)
+        return frozenset(result)
 
     def isfinal(self,stateset):
         for state in stateset:
@@ -339,17 +332,15 @@ class _NFAfromDFA(NFA):
     results of each transition function into single-element sets.
     """
     def __init__(self,D):
-        self.initial = ImmutableSet([D.initial])
+        self.initial = frozenset([D.initial])
         self.alphabet = D.alphabet
         self.DFA = D
 
     def transition(self,state,symbol):
-        return ImmutableSet([self.DFA.transition(state,symbol)])
+        return frozenset([self.DFA.transition(state,symbol)])
 
     def isfinal(self,state):
         return self.DFA.isfinal(state)
-
-Empty = ImmutableSet()
 
 class RegExp(NFA):
     """Convert regular expression to NFA."""
@@ -360,19 +351,19 @@ class RegExp(NFA):
         self.nstates = 0
         self.expect = {}
         self.successor = {}
-        self.alphabet = Set()
+        self.alphabet = set()
         self.initial,penultimate,epsilon = self.expression()
         final = self.newstate(None)
         for state in penultimate:
             self.successor[state].add(final)
-        self.final = ImmutableSet([final])
+        self.final = frozenset([final])
         if epsilon:
             self.final = self.final | self.initial
 
     def transition(self,state,c):
         """Implement NFA transition function."""
         if c != self.expect[state]:
-            return Empty
+            return frozenset()
         else:
             return self.successor[state]
 
@@ -390,12 +381,12 @@ class RegExp(NFA):
 
     def epsilon(self):
         """Parse an empty string and return an empty automaton."""
-        return Empty,Empty,True
+        return frozenset(),frozenset(),True
 
     def newstate(self,expect):
         """Allocate a new state in which we expect to see the given letter."""
         state = self.nstates
-        self.successor[state] = Set()
+        self.successor[state] = set()
         self.expect[state] = expect
         self.nstates += 1
         return state
@@ -418,7 +409,7 @@ class RegExp(NFA):
         self.alphabet.add(self.expr[self.pos])
         state = self.newstate(self.expr[self.pos])
         self.pos += 1
-        state = ImmutableSet([state])
+        state = frozenset([state])
         return state,state,False
 
     def factor(self):
@@ -462,12 +453,12 @@ class LookupNFA(NFA):
     """Construct NFA with precomputed lookup table of transitions."""
     def __init__(self,alphabet,initial,ttable,final):
         self.alphabet = alphabet
-        self.initial = ImmutableSet(initial)
+        self.initial = frozenset(initial)
         self.ttable = ttable
-        self.final = ImmutableSet(final)
+        self.final = frozenset(final)
 
     def transition(self,state,symbol):
-        return ImmutableSet(self.ttable[state,symbol])
+        return frozenset(self.ttable[state,symbol])
 
     def isfinal(self,state):
         return state in self.final
@@ -546,7 +537,7 @@ class _MinimumDFA(DFA):
             part = arbitrary_item(unrefined)
             unrefined.remove(part)
             for symbol in D.alphabet:
-                neighbors = Set()
+                neighbors = set()
                 for state in part:
                     neighbors |= N.transition(state,symbol)
                 for new,old in P.refine(neighbors):
@@ -612,3 +603,4 @@ class RegExpTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()   
+

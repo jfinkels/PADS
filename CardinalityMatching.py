@@ -6,7 +6,6 @@ D. Eppstein, UC Irvine, September 6, 2003.
 """
 
 import sys
-from sets import Set
 
 from UnionFind import UnionFind
 from Util import arbitrary_item
@@ -236,8 +235,8 @@ def greedyMatching(G, initialMatching=None):
         return matching
 
     # make sets of degree one and degree two vertices
-    deg1 = Set([v for v in avail if len(avail[v]) == 1])
-    deg2 = Set([v for v in avail if len(avail[v]) == 2])
+    deg1 = {v for v in avail if len(avail[v]) == 1}
+    deg2 = {v for v in avail if len(avail[v]) == 2}
     d2edges = []
     def updateDegree(v):
         """Cluster degree changed, update sets."""
@@ -311,7 +310,7 @@ def greedyMatching(G, initialMatching=None):
         avail[v] = {}
     for u,v in d2edges:
         avail[u][v] = avail[v][u] = (u,v)
-    deg1 = Set([v for v in avail if len(avail[v]) == 1])
+    deg1 = {v for v in avail if len(avail[v]) == 1}
     while deg1:
         v = arbitrary_item(deg1)
         w = arbitrary_item(avail[v])

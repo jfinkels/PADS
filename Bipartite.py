@@ -5,7 +5,6 @@ D. Eppstein, May 2004.
 """
 
 import unittest
-from sets import Set
 from Biconnectivity import BiconnectedComponents
 import Graphs
 import DFS
@@ -48,14 +47,14 @@ def isBipartite(G):
     except NonBipartite:
         return False
 
-def BipartiteOrientation(G,adjacency_list_type=Set):
+def BipartiteOrientation(G,adjacency_list_type=set):
     """
     Given an undirected bipartite graph G, return a directed graph in which
     the edges are oriented from one side of the bipartition to the other.
     The second argument has the same meaning as in Graphs.copyGraph.
     """
     B = Bipartition(G)
-    return dict([(v,adjacency_list_type(iter(G[v]))) for v in B])
+    return {v:adjacency_list_type(iter(G[v])) for v in B}
 
 def OddCore(G):
     """
@@ -70,7 +69,7 @@ def OddCore(G):
 
 class BipartitenessTest(unittest.TestCase):
     def cycle(self,n):
-        return dict([(i,[(i-1)%n,(i+1)%n]) for i in range(n)])
+        return {i:[(i-1)%n,(i+1)%n] for i in range(n)}
 
     def testEvenCycles(self):
         for i in range(4,12,2):
@@ -82,3 +81,4 @@ class BipartitenessTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()   
+

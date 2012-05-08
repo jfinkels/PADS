@@ -10,7 +10,6 @@ D. Eppstein, November 2003.
 """
 
 from LexBFS import LexBFS
-from sets import Set
 
 def PerfectEliminationOrdering(G):
     """Return a perfect elimination ordering, or None if G is not chordal.
@@ -19,17 +18,17 @@ def PerfectEliminationOrdering(G):
     instance, G may be a dictionary mapping each vertex to its neighbor set.
     Running time is O(n+m) and additional space usage over G is O(n+m).
     """
-    alreadyProcessed = Set()
+    alreadyProcessed = set()
     B = list(LexBFS(G))
     position = dict([(B[i],i) for i in range(len(B))])
     leftNeighbors = {}
     parent = {}
     for v in B:
-        leftNeighbors[v] = Set(G[v]) & alreadyProcessed
+        leftNeighbors[v] = set(G[v]) & alreadyProcessed
         alreadyProcessed.add(v)
         if leftNeighbors[v]:
             parent[v] = B[max([position[w] for w in leftNeighbors[v]])]
-            if not leftNeighbors[v] - Set([parent[v]]) <= leftNeighbors[parent[v]]:
+            if not leftNeighbors[v] - set([parent[v]]) <= leftNeighbors[parent[v]]:
                 return None
     B.reverse()
     return B

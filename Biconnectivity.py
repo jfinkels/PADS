@@ -8,7 +8,6 @@ D. Eppstein, April 2004.
 import unittest
 from Graphs import isUndirected
 from Util import arbitrary_item
-from sets import Set
 from PartialOrder import TopologicalOrder
 
 import DFS
@@ -54,7 +53,7 @@ class BiconnectedComponents(DFS.Searcher):
         else:
             self._active.append(child)
         self._low[child] = self._dfsnumber[child] = len(self._dfsnumber)
-        self._ancestors[child] = Set()
+        self._ancestors[child] = set()
         self._activelen[child] = len(self._active)
 
     def backedge(self,source,destination):
@@ -76,9 +75,9 @@ class BiconnectedComponents(DFS.Searcher):
         """Make new component, removing active vertices from start onward."""
         component = {}
         if articulation_point is not disconnected:
-            component[articulation_point] = Set()
+            component[articulation_point] = set()
         for v in self._active[start:]:
-            component[v] = Set()
+            component[v] = set()
             for w in self._ancestors[v]:
                 component[v].add(w)
                 component[w].add(v)
@@ -199,7 +198,7 @@ def stOrientation(G):
         raise NotBiconnected
 
     source,dest = stO.roots[0]
-    G = dict([(v,Set()) for v in G])
+    G = {v:set() for v in G}
     orientable = []
 
     while True:
@@ -266,3 +265,4 @@ class BiconnectivityTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()   
+
