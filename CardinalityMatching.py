@@ -10,10 +10,6 @@ import sys
 from UnionFind import UnionFind
 from Util import arbitrary_item
 
-if 'True' not in globals():
-    globals()['True'] = not None
-    globals()['False'] = not True
-
 def matching(G, initialMatching = None):
     """Find a maximum cardinality matching in a graph G.
     G is represented in modified GvR form: iter(G) lists its vertices;

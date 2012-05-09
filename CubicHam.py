@@ -31,10 +31,10 @@ def HamiltonianCycles(G):
     G = copyGraph(G,map_to_constant(True))
 
     # Subgraph of forced edges in the input
-    forced_in_input = dict([(v,{}) for v in G])
+    forced_in_input = {v:{} for v in G}
 
     # Subgraph of forced edges in current G
-    forced_in_current = dict([(v,{}) for v in G])
+    forced_in_current = {v:{} for v in G}
 
     # List of vertices with degree two
     degree_two = [v for v in G if len(G[v]) == 2]
@@ -225,7 +225,7 @@ def HamiltonianCycles(G):
         # We jump-start the matching algorithm with our previously computed
         # matching (or as much of it as fits the current graph) since that is
         # likely to be near-perfect.
-        unforced = dict([(v,{}) for v in G])
+        unforced = {v:{} for v in G}
         for v in G:
             for w in G[v]:
                 if w not in forced_in_current[v]:
@@ -297,12 +297,12 @@ class CubicHamTest(unittest.TestCase):
 
     def testCube(self):
         """Cube has six Hamiltonian cycles."""
-        cube = dict([(i,(i^1,i^2,i^4)) for i in range(8)])
+        cube = {i:(i^1,i^2,i^4) for i in range(8)}
         self.check(cube,6)
 
     def twistedLadder(self,n):
         """Connect opposite vertices on an even length cycle."""
-        return dict([(i,((i+1)%n,(i-1)%n,(i+n//2)%n)) for i in range(n)])
+        return {i:((i+1)%n,(i-1)%n,(i+n//2)%n) for i in range(n)}
 
     def testEvenTwistedLadders(self):
         """twistedLadder(4n) has 2n+1 Hamiltonian cycles."""
@@ -316,12 +316,8 @@ class CubicHamTest(unittest.TestCase):
 
     def truncate(self,G):
         """Replace each vertex of G by a triangle and return the result."""
-        T = {}
-        for v in G:
-            for w in G[v]:
-                T[v,w] = dict([((v,u),True) for u in G[v] if u != w])
-                T[v,w][w,v] = True
-        return T
+        return {(v,w):{(v,u) for u in G[v] if u != w} | {(w,v)}
+                for v in G for w in G[v]}
 
     def testSierpinski(self):
         """
@@ -335,3 +331,4 @@ class CubicHamTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()   
+

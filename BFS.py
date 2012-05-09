@@ -24,7 +24,7 @@ def BreadthFirstLevels(G,root):
         for v in currentLevel:
             visited.add(v)
         nextLevel = set()
-        levelGraph = dict([(v,set()) for v in currentLevel])
+        levelGraph = {v:set() for v in currentLevel}
         for v in currentLevel:
             for w in G[v]:
                 if w not in visited:

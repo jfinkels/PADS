@@ -503,7 +503,7 @@ class _ProductDFA(DFA):
 def _ReverseNFA(N):
     """Construct NFA for reversal of original NFA's language."""
     initial = [s for s in N.states() if N.isfinal(s)]
-    ttable = dict([((s,c),[]) for s in N.states() for c in N.alphabet])
+    ttable = {(s,c):[] for s in N.states() for c in N.alphabet}
     for s in N.states():
         for c in N.alphabet:
             for t in N.transition(s,c):

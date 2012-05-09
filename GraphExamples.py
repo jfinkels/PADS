@@ -26,6 +26,10 @@ def GeneralizedCoxeterGraph(n,a,b):
 
 CoxeterGraph = GeneralizedCoxeterGraph(7,2,3)
 
+def CubeConnectedCycles(n):
+    return {(x,y):[(x,(y+1)%n),(x,(y-1)%n),(x^(1<<y),y)]
+            for x in range(1<<n) for y in range(n)}
+
 def LCFNotation(L,n):
     """
     Construct the cubic Hamiltonian graph with LCF Notation L^n.
@@ -33,7 +37,7 @@ def LCFNotation(L,n):
     for a description of this notation.
     """
     n *= len(L)
-    return dict([(i,[(i-1)%n,(i+1)%n,(i+L[i%len(L)])%n]) for i in range(n)])
+    return {i:((i-1)%n,(i+1)%n,(i+L[i%len(L)])%n) for i in range(n)}
 
 McGeeGraph = LCFNotation([-12,7,-7],8)
 DyckGraph = LCFNotation([-13,5,-5,13],8)

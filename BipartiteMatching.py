@@ -40,7 +40,7 @@ def matching(graph):
         # and is also used as a flag value for pred[u] when u is in the first layer
         preds = {}
         unmatched = []
-        pred = dict([(u,unmatched) for u in graph])
+        pred = {u:unmatched for u in graph}
         for v in matching:
             del pred[matching[v]]
         layer = list(pred)
@@ -113,8 +113,7 @@ def imperfections(graph):
 
     components = {}
     for C in StronglyConnectedComponents(orientation):
-        induced = dict([(v,set([w for w,bit2 in C[v,bit]]))
-                        for v,bit in C if bit])
+        induced = {v:{w for w,bit2 in C[v,bit]} for v,bit in C if bit}
         for v,bit in C:
             if not bit:   # don't forget the matched edges!
                 induced.setdefault(M[v],set()).add(v)
@@ -123,8 +122,8 @@ def imperfections(graph):
 
     imperfections = {}
     for v in graph:
-        imperfections[v] = dict([(w,components[w,False]) for w in graph[v]
+        imperfections[v] = {w:components[w,False] for w in graph[v]
                                  if M[w] != v and
-                                 components[v,True] != components[w,False]])
+                                 components[v,True] != components[w,False]}
     
     return imperfections
