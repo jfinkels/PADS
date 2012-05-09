@@ -9,8 +9,6 @@ http://www.cs.colostate.edu/~rmm/lexbfs.ps
 D. Eppstein, November 2003.
 """
 
-from __future__ import generators
-
 from PartitionRefinement import PartitionRefinement
 from Sequence import Sequence
 from Util import arbitrary_item

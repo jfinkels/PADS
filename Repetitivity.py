@@ -100,7 +100,7 @@ class NonrepetitiveGraph:
                         self.nrg[v,L1,True].add((v,L2,False))
             if len(labels) > 3:
                 groups.append(object())
-                self.nrg[v,groups[-1],False] = set([(v,L,False) for L in group])
+                self.nrg[v,groups[-1],False] = {(v,L,False) for L in group}
                 for L in group:
                     self.nrg[v,L,True].add((v,groups[-1],True))
             n -= grouplen
@@ -142,7 +142,7 @@ class NonrepetitiveGraph:
         The path is returned as a list of vertices.
         """
         start = (v,L,False)
-        visited = set([start])
+        visited = {start}
         thislevel = [(start,(v,None))]
         nextlevel = []
         levelindex = 0

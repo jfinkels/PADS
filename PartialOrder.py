@@ -49,7 +49,7 @@ def TransitiveClosure(G):
     This is a graph on the same vertex set containing an edge (v,w)
     whenever v != w and there is a directed path from v to w in G.
     """
-    TC = dict([(v,set(preorder(G,v))) for v in G])
+    TC = {v:set(preorder(G,v)) for v in G}
     for v in G:
         TC[v].remove(v)
     return TC
@@ -72,7 +72,7 @@ def MinimumPathDecomposition(G):
     Cover a directed acyclic graph with a minimum number of paths.
     """
     M,A,B = BipartiteMatching.matching(G)
-    H = dict([(v,[]) for v in G])
+    H = {v:[] for v in G}
     for v in G:
         if v in M:
             H[M[v]] = (v,)
@@ -98,10 +98,7 @@ def MaximumAntichain(G):
     return set(A).intersection(B)
 
 class PartialOrderTest(unittest.TestCase):
-    cube = dict([(i,[]) for i in range(16)])
-    for i in range(16):
-        for b in (1,2,4,8):
-            cube[min(i,i^b)].append(max(i,i^b))
+    cube = {i:[i^b for b in (1,2,4,8) if i^b > i] for i in range(16)}
             
     def testHypercubeAcyclic(self):
         self.assert_(isAcyclic(self.cube))
@@ -110,11 +107,11 @@ class PartialOrderTest(unittest.TestCase):
         TC = TransitiveClosure(self.cube)
         for i in range(16):
             self.assertEqual(TC[i],
-                set([j for j in range(16) if i & j == i and i != j]))
+                {j for j in range(16) if i & j == i and i != j})
 
     def testHypercubeAntichain(self):        
         A = MaximumAntichain(self.cube)
-        self.assertEqual(A,set((3,5,6,9,10,12)))
+        self.assertEqual(A,{3,5,6,9,10,12})
         
     def testHypercubeDilworth(self):
         CD = list(MinimumChainDecomposition(self.cube))

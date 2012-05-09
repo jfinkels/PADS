@@ -21,11 +21,6 @@ theory of finite automata.
 
 D. Eppstein, May 2007.
 """
-
-try:
-    set
-except NameError:
-    from sets import Set as set
     
 import BFS,DFS
 from Graphs import isUndirected
@@ -65,7 +60,7 @@ class Medium:
 
     def __getitem__(self,S):
         """Construct dict mapping tokens to actions from state S."""
-        return dict([(t,self.action(S,t)) for t in self.tokens()])
+        return {t:self.action(S,t) for t in self.tokens()}
 
     def __call__(self,S,t):
         """Apply token t to state S."""
@@ -82,8 +77,8 @@ class ExplicitMedium(Medium):
 
     def __init__(self,M):
         """Form ExplicitMedium from any other kind of medium."""
-        self._reverse = dict([(t,M.reverse(t)) for t in M.tokens()])
-        self._action = dict([(S,M[S]) for S in M])
+        self._reverse = {t:M.reverse(t) for t in M.tokens()}
+        self._action = {S:M[S] for S in M}
 
     # Basic classes needed to define any medium
 
@@ -165,7 +160,7 @@ def StateTransitionGraph(M):
     If s is a state of M, G[s] will provide a dictionary mapping
     the neighbors of s to the actions that produced those neighbors.
     """
-    G = dict([(S,{}) for S in M])
+    G = {S:{} for S in M}
     for S in M:
         for t in M.tokens():
             St = M(S,t)
@@ -187,7 +182,7 @@ class LabeledGraphMedium(Medium):
     def __init__(self,G):
         if not isUndirected(G):
             raise MediumError("not an undirected graph")
-        self._action = dict([(v,{}) for v in G])
+        self._action = {v:{} for v in G}
         self._reverse = {}
         for v in G:
             for w in G[v]:
@@ -249,7 +244,7 @@ def RoutingTable(M):
     inactivated = object()  # flag object to mark inactive tokens
 
     # rest of data structure: point from states to list and list to states
-    activeForState = dict([(S,-1) for S in M])
+    activeForState = {S:-1 for S in M}
     statesForPos = [[] for i in activeTokens]
     
     def scan(S):

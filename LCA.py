@@ -16,12 +16,6 @@ D. Eppstein, November 2003.
 
 import unittest,random
 from UnionFind import UnionFind
-from sets import Set
-
-# maintain Python 2.2 compatibility
-if 'True' not in globals():
-    globals()['True'] = not None
-    globals()['False'] = not True
 
 def _decodeSlice(self,it):
     """Work around removal of __getslice__ in Python 3"""
@@ -44,7 +38,7 @@ class RangeMin:
         self._data = list(X)
         if len(X) > 1:
             big = map(max, self._ansv(False), self._ansv(True))
-            parents = dict([(i,big[i][1]) for i in range(len(X)) if big[i]])
+            parents = {i:big[i][1] for i in range(len(X)) if big[i]}
             self._lca = LCA(parents)
 
     def __getitem__(self,it):
@@ -66,7 +60,7 @@ class RangeMin:
         Due to our use of positions as a tie-breaker, values equal to x
         count as smaller on the left and larger on the right.
         """
-        stack = [None]   # protect stack top with sentinel
+        stack = [(min(self._data),-1)]   # protect stack top with sentinel
         output = [0]*len(self._data)
         for xi in _pairs(self._data,reversed):
             while stack[-1] > xi:
@@ -168,7 +162,7 @@ class LogarithmicRangeMin:
         """Compute min(X[i:i+2**j]) for each possible i,j."""
         self._minima = m = [list(X)]
         for j in range(_log2(len(X))):
-            m.append(map(min, m[-1], m[-1][1<<j:]))
+            m.append(map(min, m[-1][:-1<<j], m[-1][1<<j:]))
 
     def __getitem__(self,it):
         """When called by X[left:right], return min(X[left:right])."""
@@ -247,7 +241,7 @@ class OfflineLCA(dict):
             raise ValueError("LCA input is not a tree")
 
         # initiate depth first traversal
-        self.visited = Set()
+        self.visited = set()
         self.traverse(root[0])
 
     def traverse(self,node):

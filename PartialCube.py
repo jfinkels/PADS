@@ -40,7 +40,7 @@ def PartialCubeEdgeLabeling(G):
     # - CG: contracted graph at current stage of algorithm
     # - LL: limit on number of remaining available labels
     UF = UnionFind()
-    CG = dict([(v,dict([(w,(v,w)) for w in G[v]])) for v in G])
+    CG = {v:{w:(v,w) for w in G[v]} for v in G}
     NL = len(CG)-1
     
     # Initial sanity check: are there few enough edges?
@@ -63,7 +63,7 @@ def PartialCubeEdgeLabeling(G):
         NL -= deg
 
         # Set up bitvectors on vertices
-        bitvec = dict([(v,0) for v in CG])
+        bitvec = {v:0 for v in CG}
         neighbors = {}
         i = 0
         for neighbor in CG[root]:
@@ -78,7 +78,7 @@ def PartialCubeEdgeLabeling(G):
                     bitvec[w] |= bitvec[v]
 
         # Make graph of labeled edges and union them together
-        labeled = dict([(v,set()) for v in CG])
+        labeled = {v:set() for v in CG}
         for v in CG:
             for w in CG[v]:
                 diff = bitvec[v]^bitvec[w]
@@ -101,7 +101,7 @@ def PartialCubeEdgeLabeling(G):
             compnum += 1
 
         # generate new compressed subgraph
-        NG = dict([(i,{}) for i in range(compnum)])
+        NG = {i:{} for i in range(compnum)}
         for v in CG:
             for w in CG[v]:
                 if bitvec[v] == bitvec[w]:
@@ -118,7 +118,7 @@ def PartialCubeEdgeLabeling(G):
 
     # Here with all edge equivalence classes represented by UF.
     # Turn them into a labeled graph and return it.
-    return dict([(v,dict([(w,UF[v,w]) for w in G[v]])) for v in G])
+    return {v:{w:UF[v,w] for w in G[v]} for v in G}
 
 
 def MediumForPartialCube(G):
@@ -164,7 +164,7 @@ class PartialCubeTest(unittest.TestCase):
         self.assertEqual(I,True)
     
     def testK4(self):
-        G = dict([(i,[j for j in range(4) if j != i]) for i in range(4)])
+        G = {i:[j for j in range(4) if j != i] for i in range(4)}
         self.assertEqual(isPartialCube(G),False)
 
     def testK33(self):

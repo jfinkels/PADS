@@ -27,8 +27,6 @@ Only the graph structure itself is returned; any additional information may be l
 D. Eppstein, UC Irvine, August 12, 2003.
 """
 
-from __future__ import generators
-
 class GraphFormatError(Exception):
 	pass
 

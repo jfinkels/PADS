@@ -21,7 +21,7 @@ class PartitionRefinement:
         """
         S = set(items)
         self._sets = {id(S):S}
-        self._partition = dict([(x,S) for x in S])
+        self._partition = {x:S for x in S}
 
     def __getitem__(self,element):
         """Return the set that contains the given element."""

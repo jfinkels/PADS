@@ -130,7 +130,7 @@ class LyndonTest(unittest.TestCase):
         """Test that we generate Lyndon words in lexicographic order."""
         for s in range(2,7):
             for n in range(1,6):
-                prev = None
+                prev = []
                 for x in LengthLimitedLyndonWords(s,n):
                     self.assert_(prev < x)
                     prev = list(x)

@@ -56,7 +56,7 @@ class NotNotTest(unittest.TestCase):
             for y in NotNotTest.things:
                 self.assertEqual(Not(x)==Not(y),x==y)
     def testHash(self):
-        D = dict([(Not(x),x) for x in NotNotTest.things])
+        D = {Not(x):x for x in NotNotTest.things}
         for x in NotNotTest.things:
             self.assertEqual(D[Not(x)],x)
 

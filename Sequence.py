@@ -6,7 +6,6 @@ subject to insertions and deletions.
 D. Eppstein, November 2003.
 """
 
-from __future__ import generators
 import math
 import sys
 

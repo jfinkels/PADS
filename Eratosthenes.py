@@ -97,7 +97,7 @@ def FactoredIntegers():
 def MoebiusSequence():
     """The sequence of values of the Moebius function, OEIS A008683."""
     for n,F in FactoredIntegers():
-        if n > 1 and set(F.values()) != set([1]):
+        if n > 1 and set(F.values()) != {1}:
             yield 0
         else:
             yield (-1)**len(F)
