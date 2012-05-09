@@ -29,22 +29,24 @@ def copyGraph(G,adjacency_list_type=set):
     """
     Make a copy of a graph G and return the copy.
     Any information stored in edges G[v][w] is discarded.
+    
+    Most of the time, copy.deepcopy will be preferable to this function;
+    however, unlike deepcopy, this function can change the data type
+    of the adjacency list of the given graph.
+
     The second argument should be a callable that turns a sequence
     of neighbors into an appropriate representation of the adjacency list.
     Note that, while Set, list, and tuple are appropriate values for
     adjacency_list_type, dict is not -- use Util.map_to_constant instead.
     """
-    return dict([(v,adjacency_list_type(iter(G[v]))) for v in G])
+    return {v:adjacency_list_type(iter(G[v])) for v in G}
 
 def InducedSubgraph(V,G,adjacency_list_type=set):
     """
     The subgraph consisting of all edges between pairs of vertices in V.
     """
-    def neighbors(x):
-        for y in G[x]:
-            if y in V:
-                yield y
-    return dict([(x,adjacency_list_type(neighbors(x))) for x in G if x in V])
+    return {x:adjacency_list_type(y for y in G[x] if y in V)
+            for x in G if x in V}
 
 def union(*graphs):
     """Return a graph having all edges from the argument graphs."""

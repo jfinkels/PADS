@@ -23,6 +23,15 @@ if 'True' not in globals():
     globals()['True'] = not None
     globals()['False'] = not True
 
+def _decodeSlice(self,it):
+    """Work around removal of __getslice__ in Python 3"""
+    if type(it) != slice:
+        raise ValueError("Can only access LCA object by slice notation")
+    left,right,stride = it.indices(len(self))
+    if stride != 1:
+        raise ValueError("Stride not permitted in LCA")
+    return left,right
+
 class RangeMin:
     """If X is any list, RangeMin(X)[i:j] == min(X[i:j]).
     Initializing RangeMin(X) takes time and space linear in len(X),
@@ -38,9 +47,9 @@ class RangeMin:
             parents = dict([(i,big[i][1]) for i in range(len(X)) if big[i]])
             self._lca = LCA(parents)
 
-    def __getslice__(self,left,right):
-        """Return min(X[left:right])."""
-        right = min(right, len(self._data))  # handle omitted right index
+    def __getitem__(self,it):
+        """When called by X[left:right], return min(X[left:right])."""
+        left,right = _decodeSlice(self,it)
         if right <= left:
             return None     # empty range has no minimum
         return self._data[self._lca(left,right-1)]
@@ -110,7 +119,13 @@ class RestrictedRangeMin:
         self._blockrange = LogarithmicRangeMin(blockmin)
         self._data = list(X)
 
-    def __getslice__(self,left,right):
+    def __len__(self):
+        """How much data do we have?  Needed for negative index in slice."""
+        return len(self._data)
+
+    def __getitem__(self,it):
+        """When called by X[left:right], return min(X[left:right])."""
+        left,right = _decodeSlice(self,it)
         firstblock = left >> self._blocksize
         lastblock = (right - 1) >> self._blocksize
         if firstblock == lastblock:
@@ -138,8 +153,10 @@ class PrecomputedRangeMin:
     def __init__(self,X):
         self._minima = [PrefixMinima(X[i:]) for i in range(len(X))]
 
-    def __getslice__(self,x,y):
-        return self._minima[x][y-x-1]
+    def __getitem__(self,it):
+        """When called by X[left:right], return min(X[left:right])."""
+        left,right = _decodeSlice(self,it)
+        return self._minima[left][right-left-1]
 
     def __len__(self):
         return len(self._minima)
@@ -153,13 +170,12 @@ class LogarithmicRangeMin:
         for j in range(_log2(len(X))):
             m.append(map(min, m[-1], m[-1][1<<j:]))
 
-    def __getslice__(self,x,y):
-        """Find range minimum by representing range as the union
-        of two overlapping subranges with power-of-two lengths.
-        """
-        j = _logtable[y-x]
+    def __getitem__(self,it):
+        """When called by X[left:right], return min(X[left:right])."""
+        left,right = _decodeSlice(self,it)
+        j = _logtable[right-left]
         row = self._minima[j]
-        return min(row[x],row[y-2**j])
+        return min(row[left],row[right-2**j])
 
     def __len__(self):
         return len(self._minima[0])
@@ -325,3 +341,4 @@ class LCATest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()   
+
