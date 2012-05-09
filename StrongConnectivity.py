@@ -16,11 +16,6 @@ D. Eppstein, July 2005.
 import unittest
 import DFS
 
-try:
-    set
-except NameError:
-    from sets import Set as set
-
 class StronglyConnectedComponents(DFS.Searcher):
     """
     Generate the strongly connected components of G.  G should be

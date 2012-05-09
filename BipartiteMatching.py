@@ -8,11 +8,6 @@ D. Eppstein, April 2002.
 
 from StrongConnectivity import StronglyConnectedComponents
 
-try:
-    set
-except NameError:
-    from sets import Set as set
-
 def matching(graph):
     """
     Find maximum cardinality matching of a bipartite graph (U,V,E).

@@ -10,11 +10,6 @@ D. Eppstein, July 2005.
 from StrongConnectivity import StronglyConnectedComponents
 import DFS
 
-try:
-    set
-except NameError:
-    from sets import Set as set
-
 class NonrepetitiveGraph:
     """
     Data structure for finding nonrepetitive paths in graphs.

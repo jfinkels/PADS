@@ -5,11 +5,6 @@ Breadth First Search. See also LexBFS.py.
 D. Eppstein, May 2007.
 """
 
-try:
-    set
-except NameError:
-    from sets import Set as set
-
 def BreadthFirstLevels(G,root):
     """
     Generate a sequence of bipartite directed graphs, each consisting

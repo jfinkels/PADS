@@ -9,11 +9,6 @@ import unittest
 from DFS import preorder,postorder
 import BipartiteMatching
 
-try:
-    set
-except NameError:
-    from sets import Set as set
-
 def isTopologicalOrder(G,L):
     """Check that L is a topological ordering of directed graph G."""
     vnum = {}
