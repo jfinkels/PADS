@@ -16,7 +16,6 @@ from Graphs import isUndirected
 from PartialOrder import TopologicalOrder
 from StrongConnectivity import StronglyConnectedComponents
 from Biconnectivity import stOrientation
-from sets import Set
 import unittest
 
 def CubicMatchPartitions(G):
@@ -45,7 +44,7 @@ def CubicMatchPartitions(G):
                 sourcepos[w] = [i for i in (0,1,2) if out[w][i]==v][0]
                 adjlist[sourcepos[w]] = w
             usedpos = [sourcepos[w] for w in source]
-            if len(Set(usedpos)) != len(usedpos):
+            if len(set(usedpos)) != len(usedpos):
                 # two edges in with same index, doesn't form matching
                 break 
             elif len(source) == 0:
@@ -72,7 +71,7 @@ def groupByCycles(G,i,j):
     Collect cycles of G[v][i] and G[v][j] edges,
     return a dictionary mapping v to the number of its cycle.
     """
-    G = dict([(v,(G[v][i],G[v][j])) for v in G])
+    G = {v:(G[v][i],G[v][j]) for v in G}
     index = 0
     D = {}
     for C in StronglyConnectedComponents(G):
@@ -104,12 +103,12 @@ def xyzEmbeddings(G):
     """
     for G in CubicMatchPartitions(G):
         xyz = [groupByCycles(G,i,j) for i,j in [(0,1),(0,2),(1,2)]]
-        xyz = dict([(v,[xyz[i][v] for i in (0,1,2)]) for v in G])
+        xyz = {v:[xyz[i][v] for i in (0,1,2)] for v in G}
         if isxyz(list(xyz.itervalues())):
             yield xyz
 
 class xyzGraphTest(unittest.TestCase):
-    cube = dict([(v,[v^i for i in (1,2,4)]) for v in range(8)])
+    cube = {v:[v^i for i in (1,2,4)] for v in range(8)}
 
     def testCubicMatchPartitions(self):
         """Check that a cube has the right number of matching partitions."""
@@ -121,3 +120,4 @@ class xyzGraphTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()   
+

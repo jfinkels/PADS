@@ -56,8 +56,7 @@ class StronglyConnectedComponents(DFS.Searcher):
     def _component(self,vertices):
         """Make a new SCC."""
         vertices = set(vertices)
-        induced = dict([(v,set([w for w in self._graph[v] if w in vertices]))
-                        for v in vertices])
+        induced = {v:{w for w in self._graph[v] if w in vertices} for v in vertices}
         self._components.append(induced)
 
     def preorder(self,parent,child):
@@ -101,16 +100,23 @@ def Condensation(G):
 # and check that the correct results are obtained.
 
 class StrongConnectivityTest(unittest.TestCase):
+
     G1 = { 0:[1], 1:[2,3], 2:[4,5], 3:[4,5], 4:[6], 5:[], 6:[] }
     C1 = [[0],[1],[2],[3],[4],[5],[6]]
-    f = [frozenset([i]) for i in G1]
-    Con1 = dict([(f[v],set([f[w] for w in G1[v]])) for v in G1])
+
+    # Work around http://bugs.python.org/issue11796 by using a loop
+    # instead of a dict/set comprehension in a class variable initializer
+    # should be:
+    # Con1 = {frozenset([v]):{frozenset([w]) for w in G1[v]} for v in G1}
+    Con1 = {}
+    for v in G1:
+        Con1[frozenset([v])] = {frozenset([w]) for w in G1[v]}
     
     G2 = { 0:[1], 1:[2,3,4], 2:[0,3], 3:[4], 4:[3] }
     C2 = [[0,1,2],[3,4]]
     f012 = frozenset([0,1,2])
     f34 = frozenset([3,4])
-    Con2 = {f012:set([f34]), f34:set()}
+    Con2 = {f012:{f34}, f34:set()}
     
     knownpairs = [(G1,C1),(G2,C2)]
 

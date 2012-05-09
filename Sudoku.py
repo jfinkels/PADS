@@ -502,8 +502,8 @@ def nishio(grid):
         return result
 
     for d in digits:
-        visited = set([511])      # nodes no longer needing to be searched
-        completable = set([511])  # nodes with paths to the all-ones matrix
+        visited = {511}           # nodes no longer needing to be searched
+        completable = {511}       # nodes with paths to the all-ones matrix
         locs = grid.locations[d]
         mask = search(0)          # bitmask of cells in valid placements
         if locs != mask:
