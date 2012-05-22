@@ -15,6 +15,7 @@ D. Eppstein, November 2003.
 """
 
 import unittest,random
+from collections import defaultdict
 from UnionFind import UnionFind
 
 def _decodeSlice(self,it):
@@ -182,9 +183,9 @@ class LCA:
     """
     def __init__(self, parent, RangeMinFactory = RestrictedRangeMin):
         """Construct LCA structure from tree parent relation."""
-        children = {}
+        children = defaultdict(list)
         for x in parent:
-            children.setdefault(parent[x],[]).append(x)
+            children[parent[x]].append(x)
         root = [x for x in children if x not in parent]
         if len(root) != 1:
             raise ValueError("LCA input is not a tree")
@@ -206,11 +207,11 @@ class LCA:
         self._representatives[node] = len(levels)
         pair = (level,node)
         levels.append(pair)
-        for child in children.get(node,[]):
+        for child in children[node]:
             self._visit(children,levels,child,level+1)
             levels.append(pair)
 
-class OfflineLCA(dict):
+class OfflineLCA(defaultdict):
     """Find LCAs of all pairs in a given sequence, using Union-Find."""
 
     def __init__(self,parent,pairs):
@@ -221,9 +222,9 @@ class OfflineLCA(dict):
         """
 
         # set up dictionary where answers get stored
-        dict.__init__(self)
+        defaultdict.__init__(self,dict)
         for u,v in pairs:
-            self.setdefault(u,{})[v] = self.setdefault(v,{})[u] = None
+            self[u][v] = self[v][u] = None
 
         # set up data structure for finding node ancestor on search path
         # self.descendants forms a collection of disjoint sets,
@@ -233,9 +234,9 @@ class OfflineLCA(dict):
         self.ancestors = {}
 
         # invert the parent relationship so we can traverse the tree
-        self.children = {}
+        self.children = defaultdict(list)
         for x,px in parent.iteritems():
-            self.children.setdefault(px,[]).append(x)
+            self.children[px].append(x)
         root = [x for x in self.children if x not in parent]
         if len(root) != 1:
             raise ValueError("LCA input is not a tree")
@@ -247,7 +248,7 @@ class OfflineLCA(dict):
     def traverse(self,node):
         """Perform depth first traversal of tree."""
         self.ancestors[self.descendants[node]] = node
-        for child in self.children.get(node,[]):
+        for child in self.children[node]:
             self.traverse(child)
             self.descendants.union(child,node)
             self.ancestors[self.descendants[node]] = node

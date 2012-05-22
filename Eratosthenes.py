@@ -28,6 +28,7 @@ variant in the generation of practical numbers.
 """
 
 import unittest
+from collections import defaultdict
 
 def primes():
     '''Yields the sequence of primes via the Sieve of Eratosthenes.'''
@@ -70,7 +71,7 @@ def FactoredIntegers():
     """
     yield 1,{}
     i = 2
-    factorization = {}
+    factorization = defaultdict(dict)
     while True:
         if i not in factorization:  # prime
             F = {i:1}
@@ -81,7 +82,7 @@ def FactoredIntegers():
             F = {p:x+1}
             yield i,F
             factorization[2*i] = F
-            factorization.setdefault(i+p**x,{})[p] = x
+            factorization[i+p**x][p] = x
             del factorization[i]
         else:
             yield i,factorization[i]
@@ -90,7 +91,7 @@ def FactoredIntegers():
                 iq = i+q
                 if iq in factorization and p in factorization[iq]:
                     iq += p**x  # skip higher power of p
-                factorization.setdefault(iq,{})[p] = x
+                factorization[iq][p] = x
             del factorization[i]
         i += 1
 
