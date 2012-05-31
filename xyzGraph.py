@@ -17,6 +17,7 @@ from PartialOrder import TopologicalOrder
 from StrongConnectivity import StronglyConnectedComponents
 from Biconnectivity import stOrientation
 import unittest
+from collections import defaultdict
 
 def CubicMatchPartitions(G):
     """Partition a biconnected cubic graph G into three matchings.
@@ -85,10 +86,9 @@ def isxyz(points):
     True if there are two points per axis-parallel line, False otherwise.
     """
     for i,j in [(0,1),(0,2),(1,2)]:
-        projections = {}
+        projections = defaultdict(list)
         for p in points:
-            x,y = p[i],p[j]
-            projections.setdefault((x,y),[]).append(p)
+            projections[p[i],p[j]].append(p)
         for L in projections.itervalues():
             if len(L) != 2:
                 return False
