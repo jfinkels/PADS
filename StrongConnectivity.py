@@ -48,6 +48,10 @@ class StronglyConnectedComponents(DFS.Searcher):
         """Return iterator for sequence of strongly connected components."""
         return iter(self._components)
 
+    def __len__(self):
+        """How many components are there?"""
+        return len(self._components)
+
     def _component(self,vertices):
         """Make a new SCC."""
         vertices = set(vertices)
