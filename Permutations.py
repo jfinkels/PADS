@@ -80,6 +80,43 @@ def DoubleSteinhausJohnsonTrotter(n):
         perm[x],perm[x+1] = perm[x+1],perm[x]
         yield perm
 
+def StirlingChanges(n):
+    """Variant Steinhaus-Johnson-Trotter for Stirling permutations.
+    A Stirling permutation is a double permutation in which each
+    pair of values has only larger values between them.
+    The algorithm is to sweep the largest pair of values through
+    the sequence of smaller values, recursing when it reaches
+    the ends of the sequence, exactly as in the standard
+    Steinhaus-Johnson-Trotter algorithm. However, it differs
+    in swapping items two positions apart instead of adjacent items."""
+    if n <= 1:
+        return
+    up = xrange(2*n-2)
+    down = xrange(2*n-3,-1,-1)
+    recur = StirlingChanges(n-1)
+    try:
+        while True:
+            for x in down:
+                yield x
+            yield recur.next() + 2
+            for x in up:
+                yield x
+            yield recur.next()
+    except StopIteration:
+        pass
+
+def StirlingPermutations(n):
+    """Generate all Stirling permutations of order n."""
+    perm = []
+    for i in range(n):
+        perm += [i,i]
+
+    # run through the sequence of swaps
+    yield perm
+    for x in StirlingChanges(n):
+        perm[x],perm[x+2] = perm[x+2],perm[x]
+        yield perm
+
 # If run standalone, perform unit tests
 class PermutationTest(unittest.TestCase):    
     def testChanges(self):
