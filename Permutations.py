@@ -156,21 +156,10 @@ def Involutions(n):
     p = range(n)
     yield p
     for c in InvolutionChanges(n):
-        if p[c] == c:
-            if p[c+1] == c+1:
-                p[c],p[c+1] = c+1,c     # add new pair
-            else:                       # move end of one pair
-                i = p[c+1]
-                p[c],p[c+1],p[i] = i,c+1,c
-        elif p[c+1] == c+1:             # again, move end of one pair
-            i = p[c]
-            p[c],p[c+1],p[i] = c,i,c+1
-        elif p[c] == c+1:
-            p[c],p[c+1] = c,c+1         # remove one pair
-        else:                           # swap ends of two pairs
-            x,y = p[c],p[c+1]
-            p[x],p[y] = c+1,c
-            p[c],p[c+1] = y,x
+        x,y = p[c],p[c+1]   # current partners of c and c+1
+        if x == c and y != c+1: x = c+1
+        if x != c and y == c+1: y = c
+        p[x],p[y],p[c],p[c+1] = c+1, c, y, x    # swap partners
         yield p
 
 # If run standalone, perform unit tests
