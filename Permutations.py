@@ -124,13 +124,8 @@ def InvolutionChanges(n):
     in which the last item is fixed, and then we the match
     for the last item back and forth over a recursively
     generated sequence for n-2."""
-    if n <= 1:
-        return
-    elif n == 2:
-        yield 0
-        return
-    elif n == 3:
-        for c in [0,1,0]:
+    if n <= 3:
+        for c in [[],[],[0],[0,1,0]][n]:
             yield c
         return
     for c in InvolutionChanges(n-1):
@@ -220,7 +215,7 @@ class PermutationTest(unittest.TestCase):
 
     def testInvolutions(self):
         """Are these involutions and do we have the right number of them?"""
-        telephone = [1,1,2,4,10,26,76,232]
+        telephone = [1,1,2,4,10,26,76,232,764]
         for n in range(len(telephone)):
             count = 0
             sorted = range(n)
