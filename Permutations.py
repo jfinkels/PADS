@@ -3,13 +3,33 @@ Efficient recursive version of the Steinhaus-Johnson-Trotter algorithm
 for listing all permutations of a set of items.
 D. Eppstein, October 2011.
 
-The algorithm sets up a sequence of recursive simple generators,
-each taking constant space, for a total space of O(n), where n is
-the number of items being permuted. The number of recursive calls
-to generate a swap that moves the item originally in position n
-of the input permutation is O(n-i+1), so all but a 1/n fraction of
-the swaps take no recursion and the rest always take O(n) time,
-for an average time per swap of O(1).
+NOTE: The generators in this module work by making a sequence of
+small changes to a permutation stored in a Python list object,
+and then yielding that list. That means that the objects that they
+generate (the list objects) must not be modified by their callers,
+because that would break subsequent generation steps. And it also
+means that each permutation yielded by the generator only has its
+correct value up to the time the generator is called again, after
+which this value will change. If you want to keep a persistent copy
+of a permutation, or change it, you need to copy it into a
+separate object. E.g.
+
+    RIGHT:
+        [list(p) for p in SteinhausJohnsonTrotter(n)]
+        # makes a list of all the permutations of order n
+    WRONG:
+        list(SteinhausJohnsonTrotter(n))
+        [p for p in SteinhausJohnsonTrotter(n)]
+        # either way, these make a list of length n! all of whose
+        # elements point to the same list object as each other
+
+The Steinhaus-Johnson-Trotter implementation given here sets up a
+sequence of recursive simple generators, each taking constant space,
+for a total space of O(n), where n is the number of items being permuted.
+The number of recursive calls to generate a swap that moves the item
+originally in position n of the input permutation is O(n-i+1), so all
+but a 1/n fraction of the swaps take no recursion and the rest always take O(n) time, for an average time per swap of O(1) and an average time per
+generated permutation of O(1). The other generators are similar.
 """
 
 import unittest
