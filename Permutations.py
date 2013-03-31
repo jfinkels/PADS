@@ -154,13 +154,15 @@ def InvolutionChanges(n):
     for i in range(n-4,-1,-1):
         yield i
     ic = InvolutionChanges(n-2)
+    up = range(0,n-2)
+    down = range(n-3,-1,-1)
     try:
         while True:
             yield ic.next() + 1
-            for i in range(0,n-2):
+            for i in up:
                 yield i
             yield ic.next()
-            for i in range(n-3,-1,-1):
+            for i in down:
                 yield i
     except StopIteration:
         yield n-4
