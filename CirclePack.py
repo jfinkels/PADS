@@ -84,19 +84,26 @@ def NormalizePacking(packing,k=None,target=1.0):
     s = target/r
     return dict((kk,(zz*s,rr*s)) for kk,(zz,rr) in packing.iteritems())
 
-def InvertAround(packing,k):
+def InvertAround(packing,k,smallCircles=None):
     """Invert so that the specified circle surrounds all the others.
     Searches for the inversion center that maximizes the minimum radius.
     
     This can be expressed as a quasiconvex program, but in a related
     hyperbolic space, so rather than applying QCP methods it seems
     simpler to use a numerical hill-climbing approach, relying on the
-    theory of QCP to tell us there are no local maxima to get stuck in."""
+    theory of QCP to tell us there are no local maxima to get stuck in.
+    
+    If the smallCircles argument is given, the optimization
+    for the minimum radius circle will look only at these circles"""
     z,r = packing[k]
+    if smallCircles:
+        optpack = {k:packing[k] for k in smallCircles}
+    else:
+        optpack = packing
     q,g = z,r*0.4
     oldrad,ratio = None,2
     while abs(g) > r*(tolerance-1) or ratio > tolerance:
-        rr,ignore1,ignore2,q = max(list(testgrid(packing,k,z,r,q,g)))
+        rr,ignore1,ignore2,q = max(list(testgrid(optpack,k,z,r,q,g)))
         if oldrad:
             ratio = rr/oldrad
         oldrad = rr
