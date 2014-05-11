@@ -37,7 +37,7 @@ def primes():
     # Generate recursively the sequence of primes up to sqrt(n).
     # Each p from the sequence is used to initiate sieving at p*p.
     roots = primes()
-    root = roots.next()
+    root = next(roots)
     square = root*root
 
     # The main sieving loop.
@@ -49,7 +49,7 @@ def primes():
     while True:
         if n >= square:     # Time to include another square?
             D[square] = root+root
-            root = roots.next()
+            root = next(roots)
             square = root*root
 
         if n not in D:      # Not witnessed, must be prime.
@@ -78,7 +78,7 @@ def FactoredIntegers():
             yield i,F
             factorization[2*i] = F
         elif len(factorization[i]) == 1:    # prime power
-            p,x = factorization[i].items()[0]
+            p,x = next(iter(factorization[i].items()))
             F = {p:x+1}
             yield i,F
             factorization[2*i] = F
@@ -86,7 +86,7 @@ def FactoredIntegers():
             del factorization[i]
         else:
             yield i,factorization[i]
-            for p,x in factorization[i].iteritems():
+            for p,x in factorization[i].items():
                 q = p**x
                 iq = i+q
                 if iq in factorization and p in factorization[iq]:
@@ -109,13 +109,12 @@ def MoebiusFunction(n):
     """A functional version of the Moebius sequence.
     Efficient only for small values of n."""
     while n >= len(MoebiusFunctionValues):
-        MoebiusFunctionValues.append(MoebiusFunctionIterator.next())
+        MoebiusFunctionValues.append(next(MoebiusFunctionIterator))
     return MoebiusFunctionValues[n]
 
 def isPracticalFactorization(f):
     """Test whether f is the factorization of a practical number."""
-    f = f.items()
-    f.sort()
+    f = sorted(f.items())
     sigma = 1
     for p,x in f:
         if sigma < p - 1:
@@ -135,13 +134,13 @@ class SieveTest(unittest.TestCase):
         """Test that the first few primes are generated correctly."""
         G = primes()
         for p in [2,3,5,7,11,13,17,19,23,29,31,37]:
-            self.assertEqual(p,G.next())
+            self.assertEqual(p,next(G))
 
     def testPractical(self):
         """Test that the first few practical nos are generated correctly."""
         G = PracticalNumbers()
         for p in [1,2,4,6,8,12,16,18,20,24,28,30,32,36]:
-            self.assertEqual(p,G.next())
+            self.assertEqual(p,next(G))
 
 if __name__ == "__main__":
     unittest.main()

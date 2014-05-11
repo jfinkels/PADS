@@ -61,7 +61,7 @@ def CountLyndonWords(s,n):
     total = 0
     for i in range(1,n+1):
         if n%i == 0:
-            total += MoebiusFunction(n/i) * s**i
+            total += MoebiusFunction(n//i) * s**i
     return total//n
 
 def ChenFoxLyndonBreakpoints(s):
@@ -115,7 +115,7 @@ def isLyndonWord(s):
     """Is the given sequence a Lyndon word?"""
     if len(s) == 0:
         return True
-    return ChenFoxLyndonBreakpoints(s).next() == len(s)
+    return next(ChenFoxLyndonBreakpoints(s)) == len(s)
 
 # If run standalone, perform unit tests
 class LyndonTest(unittest.TestCase):
@@ -132,7 +132,7 @@ class LyndonTest(unittest.TestCase):
             for n in range(1,6):
                 prev = []
                 for x in LengthLimitedLyndonWords(s,n):
-                    self.assert_(prev < x)
+                    self.assertTrue(prev < x)
                     prev = list(x)
 
     def testSubsequence(self):
@@ -142,7 +142,7 @@ class LyndonTest(unittest.TestCase):
                 smaller = LengthLimitedLyndonWords(s,n-1)
                 for x in LengthLimitedLyndonWords(s,n):
                     if len(x) < n:
-                        self.assertEqual(x,smaller.next())
+                        self.assertEqual(x,next(smaller))
     
     def testIsLyndon(self):
         """Test that the words we generate are Lyndon words."""
