@@ -34,6 +34,12 @@ generated permutation of O(1). The other generators are similar.
 
 import unittest
 
+# 2to3 compatibility
+try:
+    xrange
+except:
+    xrange = range
+
 def PlainChanges(n):
     """Generate the swaps for the Steinhaus-Johnson-Trotter algorithm."""
     if n < 1:
@@ -45,10 +51,10 @@ def PlainChanges(n):
         while True:
             for x in down:
                 yield x
-            yield recur.next() + 1
+            yield next(recur) + 1
             for x in up:
                 yield x
-            yield recur.next()
+            yield next(recur)
     except StopIteration:
         pass
 
@@ -61,7 +67,7 @@ def SteinhausJohnsonTrotter(x):
     try:
         perm = list(x)
     except:
-        perm = range(x)
+        perm = list(range(x))
     n = len(perm)
 
     # run through the sequence of swaps
@@ -81,10 +87,10 @@ def DoublePlainChanges(n):
         while True:
             for x in up:
                 yield x
-            yield recur.next() + 1
+            yield next(recur) + 1
             for x in down:
                 yield x
-            yield recur.next() + 2
+            yield next(recur) + 2
     except StopIteration:
         pass
 
@@ -118,10 +124,10 @@ def StirlingChanges(n):
         while True:
             for x in down:
                 yield x
-            yield recur.next() + 2
+            yield next(recur) + 2
             for x in up:
                 yield x
-            yield recur.next()
+            yield next(recur)
     except StopIteration:
         pass
 
@@ -158,10 +164,10 @@ def InvolutionChanges(n):
     down = range(n-3,-1,-1)
     try:
         while True:
-            yield ic.next() + 1
+            yield next(ic) + 1
             for i in up:
                 yield i
-            yield ic.next()
+            yield next(ic)
             for i in down:
                 yield i
     except StopIteration:
@@ -175,7 +181,7 @@ def Involutions(n):
     Each two involutions differ by a change that either adds or
     removes an adjacent pair of swapped items, moves a swap target
     by one, or swaps two adjacent swap targets."""
-    p = range(n)
+    p = list(range(n))
     yield p
     for c in InvolutionChanges(n):
         x,y = p[c],p[c+1]   # current partners of c and c+1
@@ -221,15 +227,15 @@ class PermutationTest(unittest.TestCase):
     
     def testListInput(self):
         """If given a list as input, is it the first output?"""
-        for L in ([1,3,5,7], list('zyx'), [], [[]], range(20)):
-            self.assertEqual(L,SteinhausJohnsonTrotter(L).next())
+        for L in ([1,3,5,7], list('zyx'), [], [[]], list(range(20))):
+            self.assertEqual(L,next(SteinhausJohnsonTrotter(L)))
 
     def testInvolutions(self):
         """Are these involutions and do we have the right number of them?"""
         telephone = [1,1,2,4,10,26,76,232,764]
         for n in range(len(telephone)):
             count = 0
-            sorted = range(n)
+            sorted = list(range(n))
             invs = set()
             for p in Involutions(n):
                 self.assertEqual([p[i] for i in p],sorted)

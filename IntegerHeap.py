@@ -32,6 +32,12 @@ such as psyco are in use.
 D. Eppstein, January 2010
 """
 
+# 2to3 compatibility
+try:
+    xrange
+except:
+    xrange = range
+
 def IntegerHeap(i):
     """Return an integer heap for 2^i-bit integers.
     We use a BitVectorHeap for small i and a FlatHeap for large i.
@@ -61,7 +67,7 @@ class BitVectorHeap:
     """Maintain the minimum of a set of integers using bitvector operations."""
     def __init__(self):
         """Create a new BitVectorHeap."""
-        self._S = 0L
+        self._S = 0
         
     def __nonzero__(self):
         """True if this heap is nonempty, false if empty."""
@@ -203,5 +209,4 @@ if __name__ == "__main__":
                     N.remove(x)
                     I.remove(x)
 
-    print "Testing IntegerHeap.py"
     unittest.main()   
