@@ -11,7 +11,7 @@ def arbitrary_item(S):
     mysteriously terminating loops in callers' code when S is empty.
     """
     try:
-        return iter(S).next()
+        return next(iter(S))
     except StopIteration:
         raise IndexError("No items to select.")
 
