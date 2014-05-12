@@ -15,6 +15,7 @@ D. Eppstein, August 2008.
 """
 
 from itertools import chain
+from functools import cmp_to_key
 
 class SortedSet:
     """Maintain a set of items in such a way that iter(set) returns the items in sorted order.
@@ -53,11 +54,15 @@ class SortedSet:
 
     def __iter__(self):
         if not self._previous:
-            self._previous = sorted(self._set,cmp=self._comparison)
+            sortarg = self._set
         else:
-            self._previous = sorted(chain(self._additions,
-                                          (x for x in self._previous if x not in self._removals)),
-                                    cmp=self._comparison)
+            sortarg = chain(self._additions,
+                            (x for x in self._previous
+                             if x not in self._removals))
+        if self._comparison:
+            self._previous = sorted(sortarg,key=cmp_to_key(self._comparison))
+        else:
+            self._previous = sorted(sortarg)
         self._removals = set()
         self._additions = set()
         return iter(self._previous)
@@ -92,5 +97,4 @@ if __name__ == "__main__":
             self.assertEqual(list(S),[1,3,5,7,9])
             self.assertEqual(list(SortedSet([1,3,6,7])),[1,3,6,7])
 
-    print "Testing SortedSet.py"
     unittest.main()   
