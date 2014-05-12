@@ -246,10 +246,7 @@ class BiconnectivityTest(unittest.TestCase):
     def testBiconnectedComponents(self):
         """G2 has four biconnected components."""
         C = BiconnectedComponents(self.G2)
-        CV = [component.keys() for component in C]
-        for comp in CV:
-            comp.sort()
-        CV.sort()
+        CV = sorted(sorted(component.keys()) for component in C)
         self.assertEqual(CV,[[0,2,5],[1,3,6,8],[2,3],[4,7]])
     
     def testSTOrientation(self):
