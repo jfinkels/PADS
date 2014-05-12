@@ -240,8 +240,6 @@ class PartitionTest(unittest.TestCase):
         for n in range(1,len(self.counts)):
             last = []
             for p in lex_partitions(n):
-                if not (last < p):
-                    print "last:",last,"p:",p
                 self.assert_(last < p)
                 last = list(p)  # make less-mutable copy
 
