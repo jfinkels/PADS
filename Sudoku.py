@@ -26,11 +26,6 @@ from Wrap import wrap
 from Not import Not
 from TwoSatisfiability import Forced
 
-try:
-    set
-except NameError:
-    from sets import Set as set
-
 class BadSudoku(Exception): pass
     # raised when we discover that a puzzle has no solutions
 
