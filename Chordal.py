@@ -67,7 +67,7 @@ class ChordalTest(unittest.TestCase):
                     for w in G[v]:
                         for x in G[v]:
                             if w != x and w not in eliminated and x not in eliminated:
-                                self.assert_(w in G[x] and x in G[w]) 
+                                self.assertTrue(w in G[x] and x in G[w]) 
 
 if __name__ == "__main__":
     unittest.main()   

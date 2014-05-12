@@ -29,7 +29,10 @@ class PartitionRefinement:
 
     def __iter__(self):
         """Loop through the sets in the partition."""
-        return self._sets.itervalues()
+        try:    # Python 2/3 compatibility
+            return self._sets.itervalues()
+        except AttributeError:
+            return iter(self._sets.values())
 
     def __len__(self):
         """Return the number of sets in the partition."""
