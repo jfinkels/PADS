@@ -19,6 +19,12 @@ from Biconnectivity import stOrientation
 import unittest
 from collections import defaultdict
 
+# 2to3 compatibility
+try:
+    xrange
+except:
+    xrange = range
+
 def CubicMatchPartitions(G):
     """Partition a biconnected cubic graph G into three matchings.
     Each matching is represented as a graph, in which G[v] is a list
@@ -33,7 +39,7 @@ def CubicMatchPartitions(G):
             raise ValueError("CubicMatchPartitions: graph is not cubic")
     ST = stOrientation(G)
     L = TopologicalOrder(ST)
-    for B in xrange(1L<<(len(L)//2 - 1)):
+    for B in xrange(1<<(len(L)//2 - 1)):
         # Here with a bitstring representing the sequence of choices
         out = {}
         pos = 0
@@ -54,7 +60,7 @@ def CubicMatchPartitions(G):
             elif len(source) == 1:
                 # two outgoing vertices, one incoming
                 avail = [i for i in (0,1,2) if i != usedpos[0]]
-                if B & (1L<<pos):
+                if B & (1<<pos):
                     avail.reverse()
                 pos += 1
                 for i,w in zip(avail,list(ST[v])):
@@ -89,7 +95,7 @@ def isxyz(points):
         projections = defaultdict(list)
         for p in points:
             projections[p[i],p[j]].append(p)
-        for L in projections.itervalues():
+        for L in projections.values():
             if len(L) != 2:
                 return False
     return True
@@ -99,12 +105,12 @@ def xyzEmbeddings(G):
     """
     List all xyz graph embeddings of G.
     Each is returned as a dictionary mapping vertices to triples of points.
-    To get just the points, use D.itervalues().
+    To get just the points, use D.values().
     """
     for G in CubicMatchPartitions(G):
         xyz = [groupByCycles(G,i,j) for i,j in [(0,1),(0,2),(1,2)]]
         xyz = {v:[xyz[i][v] for i in (0,1,2)] for v in G}
-        if isxyz(list(xyz.itervalues())):
+        if isxyz(list(xyz.values())):
             yield xyz
 
 class xyzGraphTest(unittest.TestCase):
