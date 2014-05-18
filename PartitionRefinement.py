@@ -79,7 +79,7 @@ class PartitionRefinement:
 
     def freeze(self):
         """Make all sets in S immutable."""
-        for S in self._sets.values():
+        for S in list(self._sets.values()):
             F = frozenset(S)
             for x in F:
                 self._partition[x] = F

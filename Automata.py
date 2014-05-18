@@ -15,6 +15,12 @@ import unittest
 from PartitionRefinement import PartitionRefinement
 from Sequence import Sequence
 
+# Hack for Python 3 compatibility
+try:
+    unicode
+except:
+    unicode = str
+
 class LanguageError(Exception): pass
 
 def Language(A):
@@ -575,18 +581,18 @@ class RegExpTest(unittest.TestCase):
         """membership tests for RegularLanguage(expression)"""
         for L,Li,Lx in self.languages:
             for S in Li:
-                self.assert_(S in L)
+                self.assertTrue(S in L)
             for S in Lx:
-                self.assert_(S not in L)
+                self.assertTrue(S not in L)
 
     def testComplement(self):
         """membership tests for ~RegularLanguage"""
         for L,Li,Lx in self.languages:
             L = ~L
             for S in Lx:
-                self.assert_(S in L)
+                self.assertTrue(S in L)
             for S in Li:
-                self.assert_(S not in L)
+                self.assertTrue(S not in L)
 
     def testEquivalent(self):
         """test that converting NFA->expr->NFA produces same language"""
