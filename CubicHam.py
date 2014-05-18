@@ -230,7 +230,7 @@ def HamiltonianCycles(G):
             for w in G[v]:
                 if w not in forced_in_current[v]:
                     unforced[v][w] = True
-        for v in previous_matching.keys():
+        for v in list(previous_matching.keys()):
             if v not in unforced or previous_matching[v] not in unforced[v]:
                 del previous_matching[v]
         M = matching(unforced, previous_matching)
