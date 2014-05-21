@@ -32,12 +32,6 @@ such as psyco are in use.
 D. Eppstein, January 2010
 """
 
-# 2to3 compatibility
-try:
-    xrange
-except:
-    xrange = range
-
 def IntegerHeap(i):
     """Return an integer heap for 2^i-bit integers.
     We use a BitVectorHeap for small i and a FlatHeap for large i.
@@ -70,6 +64,10 @@ class BitVectorHeap:
         self._S = 0
         
     def __nonzero__(self):
+        """True if this heap is nonempty, false if empty."""
+        return self._S != 0
+        
+    def __bool__(self):
         """True if this heap is nonempty, false if empty."""
         return self._S != 0
 
@@ -108,6 +106,10 @@ class FlatHeap:
             raise ValueError("FlatHeap: %s out of range" % repr(x))
 
     def __nonzero__(self):
+        """True if this heap is nonempty, false if empty."""
+        return not (self._min is None)
+
+    def __bool__(self):
         """True if this heap is nonempty, false if empty."""
         return not (self._min is None)
 
@@ -170,6 +172,10 @@ class LinearHeap:
     def __nonzero__(self):
         """True if this heap is nonempty, false if empty."""
         return len(self._S) > 0
+        
+    def __bool__(self):
+        """True if this heap is nonempty, false if empty."""
+        return len(self._S) > 0
 
     def add(self,x):
         """Include x among the values in the heap."""
@@ -197,7 +203,7 @@ if __name__ == "__main__":
             o = 5               # do tests on 2^5-bit integers
             N = LinearHeap()
             I = IntegerHeap(o)
-            for iteration in xrange(20000):
+            for iteration in range(20000):
                 self.assertEqual(bool(N),bool(I))   # both have same emptiness
                 if (not N) or random.randrange(2):  # flip coin for add/remove
                     x = random.randrange(1<<(1<<o))
