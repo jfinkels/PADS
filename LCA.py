@@ -18,6 +18,12 @@ import unittest,random
 from collections import defaultdict
 from UnionFind import UnionFind
 
+# 2to3 compatibility
+try:
+    xrange
+except:
+    xrange = range
+
 def _decodeSlice(self,it):
     """Work around removal of __getslice__ in Python 3"""
     if type(it) != slice:
@@ -38,7 +44,7 @@ class RangeMin:
         Uses an LCA structure on a Cartesian tree for the input."""
         self._data = list(X)
         if len(X) > 1:
-            big = map(max, self._ansv(False), self._ansv(True))
+            big = list(map(max, self._ansv(False), self._ansv(True)))
             parents = {i:big[i][1] for i in range(len(X)) if big[i]}
             self._lca = LCA(parents)
 
@@ -163,7 +169,7 @@ class LogarithmicRangeMin:
         """Compute min(X[i:i+2**j]) for each possible i,j."""
         self._minima = m = [list(X)]
         for j in range(_log2(len(X))):
-            m.append(map(min, m[-1][:-1<<j], m[-1][1<<j:]))
+            m.append(list(map(min, m[-1][:-1<<j], m[-1][1<<j:])))
 
     def __getitem__(self,it):
         """When called by X[left:right], return min(X[left:right])."""
@@ -235,7 +241,7 @@ class OfflineLCA(defaultdict):
 
         # invert the parent relationship so we can traverse the tree
         self.children = defaultdict(list)
-        for x,px in parent.iteritems():
+        for x,px in parent.items():
             self.children[px].append(x)
         root = [x for x in self.children if x not in parent]
         if len(root) != 1:
@@ -278,9 +284,10 @@ def _pairs(X,reversed=False):
     """Return pairs (x,i) for x in list X, where i is
     the index of x in the data, in forward or reverse order.
     """
-    indices = range(len(X))
     if reversed:
-        indices.reverse()
+        indices = range(len(X)-1,-1,-1)
+    else:
+        indices = range(len(X))
     return [(X[i],i) for i in indices]
 
 _logtable = [None,0]
@@ -321,17 +328,17 @@ class LCATest(unittest.TestCase):
 
     def testLCA(self):
         L = LCA(self.parent)
-        for k,v in self.lcas.iteritems():
+        for k,v in self.lcas.items():
             self.assertEqual(L(*k),v)
 
     def testLogLCA(self):
         L = LCA(self.parent, LogarithmicRangeMin)
-        for k,v in self.lcas.iteritems():
+        for k,v in self.lcas.items():
             self.assertEqual(L(*k),v)
 
     def testOfflineLCA(self):
-        L = OfflineLCA(self.parent, self.lcas.iterkeys())
-        for (p,q),v in self.lcas.iteritems():
+        L = OfflineLCA(self.parent, self.lcas.keys())
+        for (p,q),v in self.lcas.items():
             self.assertEqual(L[p][q],v)
 
 if __name__ == "__main__":
