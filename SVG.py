@@ -31,9 +31,10 @@ class SVG:
         else:
             self.prefix = ""
         if standalone:
-            print >>stream,'''<?xml version="1.0" standalone="no"?>
+            self.stream.write('''<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
-  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">'''
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+''')
         self.indentation = indentation
         self.nesting = 0
         br = _coord(bbox.real)
@@ -47,7 +48,7 @@ class SVG:
         if self.nesting:
             raise Exception("SVG: Unclosed tags")
 
-    def element(self, e, delta=0, style={}, **morestyle):
+    def element(self, e, delta=0, unspaced=False, style={}, **morestyle):
         """Output an SVG element.
         The delta argument distinguishes between XML tags that
         open a nested section of the XML file (delta=+1), XML tags
@@ -61,7 +62,10 @@ class SVG:
         argument, the keyword argument takes priority."""
         if delta < 0:
             self.nesting += delta
-        output = [" " * (self.indentation + 2*self.nesting), "<"]
+        if delta >= 0 or not unspaced:
+            output = [" " * (self.indentation + 2*self.nesting), "<"]
+        else:
+            output = ["<"]
         if delta < 0:
             output.append("/")
         output += [self.prefix, e]
@@ -81,7 +85,9 @@ class SVG:
         elif delta == 0:
             output.append("/")
         output.append(">")
-        print "".join(output)
+        if delta <= 0 or not unspaced:
+            output.append("\n")
+        self.stream.write("".join(output))
 
     def group(self,style={},**morestyle):
         """Start a group of objects, all with the same style"""
@@ -95,6 +101,16 @@ class SVG:
         """Circle with given center and radius"""
         self.element('circle cx="%s" cy="%s" r="%s"' %
                 (_coord(center.real), _coord(center.imag), _coord(radius)),
+            style=style, **morestyle)
+
+    def rectangle(self, p, q, style={}, **morestyle):
+        """Rectangle with corners at points p and q"""
+        x = min(p.real,q.real)
+        y = min(p.imag,q.imag)
+        width = abs((p-q).real)
+        height = abs((p-q).imag)
+        self.element('rect x="%s" y="%s" width="%s" height="%s"' %
+                (_coord(x), _coord(x), _coord(width), _coord(height)),
             style=style, **morestyle)
 
     def segment(self, p, q, style={}, **morestyle):
@@ -116,6 +132,15 @@ class SVG:
         self.element('path d="M %s,%s A %s,%s 0 %s 0 %s,%s"' %
                      (_coord(p.real),_coord(p.imag),r,r,large,
                       _coord(q.real),_coord(q.imag)), style=style, **morestyle)
+
+    def text(self, label, location, style={}, **morestyle):
+        """Text label at the given location.
+        Caller is responsible for making the label xml-safe."""
+        self.element('text x="%s" y="%s"' %
+            (_coord(location.real),_coord(location.imag)),
+            delta=1, unspaced=True, style=style, **morestyle)
+        self.stream.write(label)
+        self.element('text', delta=-1, unspaced=True)
 
 # A small color palette chosen to have high contrast
 # even when viewed by color-blind readers

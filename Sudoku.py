@@ -25,6 +25,7 @@ from Repetitivity import NonrepetitiveGraph
 from Wrap import wrap
 from Not import Not
 from TwoSatisfiability import Forced
+from SVG import SVG
 
 class BadSudoku(Exception): pass
     # raised when we discover that a puzzle has no solutions
@@ -1411,30 +1412,29 @@ def html_format(grid):
     return False
 
 def svg_format(grid):
-    print('''<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
- "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="274pt" height="274pt" viewBox="0 0 273 273">''')
-    print('  <g fill="none" stroke="black" stroke-width="1.5">')
-    print('    <rect x="2" y="2" width="270" height="270" />')
+    svg = SVG(274+274j,sys.stdout)
+    svg.group(style={"fill":"none", "stroke":"black", "stroke-width":"1.5"})
+    svg.rectangle(2+2j,272+272j)
     for i in [3,6]:
-        print('    <line x1="2" y1="%d" x2="272" y2="%d" />' % (30*i+2,30*i+2))
-        print('    <line x1="%d" y1="2" x2="%d" y2="272" />' % (30*i+2,30*i+2))
-    print('  </g>')
-    print('  <g fill="none" stroke="black" stroke-width="0.5">')
+        pos = 30*i+2
+        svg.segment(2+pos*1j,272+pos*1j)
+        svg.segment(pos+2j,pos+272j)
+    svg.ungroup()
+    svg.group(style={"fill":"none", "stroke":"black", "stroke-width":"0.5"})
     for i in [1,2,4,5,7,8]:
-        print('    <line x1="2" y1="%d" x2="272" y2="%d" />' % (30*i+2,30*i+2))
-        print('    <line x1="%d" y1="2" x2="%d" y2="272" />' % (30*i+2,30*i+2))
-    print('  </g>')
-    print('  <g font-family="Times" font-size="24" fill="black" text-anchor="middle">')
+        pos = 30*i+2
+        svg.segment(2+pos*1j,272+pos*1j)
+        svg.segment(pos+2j,pos+272j)
+    svg.ungroup()
+    svg.group(style={"font-family":"Times", "font-size":"24", "fill":"black",
+                     "text-anchor":"middle"})
     for row in range(9):
         for col in range(9):
             cell = row*9+col
             if grid.contents[cell]:
-                print('    <text x="%d" y="%d">%d</text>' % \
-                    (30*col+17, 30*row+25, grid.contents[cell]))
-    print('  </g>')
-    print('</svg>')
+                svg.text(str(grid.contents[cell]),30*col+17+30j*row+25j)
+    svg.ungroup()
+    svg.close()
     return False
 
 output_formats = {
