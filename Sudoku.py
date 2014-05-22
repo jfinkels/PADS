@@ -41,7 +41,7 @@ class group:
         h,k = [q for q in range(4) if q != i and q != j]
         for w in range(3):
             for z in range(3):
-                mask |= 1L << (x*3**i + y*3**j + w*3**h + z*3**k)
+                mask |= 1 << (x*3**i + y*3**j + w*3**h + z*3**k)
         self.mask = mask
         self.pos = [None]*9
         self.name = "%s %d" % (name,x+3*y+1)
@@ -53,14 +53,14 @@ groups = sqrs+rows+cols
 
 neighbors = [0]*81
 for i in range(81):
-    b = 1L<<i
+    b = 1<<i
     for g in groups:
         if g.mask & b:
             neighbors[i] |= (g.mask &~ b)
 
 unmask = {}
 for i in range(81):
-    unmask[1L<<i] = i
+    unmask[1<<i] = i
 
 alignments = {}
 for s in sqrs:
@@ -218,7 +218,7 @@ class Sudoku:
         - twosat should be set true to enable a 2SAT-based solution rule
         """
         self.contents = [0]*81
-        self.locations = [None]+[(1L<<81)-1]*9
+        self.locations = [None]+[(1<<81)-1]*9
         self.rules_used = set()
         self.progress = False
         self.pairs = None
@@ -238,7 +238,7 @@ class Sudoku:
                     digit,cell = item
                 if digit:
                     self.place(digit,cell)
-                    self.original_cells |= 1L << cell
+                    self.original_cells |= 1 << cell
                 cell += 1
         
     def __iter__(self):
@@ -277,8 +277,9 @@ class Sudoku:
             x = []
         text = ' '.join([str(i) for i in items+x])
         for line in wrap(text):
-            print >>self.logstream, line
-        print >>self.logstream
+            self.logstream.write(line+'\n')
+        self.logstream.write('\n')
+        self.logstream.flush()
 
     def place(self,digit,cell,explanation=None):
         """Change the puzzle by filling the given cell with the given digit."""
@@ -291,13 +292,13 @@ class Sudoku:
                       "as it already contains",str(self.contents[cell])+"."])
             raise BadSudoku("place(%d,%d): cell already contains %d" %
                             (digit,cell,self.contents[cell]))
-        if (1L<<cell) & self.locations[digit] == 0:
+        if (1<<cell) & self.locations[digit] == 0:
             self.log(["Unable to place",digit,"in",cellnames[cell],
                       "as that digit is not available to be placed there."])
             raise BadSudoku("place(%d,%d): location not available" %
                             (digit,cell))
         self.contents[cell] = digit
-        bit = 1L << cell
+        bit = 1 << cell
         for d in digits:
             if d != digit:
                 self.unplace(d,bit,explanation,False)
@@ -325,7 +326,7 @@ class Sudoku:
 
     def choices(self,cell):
         """Which digits are still available to be placed in the cell?"""
-        bit = 1L<<cell
+        bit = 1<<cell
         return [d for d in digits if self.locations[d] & bit]
 
     def complete(self):
@@ -720,7 +721,7 @@ def subproblem(grid):
                 graph[d].append(unmask[bit])
                 locs &=~ bit
         imp = imperfections(graph)
-        for d in imp.keys():
+        for d in list(imp.keys()):
             if not imp[d]:
                 del imp[d]
         while imp:
@@ -748,7 +749,7 @@ def subproblem(grid):
             mask = 0
             forces = []
             for cell in imp[d]:
-                bit = 1L<<cell
+                bit = 1<<cell
                 if bit & grid.locations[d]:
                     mask |= bit
                     force = imp[d][cell]
@@ -774,7 +775,7 @@ def subproblem(grid):
                     forcemask = 0
                     for dig in force:
                         for cell in force[dig]:
-                            forcemask |= 1L<<cell
+                            forcemask |= 1<<cell
                     expls += [len(forcedigs) == 1 and "digit" or "digits",
                               andlist(forcedigs), "can only be placed in",
                               namecells(forcemask)]
@@ -835,7 +836,7 @@ def bilocal(grid):
             # But for simplicity's sake we ignore that possibility;
             # it doesn't happen very often and when it does the repetitive
             # cycle rule will find it instead.
-            mask = 1L<<cell
+            mask = 1<<cell
             for d in digits:
                 if d not in forced[cell]:
                     def explain():
@@ -877,8 +878,8 @@ def bivalue(grid):
         ch = grid.choices(c)
         if len(ch) == 2:
             graph[c] = {}
-            tvmask[ch[0]] |= 1L<<c
-            tvmask[ch[1]] |= 1L<<c
+            tvmask[ch[0]] |= 1<<c
+            tvmask[ch[1]] |= 1<<c
             otherbv[c,ch[0]] = ch[1]
             otherbv[c,ch[1]] = ch[0]
     edgegroup = {}
@@ -905,15 +906,15 @@ def bivalue(grid):
         mask = 0
         for g in edgegroup[v,w]:
             mask |= g.mask
-        mask &=~ (1L << v)
-        mask &=~ (1L << w)
+        mask &=~ (1 << v)
+        mask &=~ (1 << w)
         def explain():
             cycle = [v] + nrg.shortest(w,grid.otherbv[w,digit],
                                        v,grid.otherbv[v,digit])
             return ["In the cyclic sequence of cells", pathname(cycle)+",",
                     bivalue_explanation + ".",
                     "This placement would conflict with placing", digit,
-                    "in", namecells((1L<<v)|(1L<<w))+",",
+                    "in", namecells((1<<v)|(1<<w))+",",
                     "making it impossible to fill the cycle's",
                     len(cycle)-1, "cells with the remaining",
                     len(cycle)-2, "digits."]
@@ -1039,7 +1040,7 @@ def explain_conflict_path(grid,cell,d,why,reached,dd):
     if why[reached,dd]:
         path = grid.bilocation.shortest(cell,d,reached,dd)
         if len(path) == 2:
-            mask = (1L<<cell)|(1L<<reached)
+            mask = (1<<cell)|(1<<reached)
             for g in groups:
                 if g.mask & mask == mask:
                     break
@@ -1057,7 +1058,7 @@ def explain_conflict_path(grid,cell,d,why,reached,dd):
     path = grid.bivalues.shortest(cell,grid.otherbv[cell,d],
                                  reached,grid.otherbv[reached,dd])
     if len(path) == 2:
-        mask = (1L<<cell)|(1L<<reached)
+        mask = (1<<cell)|(1<<reached)
         return [cellnames[cell],"and",cellnames[reached],
                 "each have two possible values.",
                 "If",d,"were not placed in",cellnames[cell],
@@ -1075,7 +1076,7 @@ def explain_conflict(grid,cell,d,why,reached,dd):
     """Concoct explanation for pair of conflicting paths, one to reached."""
     for neighbor,ddd in why:
         if ddd == dd:
-            if (1L<<neighbor) & neighbors[reached]:
+            if (1<<neighbor) & neighbors[reached]:
                 return explain_conflict_path(grid,cell,d,why,reached,dd) + \
                        explain_conflict_path(grid,cell,d,why,neighbor,dd) + \
                        [cellnames[reached],"and",cellnames[neighbor],
@@ -1092,7 +1093,7 @@ def explain_conflict_group(grid,cell,d,why,g,dd):
     for reached,ddd in why:
         if dd == ddd and neighbors[reached] & mask:
             conflicts.append(reached)
-            confmask |= 1L<<reached
+            confmask |= 1<<reached
             mask &=~ neighbors[reached]
     conflicts.sort()
     expl = []
@@ -1127,7 +1128,7 @@ def conflict(grid):
                 why = {}
                 for reached,dd in grid.bilocation.reachable(cell,d):
                     why[reached,dd] = True
-                    if (1L<<reached) & conflicts[dd]:
+                    if (1<<reached) & conflicts[dd]:
                         def explain():
                             return explain_conflict(grid,cell,d,why,reached,dd)
                         grid.place(d,cell,explain)
@@ -1139,7 +1140,7 @@ def conflict(grid):
                                                 grid.otherbv[cell,d]):
                         other = grid.otherbv[reached,dd]
                         why[reached,other] = False
-                        if (1L<<reached) & conflicts[other]:
+                        if (1<<reached) & conflicts[other]:
                             def explain():
                                 return explain_conflict(grid,cell,d,
                                                         why,reached,other)
@@ -1203,7 +1204,7 @@ def twosat(grid):
     for cell in range(81):
         if len(grid.choices(cell)) > 1:
             for neighbor in range(81):
-                if cell != neighbor and (1L<<neighbor) & neighbors[cell]:
+                if cell != neighbor and (1<<neighbor) & neighbors[cell]:
                     for d in grid.choices(cell):
                         if d in grid.choices(neighbor):
                             T[(cell,d)].append(Not((neighbor,d)))
@@ -1219,9 +1220,9 @@ def twosat(grid):
             # has a superset of three choices. The third choice of the neighbor
             # determines whether these two cells form a locked pair.
             # (one-step lookahead of pair rule)
-            bothxy = grid.locations[x] & grid.locations[y] &~ (1L<<cell)
+            bothxy = grid.locations[x] & grid.locations[y] &~ (1<<cell)
             for g in groups:
-                if g.mask & (1L<<cell):
+                if g.mask & (1<<cell):
                     candidates = g.mask & bothxy
                     while candidates:
                         cellmask = candidates &~ (candidates - 1)
@@ -1231,7 +1232,7 @@ def twosat(grid):
                         if len(ch) == 3:
                             thirdchoice = [z for z in ch if z not in [x,y]][0]
                             for dd in [x,y]:
-                                other = grid.locations[dd] & g.mask &~ (1L<<cell) &~ (1L<<candidate)
+                                other = grid.locations[dd] & g.mask &~ (1<<cell) &~ (1<<candidate)
                                 while other:
                                     cellmask = other &~ (other - 1)
                                     other &=~ cellmask
@@ -1268,7 +1269,7 @@ def twosat(grid):
                 grid.place(digit,cell,twosat_explain)
         for cell,digit in F:    # Now the unplaces
             if not F[cell,digit]:
-                grid.unplace(digit,1L<<cell,twosat_explain)
+                grid.unplace(digit,1<<cell,twosat_explain)
 
 # triples of name, rule, difficulty level
 rules = [
@@ -1355,21 +1356,27 @@ def permute(grid, preserve_symmetry = True):
 # false otherwise
 
 def text_format(grid):
+    output = []
     for row in digits:
         if row % 3 != 1:
-            print ('|' + ' '*11)*3+'|'
+            output.append(('|' + ' '*11)*3 + '|\n')
         elif row == 1:
-            print ' ' + '-'*35 + ' '
+            output.append(' ' + '-'*35 + ' \n')
         else:
-            print '|' + '-'*35 + '|'
+            output.append('|' + '-'*35 + '|\n')
         for col in digits:
             if col % 3 == 1:
-                print '|',
+                output.append('| ')
             else:
-                print ' ',
-            print grid.contents[(row-1)*9+(col-1)] or '.',
-        print '|'
-    print ' ' + '-'*35 + ' '
+                output.append('  ')
+            digit = grid.contents[(row-1)*9+(col-1)]
+            if digit:
+                output += [str(digit), ' ']
+            else:
+                output.append('. ')
+        output.append('|\n')
+    output.append(' ' + '-'*35 + ' \n')
+    print(''.join(output))
     return True
 
 def numeric_format(grid):
@@ -1377,62 +1384,57 @@ def numeric_format(grid):
     for digit in grid:
         row.append(str(digit))
         if len(row) == 9:
-            print ''.join(row)
+            print(''.join(row))
             row = []
     return True
 
 def html_format(grid):
-    print "<table border=1>"
+    print("<table border=1>")
     for a in range(3):
-        print "<tr>"
+        print("<tr>")
         for b in range(3):
-            print "<td><table border=0>"
+            print("<td><table border=0>")
             for c in range(3):
-                print "<tr>"
+                print("<tr>")
                 for d in range(3):
                     row = 3*a+c
                     col = 3*b+d
                     cell = 9*row+col
                     if grid.contents[cell]:
-                        print '<td width=30 height=30 align=center valign=middle style="font-family:times,serif; font-size:16pt; text-align:center; color:black">%d</td>' % grid.contents[cell]
-#                        sty = '; color:black'
-#                        val = ' value="%d" readonly' % grid.contents[cell]
+                        print('<td width=30 height=30 align=center valign=middle style="font-family:times,serif; font-size:16pt; text-align:center; color:black">%d</td>' % grid.contents[cell])
                     else:
-                        print '<td width=30 height=30 align=center valign=middle><input style="font-family:times,serif; font-size:16pt; text-align:center; color:#555; margin:0pt; border-width:0" size=1 maxlength=1></td>'
-#                        sty = '; color:gray'
-#                        val = ''
-#                    print '<td width=30 height=30 align=center valign=middle><input style="font-size:16pt; text-align:center%s" size=1 maxlength=1%s></td>' % (sty,val)
-                print "</tr>"
-            print "</table></td>"
-        print "</tr>"
-    print "</table>"
+                        print('<td width=30 height=30 align=center valign=middle><input style="font-family:times,serif; font-size:16pt; text-align:center; color:#555; margin:0pt; border-width:0" size=1 maxlength=1></td>')
+                print("</tr>")
+            print("</table></td>")
+        print("</tr>")
+    print("</table>")
     return False
 
 def svg_format(grid):
-    print '''<?xml version="1.0" encoding="iso-8859-1"?>
+    print('''<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="274pt" height="274pt" viewBox="0 0 273 273">'''
-    print '  <g fill="none" stroke="black" stroke-width="1.5">'
-    print '    <rect x="2" y="2" width="270" height="270" />'
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="274pt" height="274pt" viewBox="0 0 273 273">''')
+    print('  <g fill="none" stroke="black" stroke-width="1.5">')
+    print('    <rect x="2" y="2" width="270" height="270" />')
     for i in [3,6]:
-        print '    <line x1="2" y1="%d" x2="272" y2="%d" />' % (30*i+2,30*i+2)
-        print '    <line x1="%d" y1="2" x2="%d" y2="272" />' % (30*i+2,30*i+2)
-    print '  </g>'
-    print '  <g fill="none" stroke="black" stroke-width="0.5">'
+        print('    <line x1="2" y1="%d" x2="272" y2="%d" />' % (30*i+2,30*i+2))
+        print('    <line x1="%d" y1="2" x2="%d" y2="272" />' % (30*i+2,30*i+2))
+    print('  </g>')
+    print('  <g fill="none" stroke="black" stroke-width="0.5">')
     for i in [1,2,4,5,7,8]:
-        print '    <line x1="2" y1="%d" x2="272" y2="%d" />' % (30*i+2,30*i+2)
-        print '    <line x1="%d" y1="2" x2="%d" y2="272" />' % (30*i+2,30*i+2)
-    print '  </g>'
-    print '  <g font-family="Times" font-size="24" fill="black" text-anchor="middle">'
+        print('    <line x1="2" y1="%d" x2="272" y2="%d" />' % (30*i+2,30*i+2))
+        print('    <line x1="%d" y1="2" x2="%d" y2="272" />' % (30*i+2,30*i+2))
+    print('  </g>')
+    print('  <g font-family="Times" font-size="24" fill="black" text-anchor="middle">')
     for row in range(9):
         for col in range(9):
             cell = row*9+col
             if grid.contents[cell]:
-                print '    <text x="%d" y="%d">%d</text>' % \
-                    (30*col+17, 30*row+25, grid.contents[cell])
-    print '  </g>'
-    print '</svg>'
+                print('    <text x="%d" y="%d">%d</text>' % \
+                    (30*col+17, 30*row+25, grid.contents[cell]))
+    print('  </g>')
+    print('</svg>')
     return False
 
 output_formats = {
@@ -1493,18 +1495,18 @@ def all_solutions(grid, fastrules = True):
         grid.rules_used.update(branch.rules_used)
         grid.rules_used.add("backtrack")
         grid.steps = branch.steps
-        grid.unplace(d,1L<<c,"The backtracking search has already tried this"
+        grid.unplace(d,1<<c,"The backtracking search has already tried this"
                      " placement, and now must try the opposite decision.")
 
 def unisolvent(grid):
     """Does this puzzle have a unique solution?"""
     stream = all_solutions(grid)
     try:
-        stream.next()
+        next(stream)
     except StopIteration:
         return False
     try:
-        stream.next()
+        next(stream)
     except StopIteration:
         return True
     return False
@@ -1564,38 +1566,38 @@ parser.add_option("-f", "--format", dest="format", action="store",
 if __name__ == '__main__':
     options,args = parser.parse_args()
     if args:
-        print >>sys.stderr, "Unrecognized command line syntax, use --help for input documentation"
+        print("Unrecognized command line syntax, use --help for input documentation")
         sys.exit(0)
     
     if options.show_rules:
-        print """This solver knows the following rules.  Rules occurring later
+        print("""This solver knows the following rules.  Rules occurring later
 in the list are attempted only when all earlier rules have failed
 to make progress.
-"""
+""")
         for name,rule,difficulty in rules:
-            print name + ":" + rule.__doc__
+            print(name + ":" + rule.__doc__)
         sys.exit(0)
 
     if options.show_levels:
-        print """
+        print("""
 Puzzles are classified by difficulty, according to a weighted combination
 of the set of rules needed to solve each puzzle.  There are six levels,
 in order by difficulty: easy, moderate, tricky, difficult, evil, and
 fiendish.  In addition, a puzzle is classified as impossible if this
 program cannot find a solution for it, or if backtracking is needed to
 find the solution.
-"""
+""")
         sys.exit(0)
 
     if options.translate:
         if options.generate:
-            print "Can not simultaneously generate and translate puzzles."
+            print("Cannot simultaneously generate and translate puzzles.")
             sys.exit(0)
     
     try:
         outputter = output_formats[options.format.lower()]
     except KeyError:
-        print "Unrecognized output format."
+        print("Unrecognized output format.")
         sys.exit(0)
 
     if options.empty:
@@ -1712,20 +1714,20 @@ if __name__ == '__main__':
     if "backtrack" in puzzle.rules_used:
         used_names.append("backtrack")
     if print_level:
-        print "\nRules used:", ", ".join(used_names)
+        print("\nRules used:" + (", ".join(used_names)))
         if nsolns != 1:
-            print "Number of solutions:",nsolns
+            print("Number of solutions: %d" % nsolns)
         if not puzzle.complete() or "backtrack" in puzzle.rules_used:
-            print "Level: impossible"
+            print("Level: impossible")
         elif difficulty <= 0:
-            print "Level: easy"
+            print("Level: easy")
         elif difficulty <= 5:
-            print "Level: moderate"
+            print("Level: moderate")
         elif difficulty <= 9:
-            print "Level: tricky"
+            print("Level: tricky")
         elif difficulty <= 17:
-            print "Level: difficult"
+            print("Level: difficult")
         elif difficulty <= 33:
-            print "Level: evil"
+            print("Level: evil")
         else:
-            print "Level: fiendish"
+            print("Level: fiendish")

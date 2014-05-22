@@ -50,12 +50,12 @@ def ConcaveMinima(RowIndices,ColIndices,Matrix):
     
     # Recursive call to search for every odd column
     minima = ConcaveMinima(RowIndices,
-                [ColIndices[i] for i in xrange(1,len(ColIndices),2)],
+                [ColIndices[i] for i in range(1,len(ColIndices),2)],
                 Matrix)
 
     # Go back and fill in the even rows
     r = 0
-    for c in xrange(0,len(ColIndices),2):
+    for c in range(0,len(ColIndices),2):
         col = ColIndices[c]
         row = RowIndices[r]
         if c == len(ColIndices) - 1:
