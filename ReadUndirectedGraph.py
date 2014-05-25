@@ -130,7 +130,7 @@ def readNodeEdgeList(lines):
 
 	def addEdge(line, id):
 		u = line
-		v = lines.next()
+		v = next(lines)
 		if v.startswith('//'):
 			raise GraphFormatError, 'Missing edge endpoint in node edge list'
 		edge(G, u, v, id)
@@ -143,7 +143,7 @@ def readNodeEdgeList(lines):
 		id = line
 		if id in EdgeNames:
 			raise GraphFormatError, 'Edge name "%s" used twice in node edge list' % id
-		addEdge(lines.next(), id)
+		addEdge(next(lines), id)
 		EdgeNames[id] = id
 		
 	def noActionYet(line):
@@ -280,7 +280,7 @@ def readSparse6(str):
 
 		while 1:
 			if dLen < 1:
-				d = chunks.next()
+				d = next(chunks)
 				dLen = 6
 			dLen -= 1
 			b = (d>>dLen) & 1	# grab top remaining bit
@@ -288,7 +288,7 @@ def readSparse6(str):
 			x = d & ((1<<dLen)-1) 	# partially built up value of x
 			xLen = dLen				# how many bits included so far in x
 			while xLen < k:			# now grab full chunks until we have enough
-				d = chunks.next()
+				d = next(chunks)
 				dLen = 6
 				x = (x<<6) + d
 				xLen += 6
@@ -327,17 +327,17 @@ def readLeda(lines):
 	"""Parse filtered LEDA.GRAPH format file."""
 	lines = iter(lines)
 	for i in range(3):
-		lines.next()			# skip header lines
+		next(lines)			    # skip header lines
 	G = graph()
 
-	n = graphNum(lines.next())	# number of vertices
+	n = graphNum(next(lines))	# number of vertices
 	for i in range(n):
 		vertex(G, i+1)
-		lines.next()			# skip LEDA data
+		next(lines)			    # skip LEDA data
 	
-	m = graphNum(lines.next())	# number of edges
+	m = graphNum(next(lines))	# number of edges
 	for i in range(m):
-		words = lines.next().split()
+		words = next(lines).split()
 		if len(words) < 4:
 			raise GraphFormatError, 'Too few fields in LEDA.GRAPH edge %d' % (i+1)
 		source = graphNum(words[0])

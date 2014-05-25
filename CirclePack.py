@@ -44,7 +44,7 @@ def CirclePack(internal,external):
 
     # Recursively place all the circles
     placements = {}
-    k1 = iter(internal).next()  # pick one internal circle
+    k1 = next(iter(internal))   # pick one internal circle
     placements[k1] = 0j         # place it at the origin
     k2 = internal[k1][0]        # pick one of its neighbors
     placements[k2] = radii[k1]+radii[k2] # place it on the real axis
