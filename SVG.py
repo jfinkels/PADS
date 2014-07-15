@@ -151,5 +151,5 @@ class colors:
     red = "#BC1E46"
     blue = "#0081CD"
     green = "#009246"
-    yellow = "FEC200"
-    magenta = "CC33CC"
+    yellow = "#FEC200"
+    magenta = "#CC33CC"
