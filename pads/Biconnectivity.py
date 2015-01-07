@@ -5,16 +5,14 @@ DFS-based algorithm for computing biconnected components.
 D. Eppstein, April 2004.
 """
 
-import unittest
-from Graphs import isUndirected
-from Util import arbitrary_item
-from PartialOrder import TopologicalOrder
-
-import DFS
+from .Graphs import isUndirected
+from .Util import arbitrary_item
+from .PartialOrder import TopologicalOrder
+from .DFS import Searcher
 
 disconnected = object() # flag for BiconnectedComponents
 
-class BiconnectedComponents(DFS.Searcher):
+class BiconnectedComponents(Searcher):
     """
     Generate the biconnected components of G.  G should be represented in
     such a way that "for v in G" loops through the vertices, and "G[v]"
@@ -37,7 +35,7 @@ class BiconnectedComponents(DFS.Searcher):
         self._ancestors = {} # directed subgraph from nodes to DFS ancestors
 
         # perform the Depth First Search
-        DFS.Searcher.__init__(self,G)
+        Searcher.__init__(self,G)
 
         # clean up now-useless data structures
         del self._dfsnumber, self._activelen, self._active
@@ -87,7 +85,7 @@ class BiconnectedComponents(DFS.Searcher):
 
 class NotBiconnected(Exception): pass
 
-class BiconnectivityTester(DFS.Searcher):
+class BiconnectivityTester(Searcher):
     """
     Stripped down version of BiconnectedComponents.
     Either successfully inits or raises NotBiconnected.
@@ -101,7 +99,7 @@ class BiconnectivityTester(DFS.Searcher):
         self._dfsnumber = {}
         self._low = {}
         self._rootedge = None
-        DFS.Searcher.__init__(self,G)
+        Searcher.__init__(self,G)
 
     def preorder(self,parent,child):
         if parent == child and self._rootedge:
@@ -133,7 +131,7 @@ def isBiconnected(G):
         return False
 
 
-class stOrienter(DFS.Searcher):
+class stOrienter(Searcher):
     """
     Subclass for st-orienting a biconnected graph.
     """
@@ -156,7 +154,7 @@ class stOrienter(DFS.Searcher):
         self.roots = [] # edges with no predecessor
 
         # perform the Depth First Search
-        DFS.Searcher.__init__(self,G)
+        Searcher.__init__(self,G)
 
         # clean up now-useless data structures
         del self._dfsnumber, self._low, self._down, self._lowv
@@ -212,54 +210,3 @@ def stOrientation(G):
         source,dest = orientable.pop()
     
     return G
-
-# If run as "python Biconnectivity.py", run tests on various small graphs
-# and check that the correct results are obtained.
-
-class BiconnectivityTest(unittest.TestCase):
-    G1 = {
-        0: [1,2,5],
-        1: [0,5],
-        2: [0,3,4],
-        3: [2,4,5,6],
-        4: [2,3,5,6],
-        5: [0,1,3,4],
-        6: [3,4],
-    }
-    G2 = {
-        0: [2,5],
-        1: [3,8],
-        2: [0,3,5],
-        3: [1,2,6,8],
-        4: [7],
-        5: [0,2],
-        6: [3,8],
-        7: [4],
-        8: [1,3,6],
-    }
-
-    def testIsBiconnected(self):
-        """G1 is biconnected but G2 is not."""
-        self.assertEqual(isBiconnected(self.G1), True)
-        self.assertEqual(isBiconnected(self.G2), False)
-
-    def testBiconnectedComponents(self):
-        """G2 has four biconnected components."""
-        C = BiconnectedComponents(self.G2)
-        CV = sorted(sorted(component.keys()) for component in C)
-        self.assertEqual(CV,[[0,2,5],[1,3,6,8],[2,3],[4,7]])
-    
-    def testSTOrientation(self):
-        STO = stOrientation(self.G1)
-        L = list(TopologicalOrder(STO))
-        indegree = dict([(v,0) for v in self.G1])
-        for v in L:
-            for w in STO[v]:
-                indegree[w] += 1
-        outdegree = dict([(v,len(STO[v])) for v in self.G1])
-        self.assertEqual(len([v for v in self.G1 if indegree[v] == 0]), 1)
-        self.assertEqual(len([v for v in self.G1 if outdegree[v] == 0]), 1)
-
-if __name__ == "__main__":
-    unittest.main()   
-

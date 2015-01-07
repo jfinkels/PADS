@@ -6,7 +6,7 @@ independent set for bipartite graphs.
 D. Eppstein, April 2002.
 """
 
-from StrongConnectivity import StronglyConnectedComponents
+from .StrongConnectivity import StronglyConnectedComponents
 
 def matching(graph):
     """

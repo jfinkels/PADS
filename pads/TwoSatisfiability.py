@@ -31,11 +31,10 @@ If G is a graph of this type,
 D. Eppstein, April 2009.
 """
 
-import unittest
-from Not import Not,SymbolicNegation
-from Graphs import copyGraph
-from StrongConnectivity import Condensation
-from AcyclicReachability import Reachability
+from .Not import Not,SymbolicNegation
+from .Graphs import copyGraph
+from .StrongConnectivity import Condensation
+from .AcyclicReachability import Reachability
 
 def Symmetrize(G):
     """Expand implication graph to a larger symmetric form.
@@ -94,23 +93,3 @@ def Forced(G):
                 return None
             Force[v] = value
     return Force
-
-# Unit tests
-# Run python TwoSatisfiability.py to perform these tests.
-
-class TwoSatTest(unittest.TestCase):
-    T1 = {1:[2,3], 2:[Not(1),3]}
-    T2 = {1:[2], 2:[Not(1)], Not(1):[3], 3:[4,2], 4:[1]}
-
-    def testTwoSat(self):
-        """Check that the correct problems are satisfiable."""
-        self.assertEqual(Satisfiable(self.T1),True)
-        self.assertEqual(Satisfiable(self.T2),False)
-
-    def testForced(self):
-        """Check that we can correctly identify forced variables."""
-        self.assertEqual(Forced(self.T1),{1:False})
-        self.assertEqual(Forced(self.T2),None)
-
-if __name__ == "__main__":
-    unittest.main()   

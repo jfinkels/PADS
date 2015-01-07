@@ -14,8 +14,7 @@ test takes constant time to perform.
 D. Eppstein, April 2009.
 """
 
-import unittest
-from PartialOrder import TopologicalOrder
+from .PartialOrder import TopologicalOrder
 
 class Reachability:
     def __init__(self,G):
@@ -34,15 +33,3 @@ class Reachability:
     def reachable(self,source,destination):
         """Test whether the DAG has a path from source to destination."""
         return (1<<self.key[destination])&self.canReach[self.key[source]] != 0
-
-class ReachabilityTest(unittest.TestCase):
-    def testReachable(self):
-        G = {"A":["C"],"B":["C","D"],"C":["D","E"],"D":[],"E":[]}
-        R = Reachability(G)
-        for s in "ABCDE":
-            for t in "ABCDE":
-                self.assertEqual(R.reachable(s,t),
-                                 s <= t and s+t not in ["AB","DE"])
-
-if __name__ == "__main__":
-    unittest.main()   

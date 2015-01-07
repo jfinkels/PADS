@@ -4,10 +4,11 @@ Two-color graphs and find related structures.
 D. Eppstein, May 2004.
 """
 
-import unittest
-from Biconnectivity import BiconnectedComponents
-import Graphs
-import DFS
+from .Biconnectivity import BiconnectedComponents
+from .Graphs import union
+from .DFS import search as dfs_search
+from .DFS import nontree as NONTREE
+from .DFS import forward as FORWARD
 
 class NonBipartite(Exception):
     pass
@@ -19,10 +20,10 @@ def TwoColor(G):
     to two colors (True and False).
     """
     color = {}
-    for v,w,edgetype in DFS.search(G):
-        if edgetype is DFS.forward:
+    for v,w,edgetype in dfs_search(G):
+        if edgetype is FORWARD:
             color[w] = not color.get(v,False)
-        elif edgetype is DFS.nontree and color[v] == color[w]:
+        elif edgetype is NONTREE and color[v] == color[w]:
             raise NonBipartite
     return color
 
@@ -61,24 +62,5 @@ def OddCore(G):
     Subgraph of vertices and edges that participate in odd cycles.
     Aka, the union of nonbipartite biconnected components.
     """
-    return Graphs.union(*[C for C in BiconnectedComponents(G)
-                          if not isBipartite(C)])
-
-# If run as "python Bipartite.py", run tests on various small graphs
-# and check that the correct results are obtained.
-
-class BipartitenessTest(unittest.TestCase):
-    def cycle(self,n):
-        return {i:[(i-1)%n,(i+1)%n] for i in range(n)}
-
-    def testEvenCycles(self):
-        for i in range(4,12,2):
-            self.assertEqual(isBipartite(self.cycle(i)), True)
-
-    def testOddCycles(self):
-        for i in range(3,12,2):
-            self.assertEqual(isBipartite(self.cycle(i)), False)
-
-if __name__ == "__main__":
-    unittest.main()   
-
+    return union(*[C for C in BiconnectedComponents(G)
+                   if not isBipartite(C)])

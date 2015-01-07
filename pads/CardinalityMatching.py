@@ -5,10 +5,8 @@ Find maximum cardinality matchings in general undirected graphs.
 D. Eppstein, UC Irvine, September 6, 2003.
 """
 
-import sys
-
-from UnionFind import UnionFind
-from Util import arbitrary_item
+from .UnionFind import UnionFind
+from .Util import arbitrary_item
 
 def matching(G, initialMatching = None):
     """Find a maximum cardinality matching in a graph G.

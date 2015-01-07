@@ -11,13 +11,12 @@ representations of an arbitrary graph, when they exist.
 
 D. Eppstein, June 2006.
 """
-
-from Graphs import isUndirected
-from PartialOrder import TopologicalOrder
-from StrongConnectivity import StronglyConnectedComponents
-from Biconnectivity import stOrientation
-import unittest
 from collections import defaultdict
+
+from .Graphs import isUndirected
+from .PartialOrder import TopologicalOrder
+from .StrongConnectivity import StronglyConnectedComponents
+from .Biconnectivity import stOrientation
 
 # 2to3 compatibility
 try:
@@ -112,18 +111,3 @@ def xyzEmbeddings(G):
         xyz = {v:[xyz[i][v] for i in (0,1,2)] for v in G}
         if isxyz(list(xyz.values())):
             yield xyz
-
-class xyzGraphTest(unittest.TestCase):
-    cube = {v:[v^i for i in (1,2,4)] for v in range(8)}
-
-    def testCubicMatchPartitions(self):
-        """Check that a cube has the right number of matching partitions."""
-        self.assertEqual(len(list(CubicMatchPartitions(self.cube))),4)
-
-    def testCubeIsXYZ(self):
-        """Check that a cube is correctly identified as an xyz graph."""
-        self.assertEqual(len(list(xyzEmbeddings(self.cube))),1)
-
-if __name__ == "__main__":
-    unittest.main()   
-

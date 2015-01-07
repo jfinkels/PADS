@@ -13,10 +13,9 @@ it uses as a subroutine.
 
 D. Eppstein, November 2003.
 """
-
-import unittest,random
 from collections import defaultdict
-from UnionFind import UnionFind
+
+from .UnionFind import UnionFind
 
 # 2to3 compatibility
 try:
@@ -296,51 +295,3 @@ def _log2(n):
     while len(_logtable) <= n:
         _logtable.extend([1+_logtable[-1]]*len(_logtable))
     return _logtable[n]
-
-# if run as "python LCA.py", run tests on random data
-# and check that RangeMin's results are correct.
-
-class RandomRangeMinTest(unittest.TestCase):
-    def testRangeMin(self):
-        for trial in range(20):
-            data = [random.choice(xrange(1000000))
-                    for i in range(random.randint(1,100))]
-            R = RangeMin(data)
-            for sample in range(100):
-                i = random.randint(0,len(data)-1)
-                j = random.randint(i+1,len(data))
-                self.assertEqual(R[i:j],min(data[i:j]))
-
-class LCATest(unittest.TestCase):
-    parent = {'b':'a','c':'a','d':'a','e':'b','f':'b','g':'f','h':'g','i':'g'}
-    lcas = {
-        ('a','b'):'a',
-        ('b','c'):'a',
-        ('c','d'):'a',
-        ('d','e'):'a',
-        ('e','f'):'b',
-        ('e','g'):'b',
-        ('e','h'):'b',
-        ('c','i'):'a',
-        ('a','i'):'a',
-        ('f','i'):'f',
-    }
-
-    def testLCA(self):
-        L = LCA(self.parent)
-        for k,v in self.lcas.items():
-            self.assertEqual(L(*k),v)
-
-    def testLogLCA(self):
-        L = LCA(self.parent, LogarithmicRangeMin)
-        for k,v in self.lcas.items():
-            self.assertEqual(L(*k),v)
-
-    def testOfflineLCA(self):
-        L = OfflineLCA(self.parent, self.lcas.keys())
-        for (p,q),v in self.lcas.items():
-            self.assertEqual(L[p][q],v)
-
-if __name__ == "__main__":
-    unittest.main()   
-

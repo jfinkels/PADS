@@ -5,9 +5,8 @@ Various operations on partial orders and directed acyclic graphs.
 D. Eppstein, July 2006.
 """
 
-import unittest
-from DFS import preorder,postorder
-import BipartiteMatching
+from .DFS import preorder,postorder
+from .BipartiteMatching import matching
 
 def isTopologicalOrder(G,L):
     """Check that L is a topological ordering of directed graph G."""
@@ -66,7 +65,7 @@ def MinimumPathDecomposition(G):
     """
     Cover a directed acyclic graph with a minimum number of paths.
     """
-    M,A,B = BipartiteMatching.matching(G)
+    M,A,B = matching(G)
     H = {v:[] for v in G}
     for v in G:
         if v in M:
@@ -89,28 +88,5 @@ def MaximumAntichain(G):
     if not isAcyclic(G):
         raise ValueError("MaximumAntichain: input is not acyclic.")
     TC = TransitiveClosure(G)
-    M,A,B = BipartiteMatching.matching(TransitiveClosure(G))
+    M,A,B = matching(TransitiveClosure(G))
     return set(A).intersection(B)
-
-class PartialOrderTest(unittest.TestCase):
-    cube = {i:[i^b for b in (1,2,4,8) if i^b > i] for i in range(16)}
-            
-    def testHypercubeAcyclic(self):
-        self.assert_(isAcyclic(self.cube))
-        
-    def testHypercubeClosure(self):
-        TC = TransitiveClosure(self.cube)
-        for i in range(16):
-            self.assertEqual(TC[i],
-                {j for j in range(16) if i & j == i and i != j})
-
-    def testHypercubeAntichain(self):        
-        A = MaximumAntichain(self.cube)
-        self.assertEqual(A,{3,5,6,9,10,12})
-        
-    def testHypercubeDilworth(self):
-        CD = list(MinimumChainDecomposition(self.cube))
-        self.assertEqual(len(CD),6)
-
-if __name__ == "__main__":
-    unittest.main()   
