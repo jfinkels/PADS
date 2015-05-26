@@ -128,7 +128,7 @@ class SVG:
             large = "1"
         else:
             large = "0"
-        r = _coord(r)
+        r = _coord(abs(r))
         self.element('path d="M %s,%s A %s,%s 0 %s 0 %s,%s"' %
                      (_coord(p.real),_coord(p.imag),r,r,large,
                       _coord(q.real),_coord(q.imag)), style=style, **morestyle)
