@@ -12,6 +12,7 @@ D. Eppstein, November 2003.
 from .LexBFS import LexBFS
 from .Graphs import isUndirected
 
+
 def PerfectEliminationOrdering(G):
     """Return a perfect elimination ordering, or raise an exception if not chordal.
     G should be represented in such a way that "for v in G" loops through
@@ -21,7 +22,7 @@ def PerfectEliminationOrdering(G):
     """
     alreadyProcessed = set()
     B = list(LexBFS(G))
-    position = {B[i]:i for i in range(len(B))}
+    position = {B[i]: i for i in range(len(B))}
     leftNeighbors = {}
     parent = {}
     for v in B:
@@ -30,9 +31,11 @@ def PerfectEliminationOrdering(G):
         if leftNeighbors[v]:
             parent[v] = B[max([position[w] for w in leftNeighbors[v]])]
             if not leftNeighbors[v] - {parent[v]} <= leftNeighbors[parent[v]]:
-                raise ValueError("Input to PerfectEliminationOrdering is not chordal")
+                raise ValueError(
+                    "Input to PerfectEliminationOrdering is not chordal")
     B.reverse()
     return B
+
 
 def Chordal(G):
     """Test if a given graph is chordal."""

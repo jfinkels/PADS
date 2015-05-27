@@ -10,8 +10,10 @@ from .DFS import search as dfs_search
 from .DFS import nontree as NONTREE
 from .DFS import forward as FORWARD
 
+
 class NonBipartite(Exception):
     pass
+
 
 def TwoColor(G):
     """
@@ -20,12 +22,13 @@ def TwoColor(G):
     to two colors (True and False).
     """
     color = {}
-    for v,w,edgetype in dfs_search(G):
+    for v, w, edgetype in dfs_search(G):
         if edgetype is FORWARD:
-            color[w] = not color.get(v,False)
+            color[w] = not color.get(v, False)
         elif edgetype is NONTREE and color[v] == color[w]:
             raise NonBipartite
     return color
+
 
 def Bipartition(G):
     """
@@ -38,6 +41,7 @@ def Bipartition(G):
         if color[v]:
             yield v
 
+
 def isBipartite(G):
     """
     Return True if G is bipartite, False otherwise.
@@ -48,14 +52,16 @@ def isBipartite(G):
     except NonBipartite:
         return False
 
-def BipartiteOrientation(G,adjacency_list_type=set):
+
+def BipartiteOrientation(G, adjacency_list_type=set):
     """
     Given an undirected bipartite graph G, return a directed graph in which
     the edges are oriented from one side of the bipartition to the other.
     The second argument has the same meaning as in Graphs.copyGraph.
     """
     B = Bipartition(G)
-    return {v:adjacency_list_type(iter(G[v])) for v in B}
+    return {v: adjacency_list_type(iter(G[v])) for v in B}
+
 
 def OddCore(G):
     """

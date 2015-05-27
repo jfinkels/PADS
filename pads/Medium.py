@@ -21,7 +21,7 @@ theory of finite automata.
 
 D. Eppstein, May 2007.
 """
-    
+
 from .BFS import BreadthFirstLevels
 from .DFS import search as dfs_search
 from .DFS import nontree as NONTREE
@@ -29,19 +29,23 @@ from .DFS import reverse as REVERSE
 from .DFS import forward as FORWARD
 from .Graphs import isUndirected
 
-class MediumError(ValueError): pass
+
+class MediumError(ValueError):
+    pass
+
 
 class Medium:
+
     """
     Base class for media.
-    
+
     A medium is defined by four instance methods:
     - M.states() lists the states of M
     - M.tokens() lists the tokens of M
     - M.reverse(token) finds the token with opposite action to its argument
     - M.action(state,token) gives the result of applying that token
     These should be defined in subclasses; the base does not define them.
-    
+
     In addition, we define methods (that may possibly be overridden):
     - iter(M) is a synonym for M.states()
     - len(M) is a synonym for len(M.states())
@@ -53,7 +57,7 @@ class Medium:
     def __iter__(self):
         """Generate sequence of medium states."""
         return self.states()
-    
+
     def __len__(self):
         """Return number of states in the medium."""
         i = 0
@@ -61,16 +65,17 @@ class Medium:
             i += 1
         return i
 
-    def __getitem__(self,S):
+    def __getitem__(self, S):
         """Construct dict mapping tokens to actions from state S."""
-        return {t:self.action(S,t) for t in self.tokens()}
+        return {t: self.action(S, t) for t in self.tokens()}
 
-    def __call__(self,S,t):
+    def __call__(self, S, t):
         """Apply token t to state S."""
-        return self.action(S,t)
+        return self.action(S, t)
 
 
 class ExplicitMedium(Medium):
+
     """
     Medium in which all dicts M[state] have been precomputed.
     This can be less space-efficient than other representations
@@ -78,10 +83,10 @@ class ExplicitMedium(Medium):
     (# states) x (# tokens) but it makes all operations fast.
     """
 
-    def __init__(self,M):
+    def __init__(self, M):
         """Form ExplicitMedium from any other kind of medium."""
-        self._reverse = {t:M.reverse(t) for t in M.tokens()}
-        self._action = {S:M[S] for S in M}
+        self._reverse = {t: M.reverse(t) for t in M.tokens()}
+        self._action = {S: M[S] for S in M}
 
     # Basic classes needed to define any medium
 
@@ -91,10 +96,10 @@ class ExplicitMedium(Medium):
     def tokens(self):
         return iter(self._reverse)
 
-    def reverse(self,t):
+    def reverse(self, t):
         return self._reverse[t]
 
-    def action(self,S,t):
+    def action(self, S, t):
         return self._action[S][t]
 
     # Faster implementation of other medium functions
@@ -102,55 +107,56 @@ class ExplicitMedium(Medium):
     def __len__(self):
         return len(self._action)
 
-    def __getitem__(self,S):
+    def __getitem__(self, S):
         return self._action[S]
 
 
 class BitvectorMedium(Medium):
+
     """
     Medium defined by a set of bitvectors.
-    
+
     The tokens of the medium are pairs (i,b) where i is an index
     into a bitvector and b is a bit; the action of a token on a bitvector
     is to change the i'th bit to b, if the result is part of the set,
     and if not to leave the bitvector unchanged.
-    
+
     We assume but do not verify that the bitvectors do form a medium;
     that is, that one can transform any bitvector in the set into any
     other via a sequence of actions of length equal to the Hamming
     distance between the vectors.
     """
 
-    def __init__(self,states,L):
+    def __init__(self, states, L):
         """Initialize medium for set states and bitvector length L."""
         self._states = set(states)
         self._veclen = L
-    
+
     def states(self):
         return iter(self._states)
 
     def tokens(self):
         for i in range(self._veclen):
-            yield i,False
-            yield i,True
+            yield i, False
+            yield i, True
 
-    def reverse(self,t):
-        i,b = t
-        return i,not b
+    def reverse(self, t):
+        i, b = t
+        return i, not b
 
-    def action(self,S,t):
+    def action(self, S, t):
         """
         Compute the action of token t on state S.
         We form the bitvector V that should correspond to St,
         then test whether V belongs to the given set of states.
         If so, we return it; otherwise, we return S itself.
         """
-        i,b = t
-        mask = 1<<i
+        i, b = t
+        mask = 1 << i
         if b:
             V = S | mask
         else:
-            V = S &~ mask
+            V = S & ~ mask
         if V in self._states:
             return V
         else:
@@ -163,18 +169,20 @@ def StateTransitionGraph(M):
     If s is a state of M, G[s] will provide a dictionary mapping
     the neighbors of s to the actions that produced those neighbors.
     """
-    G = {S:{} for S in M}
+    G = {S: {} for S in M}
     for S in M:
         for t in M.tokens():
-            St = M(S,t)
+            St = M(S, t)
             if St != S:
                 if St in G[S]:
-                    raise MediumError("multiple adjacency from %s to %s" % (S,St))
+                    raise MediumError(
+                        "multiple adjacency from %s to %s" % (S, St))
                 G[S][St] = t
     return G
 
 
 class LabeledGraphMedium(Medium):
+
     """
     A medium defined from an edge-labeled graph.
     The input graph G should have the property that G[v][w] is a token
@@ -182,16 +190,18 @@ class LabeledGraphMedium(Medium):
     LabeledGraphMedium(StateTransitionGraph(M)) should result
     in a medium with the same behavior as M itself.
     """
-    def __init__(self,G):
+
+    def __init__(self, G):
         if not isUndirected(G):
             raise MediumError("not an undirected graph")
-        self._action = {v:{} for v in G}
+        self._action = {v: {} for v in G}
         self._reverse = {}
         for v in G:
             for w in G[v]:
                 t = G[v][w]
                 if t in self._action[v]:
-                    raise MediumError("multiple edges for state %s and token %s" % (v,t))
+                    raise MediumError(
+                        "multiple edges for state %s and token %s" % (v, t))
                 self._action[v][t] = w
                 if t not in self._reverse:
                     rt = G[w][v]
@@ -208,12 +218,12 @@ class LabeledGraphMedium(Medium):
     def tokens(self):
         return iter(self._reverse)
 
-    def reverse(self,t):
+    def reverse(self, t):
         return self._reverse[t]
 
-    def action(self,S,t):
-        return self._action[S].get(t,S)
-    
+    def action(self, S, t):
+        return self._action[S].get(t, S)
+
     def __len__(self):
         return len(self._action)
 
@@ -225,7 +235,7 @@ def RoutingTable(M):
     By following successive tokens from this table, we can find
     a path in the medium that uses each token at most once
     and involves no token-reverse pairs.
-    
+
     We use the O(n^2) time algorithm from arxiv:cs.DS/0206033.
     This is also a key step of the partial cube recognition algorithm
     from arxiv:0705.1025 -- as part of that algorithm, if we
@@ -236,7 +246,7 @@ def RoutingTable(M):
 
     # find list of tokens that lead to the initial state
     activeTokens = set()
-    for LG in BreadthFirstLevels(G,initialState):
+    for LG in BreadthFirstLevels(G, initialState):
         for v in LG:
             for w in LG[v]:
                 activeTokens.add(G[w][v])
@@ -247,21 +257,22 @@ def RoutingTable(M):
     inactivated = object()  # flag object to mark inactive tokens
 
     # rest of data structure: point from states to list and list to states
-    activeForState = {S:-1 for S in M}
+    activeForState = {S: -1 for S in M}
     statesForPos = [[] for i in activeTokens]
-    
+
     def scan(S):
         """Find the next token that is effective for s."""
         i = activeForState[S]
         while True:
             i += 1
             if i >= len(activeTokens):
-                raise MediumError("no active token from %s to %s" %(S,current))
-            if activeTokens[i] != inactivated and M(S,activeTokens[i]) != S:
+                raise MediumError(
+                    "no active token from %s to %s" % (S, current))
+            if activeTokens[i] != inactivated and M(S, activeTokens[i]) != S:
                 activeForState[S] = i
                 statesForPos[i].append(S)
                 return
-    
+
     # set initial active states
     for S in M:
         if S != current:
@@ -270,16 +281,16 @@ def RoutingTable(M):
     # traverse the graph, maintaining active tokens
     visited = set()
     routes = {}
-    for prev,current,edgetype in dfs_search(G,initialState):
+    for prev, current, edgetype in dfs_search(G, initialState):
         if prev != current and edgetype != NONTREE:
             if edgetype == REVERSE:
-                prev,current = current,prev
-            
+                prev, current = current, prev
+
             # add token to end of list, point to it from old state
             activeTokens.append(G[prev][current])
             activeForState[prev] = len(activeTokens) - 1
             statesForPos.append([prev])
-            
+
             # inactivate reverse token, find new token for its states
             activeTokens[activeForState[current]] = inactivated
             for S in statesForPos[activeForState[current]]:
@@ -290,7 +301,7 @@ def RoutingTable(M):
             if current not in visited:
                 for S in M:
                     if S != current:
-                        routes[S,current] = activeTokens[activeForState[S]]
+                        routes[S, current] = activeTokens[activeForState[S]]
 
     return routes
 
@@ -301,11 +312,11 @@ def HypercubeEmbedding(M):
     tokmap = {}
     for t in M.tokens():
         if t not in tokmap:
-            tokmap[t] = tokmap[M.reverse(t)] = 1<<dim
+            tokmap[t] = tokmap[M.reverse(t)] = 1 << dim
             dim += 1
     embed = {}
     G = StateTransitionGraph(M)
-    for prev,current,edgetype in dfs_search(G):
+    for prev, current, edgetype in dfs_search(G):
         if edgetype == FORWARD:
             if prev == current:
                 embed[current] = 0

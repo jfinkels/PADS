@@ -15,6 +15,7 @@ from .UnionFind import UnionFind
 from .StrongConnectivity import StronglyConnectedComponents
 from .Graphs import isUndirected
 
+
 def PartialCubeEdgeLabeling(G):
     """
     Label edges of G by their equivalence classes in a partial cube structure.
@@ -29,7 +30,7 @@ def PartialCubeEdgeLabeling(G):
     set representing edges in the original graph that have been contracted
     to the single edge v-w.
     """
-    
+
     # Some simple sanity checks
     if not isUndirected(G):
         raise MediumError("graph is not undirected")
@@ -42,55 +43,55 @@ def PartialCubeEdgeLabeling(G):
     # - CG: contracted graph at current stage of algorithm
     # - LL: limit on number of remaining available labels
     UF = UnionFind()
-    CG = {v:{w:(v,w) for w in G[v]} for v in G}
-    NL = len(CG)-1
-    
+    CG = {v: {w: (v, w) for w in G[v]} for v in G}
+    NL = len(CG) - 1
+
     # Initial sanity check: are there few enough edges?
     # Needed so that we don't try to use union-find on a dense
     # graph and incur superquadratic runtimes.
     n = len(CG)
     m = sum([len(CG[v]) for v in CG])
-    if 1<<(m//n) > n:
+    if 1 << (m // n) > n:
         raise MediumError("graph has too many edges")
 
     # Main contraction loop in place of the original algorithm's recursion
-    while len(CG) > 1:    
+    while len(CG) > 1:
         if not isBipartite(CG):
             raise MediumError("graph is not bipartite")
 
         # Find max degree vertex in G, and update label limit
-        deg,root = max([(len(CG[v]),v) for v in CG])
+        deg, root = max([(len(CG[v]), v) for v in CG])
         if deg > NL:
             raise MediumError("graph has too many equivalence classes")
         NL -= deg
 
         # Set up bitvectors on vertices
-        bitvec = {v:0 for v in CG}
+        bitvec = {v: 0 for v in CG}
         neighbors = {}
         i = 0
         for neighbor in CG[root]:
-            bitvec[neighbor] = 1<<i
-            neighbors[1<<i] = neighbor
+            bitvec[neighbor] = 1 << i
+            neighbors[1 << i] = neighbor
             i += 1
 
         # Breadth first search to propagate bitvectors to the rest of the graph
-        for LG in BreadthFirstLevels(CG,root):
+        for LG in BreadthFirstLevels(CG, root):
             for v in LG:
                 for w in LG[v]:
                     bitvec[w] |= bitvec[v]
 
         # Make graph of labeled edges and union them together
-        labeled = {v:set() for v in CG}
+        labeled = {v: set() for v in CG}
         for v in CG:
             for w in CG[v]:
-                diff = bitvec[v]^bitvec[w]
-                if not diff or bitvec[w] &~ bitvec[v] == 0:
+                diff = bitvec[v] ^ bitvec[w]
+                if not diff or bitvec[w] & ~ bitvec[v] == 0:
                     continue    # zero edge or wrong direction
                 if diff not in neighbors:
                     raise MediumError("multiply-labeled edge")
                 neighbor = neighbors[diff]
-                UF.union(CG[v][w],CG[root][neighbor])
-                UF.union(CG[w][v],CG[neighbor][root])
+                UF.union(CG[v][w], CG[root][neighbor])
+                UF.union(CG[w][v], CG[neighbor][root])
                 labeled[v].add(w)
                 labeled[w].add(v)
 
@@ -103,7 +104,7 @@ def PartialCubeEdgeLabeling(G):
             compnum += 1
 
         # generate new compressed subgraph
-        NG = {i:{} for i in range(compnum)}
+        NG = {i: {} for i in range(compnum)}
         for v in CG:
             for w in CG[v]:
                 if bitvec[v] == bitvec[w]:
@@ -112,15 +113,15 @@ def PartialCubeEdgeLabeling(G):
                     if vi == wi:
                         raise MediumError("self-loop in contracted graph")
                     if wi in NG[vi]:
-                        UF.union(NG[vi][wi],CG[v][w])
+                        UF.union(NG[vi][wi], CG[v][w])
                     else:
                         NG[vi][wi] = CG[v][w]
-        
+
         CG = NG
 
     # Here with all edge equivalence classes represented by UF.
     # Turn them into a labeled graph and return it.
-    return {v:{w:UF[v,w] for w in G[v]} for v in G}
+    return {v: {w: UF[v, w] for w in G[v]} for v in G}
 
 
 def MediumForPartialCube(G):

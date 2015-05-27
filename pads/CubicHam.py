@@ -9,6 +9,7 @@ from .Biconnectivity import isBiconnected
 from .CardinalityMatching import matching
 from .Util import arbitrary_item, map_to_constant
 
+
 def HamiltonianCycles(G):
     """
     Generate a sequence of all Hamiltonian cycles in graph G.
@@ -24,16 +25,17 @@ def HamiltonianCycles(G):
     # In the copied graph G, G[v][w] is True when vw is an original edge
     # of the input, and False when it was produced by a contraction.
     if not G or not isUndirected(G) or maxDegree(G) > 3:
-        raise ValueError("HamiltonianCycles input must be undirected degree three graph")
+        raise ValueError(
+            "HamiltonianCycles input must be undirected degree three graph")
     if minDegree(G) < 2:
         return
-    G = copyGraph(G,map_to_constant(True))
+    G = copyGraph(G, map_to_constant(True))
 
     # Subgraph of forced edges in the input
-    forced_in_input = {v:{} for v in G}
+    forced_in_input = {v: {} for v in G}
 
     # Subgraph of forced edges in current G
-    forced_in_current = {v:{} for v in G}
+    forced_in_current = {v: {} for v in G}
 
     # List of vertices with degree two
     degree_two = [v for v in G if len(G[v]) == 2]
@@ -51,13 +53,13 @@ def HamiltonianCycles(G):
     # Whenever we modify the graph, we push an action undoing that modification.
     # Below are definitions of actions and action-related functions.
 
-    def remove(v,w):
+    def remove(v, w):
         """Remove edge v,w from edges of G."""
         was_original = G[v][w]
-        del G[v][w],G[w][v]
+        del G[v][w], G[w][v]
         was_forced = w in forced_in_current[v]
         if was_forced:
-            del forced_in_current[v][w],forced_in_current[w][v]
+            del forced_in_current[v][w], forced_in_current[w][v]
 
         def unremove():
             G[v][w] = G[w][v] = was_original
@@ -69,12 +71,13 @@ def HamiltonianCycles(G):
     def now_degree_two(v):
         """Discover that changing G has caused v's degree to become two."""
         degree_two.append(v)
+
         def not_degree_two():
             top = degree_two.pop()
             assert v == top
         actions.append(not_degree_two)
 
-    def safely_remove(v,w):
+    def safely_remove(v, w):
         """
         Remove edge v,w and update degree two data structures.
         Returns True if successful, False if found a contradiction.
@@ -82,7 +85,7 @@ def HamiltonianCycles(G):
         assert w in G[v]
         if w in forced_in_current[v] or len(G[v]) < 3 or len(G[w]) < 3:
             return False
-        remove(v,w)
+        remove(v, w)
         now_degree_two(v)
         now_degree_two(w)
         return True
@@ -97,9 +100,9 @@ def HamiltonianCycles(G):
         w = [x for x in G[v] if x not in forced_in_current[v]][0]
         if len(G[w]) <= 2:
             return False
-        return safely_remove(v,w)
+        return safely_remove(v, w)
 
-    def force(v,w):
+    def force(v, w):
         """
         Add edge v,w to forced edges.
         Returns True if successful, False if found a contradiction.
@@ -111,7 +114,7 @@ def HamiltonianCycles(G):
         if w not in G[v] or v not in G[w]:
             return False    # Removed from G after we decided to force it?
         forced_in_current[v][w] = forced_in_current[w][v] = True
-        not_previously_forced = [x for x in (v,w) if x not in forced_vertices]
+        not_previously_forced = [x for x in (v, w) if x not in forced_vertices]
         for x in not_previously_forced:
             forced_vertices[x] = True
         was_original = G[v][w]
@@ -122,16 +125,16 @@ def HamiltonianCycles(G):
             """Undo call to force."""
             for x in not_previously_forced:
                 del forced_vertices[x]
-            del forced_in_current[v][w],forced_in_current[w][v]
+            del forced_in_current[v][w], forced_in_current[w][v]
             if was_original:
-                del forced_in_input[v][w],forced_in_input[w][v]
+                del forced_in_input[v][w], forced_in_input[w][v]
 
         actions.append(unforce)
         return remove_third_leg(v) and remove_third_leg(w) and \
-            force_into_triangle(v,w) and force_into_triangle(w,v) and \
-            force_from_triangle(v,w)
+            force_into_triangle(v, w) and force_into_triangle(w, v) and \
+            force_from_triangle(v, w)
 
-    def force_into_triangle(v,w):
+    def force_into_triangle(v, w):
         """
         After v,w has been added to forced edges, check if w
         belongs to a triangle, and if so force the opposite edge.
@@ -139,12 +142,12 @@ def HamiltonianCycles(G):
         """
         if len(G[w]) != 3:
             return True
-        x,y = [z for z in G[w] if z != v]
+        x, y = [z for z in G[w] if z != v]
         if y not in G[x]:
             return True
-        return force(x,y)
+        return force(x, y)
 
-    def force_from_triangle(v,w):
+    def force_from_triangle(v, w):
         """
         After v,w has been added to forced edges, check whether it
         belongs to a triangle, and if so force the opposite edge.
@@ -155,7 +158,7 @@ def HamiltonianCycles(G):
                 if len(G[u]) < 3:
                     return len(G) == 3  # deg=2 only ok if 3 verts left
                 x = [y for y in G[u] if y != v and y != w][0]
-                if not force(u,x):
+                if not force(u, x):
                     return False
         return True
 
@@ -166,29 +169,29 @@ def HamiltonianCycles(G):
         Appends recursive search of contracted graph to action stack.
         """
         assert len(G[v]) == 2
-        u,w = G[v]
+        u, w = G[v]
         if w in G[u]:           # About to create parallel edge?
             if len(G) == 3:     # Graph is a triangle?
-                return force(u,v) and force(v,w) and force(u,w)
-            if not safely_remove(u,w):
+                return force(u, v) and force(v, w) and force(u, w)
+            if not safely_remove(u, w):
                 return None     # Unable to remove uw, no cycles exist
 
-        if not force(u,v) or not force(v,w):
+        if not force(u, v) or not force(v, w):
             return None     # Forcing the edges led to a contradiction
-        remove(u,v)
-        remove(v,w)
+        remove(u, v)
+        remove(v, w)
         G[u][w] = G[w][u] = False
         forced_in_current[u][w] = forced_in_current[w][u] = True
-        del G[v],forced_vertices[v]
+        del G[v], forced_vertices[v]
 
         def uncontract():
-            del G[u][w],G[w][u]
-            del forced_in_current[u][w],forced_in_current[w][u]
+            del G[u][w], G[w][u]
+            del forced_in_current[u][w], forced_in_current[w][u]
             forced_vertices[v] = True
             G[v] = {}
 
         actions.append(uncontract)
-        if force_from_triangle(u,w):    # Contraction may have made a triangle
+        if force_from_triangle(u, w):    # Contraction may have made a triangle
             actions.append(main)        # Search contracted graph recursively
 
     def handle_degree_two():
@@ -198,6 +201,7 @@ def HamiltonianCycles(G):
         Appends recursive search of contracted graph to action stack.
         """
         v = degree_two.pop()
+
         def unpop():
             degree_two.append(v)
         actions.append(unpop)
@@ -224,7 +228,7 @@ def HamiltonianCycles(G):
         # We jump-start the matching algorithm with our previously computed
         # matching (or as much of it as fits the current graph) since that is
         # likely to be near-perfect.
-        unforced = {v:{} for v in G}
+        unforced = {v: {} for v in G}
         for v in G:
             for w in G[v]:
                 if w not in forced_in_current[v]:
@@ -250,11 +254,11 @@ def HamiltonianCycles(G):
 
         def continuation():
             """Here after searching first recursive subgraph."""
-            if force(v,w):
+            if force(v, w):
                 actions.append(main)
 
         actions.append(continuation)
-        if safely_remove(v,w):
+        if safely_remove(v, w):
             actions.append(main)
 
     # The main backtracking loop

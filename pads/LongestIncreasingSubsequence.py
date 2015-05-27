@@ -6,6 +6,7 @@ D. Eppstein, April 2004
 
 from bisect import bisect_left
 
+
 def LongestIncreasingSubsequence(S):
     """
     Find and return longest increasing subsequence of S.
@@ -23,15 +24,15 @@ def LongestIncreasingSubsequence(S):
     tail = [None]
 
     for x in S:
-        i = bisect_left(head,x)
+        i = bisect_left(head, x)
         if i >= len(head):
             head.append(x)
             if i > 0:
-                tail.append((head[i-1],tail[i-1]))
+                tail.append((head[i - 1], tail[i - 1]))
         elif head[i] > x:
             head[i] = x
             if i > 0:
-                tail[i] = head[i-1],tail[i-1]
+                tail[i] = head[i - 1], tail[i - 1]
 
     if not head:
         return []
@@ -39,7 +40,7 @@ def LongestIncreasingSubsequence(S):
     output = [head[-1]]
     pair = tail[-1]
     while pair:
-        x,pair = pair
+        x, pair = pair
         output.append(x)
 
     output.reverse()

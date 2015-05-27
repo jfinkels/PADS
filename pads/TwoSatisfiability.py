@@ -31,14 +31,15 @@ If G is a graph of this type,
 D. Eppstein, April 2009.
 """
 
-from .Not import Not,SymbolicNegation
+from .Not import Not, SymbolicNegation
 from .Graphs import copyGraph
 from .StrongConnectivity import Condensation
 from .AcyclicReachability import Reachability
 
+
 def Symmetrize(G):
     """Expand implication graph to a larger symmetric form.
-    
+
     If the 2SAT instance includes an implication A=>B, then
     it is also valid to conclude that ~B => ~A, and our 2SAT solver
     needs to have that second implication made explicit.
@@ -48,14 +49,15 @@ def Symmetrize(G):
     """
     H = copyGraph(G)
     for v in G:
-        H.setdefault(Not(v),set())  # make sure all negations are included
+        H.setdefault(Not(v), set())  # make sure all negations are included
         for w in G[v]:
-            H.setdefault(w,set())   # as well as all implicants
-            H.setdefault(Not(w),set()) # and negated implicants
+            H.setdefault(w, set())   # as well as all implicants
+            H.setdefault(Not(w), set())  # and negated implicants
     for v in G:
         for w in G[v]:
             H[Not(w)].add(Not(v))
     return H
+
 
 def Satisfiable(G):
     """Does this 2SAT instance have a satisfying assignment?"""
@@ -66,14 +68,15 @@ def Satisfiable(G):
                 return False
     return True
 
+
 def Forced(G):
     """Find forced values for variables in a 2SAT instance.
-    
+
     A variable's value is forced to x if every satisfying assignment
     assigns the same value x to that variable. We return a dictionary
     (possibly empty) in which the keys are the forced variables
     and their values are the values they are forced to.
-    
+
     If the given instance is unsatisfiable, we return None."""
     Force = {}
     Sym = Symmetrize(G)
@@ -84,9 +87,9 @@ def Forced(G):
             Map[v] = SCC
     Reach = Reachability(Con)
     for v in Sym:
-        if Reach.reachable(Map[v],Map[Not(v)]): # v implies not v?
+        if Reach.reachable(Map[v], Map[Not(v)]):  # v implies not v?
             value = False
-            if isinstance(v,SymbolicNegation):
+            if isinstance(v, SymbolicNegation):
                 v = Not(v)
                 value = True
             if v in Force:  # already added by negation?

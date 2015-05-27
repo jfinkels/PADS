@@ -17,13 +17,15 @@ D. Eppstein, August 2008.
 from itertools import chain
 from functools import cmp_to_key
 
+
 class SortedSet:
+
     """Maintain a set of items in such a way that iter(set) returns the items in sorted order.
     We also allow a custom comparison routine, and augment the usual add() and remove() methods
     with an update() method that tells the set that a single item's position in the order might
     have changed."""
-    
-    def __init__(self,iterable=[],comparison=None):
+
+    def __init__(self, iterable=[], comparison=None):
         """Create a new sorted set with the given comparison function."""
         self._comparison = comparison
         self._set = set(iterable)
@@ -33,20 +35,20 @@ class SortedSet:
         """How many items do we have?"""
         return len(self._set)
 
-    def add(self,item):
+    def add(self, item):
         """Add the given item to a sorted set."""
         self._set.add(item)
         if self._previous:
             self._additions.add(item)
 
-    def remove(self,item):
+    def remove(self, item):
         """Remove the given item from a sorted set."""
         self._set.remove(item)
         if self._previous:
             self._removals.add(item)
             self._additions.discard(item)
 
-    def update(self,item):
+    def update(self, item):
         """Flag the given item as needing re-comparison with its neighbors in the order."""
         if self._previous:
             self._removals.add(item)
@@ -60,7 +62,7 @@ class SortedSet:
                             (x for x in self._previous
                              if x not in self._removals))
         if self._comparison:
-            self._previous = sorted(sortarg,key=cmp_to_key(self._comparison))
+            self._previous = sorted(sortarg, key=cmp_to_key(self._comparison))
         else:
             self._previous = sorted(sortarg)
         self._removals = set()

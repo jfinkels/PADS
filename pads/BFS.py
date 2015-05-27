@@ -5,7 +5,8 @@ Breadth First Search. See also LexBFS.py.
 D. Eppstein, May 2007.
 """
 
-def BreadthFirstLevels(G,root):
+
+def BreadthFirstLevels(G, root):
     """
     Generate a sequence of bipartite directed graphs, each consisting
     of the edges from level i to level i+1 of G. Edges that connect
@@ -19,7 +20,7 @@ def BreadthFirstLevels(G,root):
         for v in currentLevel:
             visited.add(v)
         nextLevel = set()
-        levelGraph = {v:set() for v in currentLevel}
+        levelGraph = {v: set() for v in currentLevel}
         for v in currentLevel:
             for w in G[v]:
                 if w not in visited:

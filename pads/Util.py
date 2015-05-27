@@ -4,6 +4,7 @@ Simple utility functions for PADS library.
 D. Eppstein, April 2004.
 """
 
+
 def arbitrary_item(S):
     """
     Select an arbitrary item from set or sequence S.
@@ -15,6 +16,7 @@ def arbitrary_item(S):
     except StopIteration:
         raise IndexError("No items to select.")
 
+
 def map_to_constant(constant):
     """
     Return a factory that turns sequences into dictionaries, where the
@@ -22,5 +24,5 @@ def map_to_constant(constant):
     Appropriate as the adjacency_list_type argument for Graphs.copyGraph.
     """
     def factory(seq):
-        return dict.fromkeys(seq,constant)
+        return dict.fromkeys(seq, constant)
     return factory

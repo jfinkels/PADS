@@ -32,11 +32,12 @@ def mckay(n):
             continue
         replacement = partition[last_nonunit] - 1
         total_replaced = replacement + len(partition) - last_nonunit
-        reps,rest = divmod(total_replaced,replacement)
-        partition[last_nonunit:] = reps*[replacement]
+        reps, rest = divmod(total_replaced, replacement)
+        partition[last_nonunit:] = reps * [replacement]
         if rest:
             partition.append(rest)
-        last_nonunit = len(partition) - (partition[-1]==1) - 1
+        last_nonunit = len(partition) - (partition[-1] == 1) - 1
+
 
 def revlex_partitions(n):
     """
@@ -50,7 +51,7 @@ def revlex_partitions(n):
         yield []
     if n <= 0:
         return
-    for p in revlex_partitions(n-1):
+    for p in revlex_partitions(n - 1):
         if len(p) == 1 or (len(p) > 1 and p[-1] < p[-2]):
             p[-1] += 1
             yield p
@@ -59,13 +60,14 @@ def revlex_partitions(n):
         yield p
         p.pop()
 
+
 def lex_partitions(n):
     """Similar to revlex_partitions, but in lexicographic order."""
     if n == 0:
         yield []
     if n <= 0:
         return
-    for p in lex_partitions(n-1):
+    for p in lex_partitions(n - 1):
         p.append(1)
         yield p
         p.pop()
@@ -75,6 +77,7 @@ def lex_partitions(n):
             p[-1] -= 1
 
 partitions = revlex_partitions     # default partition generating algorithm
+
 
 def binary_partitions(n):
     """
@@ -93,16 +96,16 @@ def binary_partitions(n):
         pow <<= 1
     partition = []
     while pow:
-        if sum+pow <= n:
+        if sum + pow <= n:
             partition.append(pow)
             sum += pow
         pow >>= 1
-    
+
     # Find all partitions of numbers up to n into powers of two > 1,
     # in revlex order, by repeatedly splitting the smallest nonunit power,
     # and replacing the following sequence of 1's by the first revlex
     # partition with maximum power less than the result of the split.
-    
+
     # Time analysis:
     #
     # Each outer iteration increases len(partition) by at most one
@@ -120,8 +123,8 @@ def binary_partitions(n):
     # of such inner iterations is <= sum_k k*X/2^{k-1} = O(X).
     #
     # Therefore the overall average time per output is constant.
-    
-    last_nonunit = len(partition) - 1 - (n&1)
+
+    last_nonunit = len(partition) - 1 - (n & 1)
     while True:
         yield partition
         if last_nonunit < 0:
@@ -132,24 +135,25 @@ def binary_partitions(n):
             last_nonunit -= 1
             continue
         partition.append(1)
-        x = partition[last_nonunit] = partition[last_nonunit+1] = \
+        x = partition[last_nonunit] = partition[last_nonunit + 1] = \
             partition[last_nonunit] >> 1    # make the split!
         last_nonunit += 1
         while x > 1:
             if len(partition) - last_nonunit - 1 >= x:
-                del partition[-x+1:]
+                del partition[-x + 1:]
                 last_nonunit += 1
                 partition[last_nonunit] = x
             else:
                 x >>= 1
 
-def fixed_length_partitions(n,L):
+
+def fixed_length_partitions(n, L):
     """
     Integer partitions of n into L parts, in colex order.
     The algorithm follows Knuth v4 fasc3 p38 in rough outline;
     Knuth credits it to Hindenburg, 1779.
     """
-    
+
     # guard against special cases
     if L == 0:
         if n == 0:
@@ -162,7 +166,7 @@ def fixed_length_partitions(n,L):
     if n < L:
         return
 
-    partition = [n - L + 1] + (L-1)*[1]
+    partition = [n - L + 1] + (L - 1) * [1]
     while True:
         yield partition
         if partition[0] - 1 > partition[1]:
@@ -184,6 +188,7 @@ def fixed_length_partitions(n,L):
             j -= 1
         partition[0] = s
 
+
 def conjugate(p):
     """
     Find the conjugate of a partition.
@@ -195,7 +200,7 @@ def conjugate(p):
         return result
     while True:
         result.append(j)
-        while len(result) >= p[j-1]:
+        while len(result) >= p[j - 1]:
             j -= 1
             if j == 0:
                 return result

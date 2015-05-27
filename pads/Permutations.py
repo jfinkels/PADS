@@ -38,13 +38,14 @@ try:
 except:
     xrange = range
 
+
 def PlainChanges(n):
     """Generate the swaps for the Steinhaus-Johnson-Trotter algorithm."""
     if n < 1:
         return
-    up = xrange(n-1)
-    down = xrange(n-2,-1,-1)
-    recur = PlainChanges(n-1)
+    up = xrange(n - 1)
+    down = xrange(n - 2, -1, -1)
+    recur = PlainChanges(n - 1)
     try:
         while True:
             for x in down:
@@ -55,6 +56,7 @@ def PlainChanges(n):
             yield next(recur)
     except StopIteration:
         pass
+
 
 def SteinhausJohnsonTrotter(x):
     """Generate all permutations of x.
@@ -71,16 +73,17 @@ def SteinhausJohnsonTrotter(x):
     # run through the sequence of swaps
     yield perm
     for x in PlainChanges(n):
-        perm[x],perm[x+1] = perm[x+1],perm[x]
+        perm[x], perm[x + 1] = perm[x + 1], perm[x]
         yield perm
+
 
 def DoublePlainChanges(n):
     """Generate the swaps for double permutations."""
     if n < 1:
         return
-    up = xrange(1,2*n-1)
-    down = xrange(2*n-2,0,-1)
-    recur = DoublePlainChanges(n-1)
+    up = xrange(1, 2 * n - 1)
+    down = xrange(2 * n - 2, 0, -1)
+    recur = DoublePlainChanges(n - 1)
     try:
         while True:
             for x in up:
@@ -92,17 +95,19 @@ def DoublePlainChanges(n):
     except StopIteration:
         pass
 
+
 def DoubleSteinhausJohnsonTrotter(n):
     """Generate all double permutations of the range 0 through n-1"""
     perm = []
     for i in range(n):
-        perm += [i,i]
+        perm += [i, i]
 
     # run through the sequence of swaps
     yield perm
     for x in DoublePlainChanges(n):
-        perm[x],perm[x+1] = perm[x+1],perm[x]
+        perm[x], perm[x + 1] = perm[x + 1], perm[x]
         yield perm
+
 
 def StirlingChanges(n):
     """Variant Steinhaus-Johnson-Trotter for Stirling permutations.
@@ -115,9 +120,9 @@ def StirlingChanges(n):
     in swapping items two positions apart instead of adjacent items."""
     if n <= 1:
         return
-    up = xrange(2*n-2)
-    down = xrange(2*n-3,-1,-1)
-    recur = StirlingChanges(n-1)
+    up = xrange(2 * n - 2)
+    down = xrange(2 * n - 3, -1, -1)
+    recur = StirlingChanges(n - 1)
     try:
         while True:
             for x in down:
@@ -129,17 +134,19 @@ def StirlingChanges(n):
     except StopIteration:
         pass
 
+
 def StirlingPermutations(n):
     """Generate all Stirling permutations of order n."""
     perm = []
     for i in range(n):
-        perm += [i,i]
+        perm += [i, i]
 
     # run through the sequence of swaps
     yield perm
     for x in StirlingChanges(n):
-        perm[x],perm[x+2] = perm[x+2],perm[x]
+        perm[x], perm[x + 2] = perm[x + 2], perm[x]
         yield perm
+
 
 def InvolutionChanges(n):
     """Generate change sequence for involutions on n items.
@@ -149,17 +156,17 @@ def InvolutionChanges(n):
     for the last item back and forth over a recursively
     generated sequence for n-2."""
     if n <= 3:
-        for c in [[],[],[0],[0,1,0]][n]:
+        for c in [[], [], [0], [0, 1, 0]][n]:
             yield c
         return
-    for c in InvolutionChanges(n-1):
+    for c in InvolutionChanges(n - 1):
         yield c
-    yield n-2
-    for i in range(n-4,-1,-1):
+    yield n - 2
+    for i in range(n - 4, -1, -1):
         yield i
-    ic = InvolutionChanges(n-2)
-    up = range(0,n-2)
-    down = range(n-3,-1,-1)
+    ic = InvolutionChanges(n - 2)
+    up = range(0, n - 2)
+    down = range(n - 3, -1, -1)
     try:
         while True:
             yield next(ic) + 1
@@ -169,7 +176,8 @@ def InvolutionChanges(n):
             for i in down:
                 yield i
     except StopIteration:
-        yield n-4
+        yield n - 4
+
 
 def Involutions(n):
     """Generate involutions on n items.
@@ -182,8 +190,10 @@ def Involutions(n):
     p = list(range(n))
     yield p
     for c in InvolutionChanges(n):
-        x,y = p[c],p[c+1]   # current partners of c and c+1
-        if x == c and y != c+1: x = c+1
-        if x != c and y == c+1: y = c
-        p[x],p[y],p[c],p[c+1] = c+1, c, y, x    # swap partners
+        x, y = p[c], p[c + 1]   # current partners of c and c+1
+        if x == c and y != c + 1:
+            x = c + 1
+        if x != c and y == c + 1:
+            y = c
+        p[x], p[y], p[c], p[c + 1] = c + 1, c, y, x    # swap partners
         yield p

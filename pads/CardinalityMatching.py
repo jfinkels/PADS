@@ -8,7 +8,8 @@ D. Eppstein, UC Irvine, September 6, 2003.
 from .UnionFind import UnionFind
 from .Util import arbitrary_item
 
-def matching(G, initialMatching = None):
+
+def matching(G, initialMatching=None):
     """Find a maximum cardinality matching in a graph G.
     G is represented in modified GvR form: iter(G) lists its vertices;
     iter(G[v]) lists the neighbors of v; w in G[v] tests adjacency.
@@ -23,7 +24,7 @@ def matching(G, initialMatching = None):
 
     # Copy initial matching so we can use it nondestructively
     # and augment it greedily to reduce main loop iterations
-    matching = greedyMatching(G,initialMatching)
+    matching = greedyMatching(G, initialMatching)
 
     def augment():
         """Search for a single augmenting path.
@@ -61,12 +62,12 @@ def matching(G, initialMatching = None):
         # Many of these are called only from one place, but are split out
         # as subroutines to improve modularization and readability.
 
-        def blossom(v,w,a):
+        def blossom(v, w, a):
             """Create a new blossom from edge v-w with common ancestor a."""
 
-            def findSide(v,w):
+            def findSide(v, w):
                 path = [leader[v]]
-                b = (v,w)   # new base for all T nodes found on the path
+                b = (v, w)   # new base for all T nodes found on the path
                 while path[-1] != a:
                     tnode = S[path[-1]]
                     path.append(tnode)
@@ -76,13 +77,14 @@ def matching(G, initialMatching = None):
                 return path
 
             a = leader[a]   # sanity check
-            path1,path2 = findSide(v,w), findSide(w,v)
+            path1, path2 = findSide(v, w), findSide(w, v)
             leader.union(*path1)
             leader.union(*path2)
-            S[leader[a]] = S[a] # update structure tree
+            S[leader[a]] = S[a]  # update structure tree
 
         topless = object()  # should be unequal to any graph vertex
-        def alternatingPath(start, goal = topless):
+
+        def alternatingPath(start, goal=topless):
             """Return sequence of vertices on alternating path from start to goal.
             The goal must be a T node along the path from the start to
             the root of the structure tree. If goal is omitted, we find
@@ -109,9 +111,9 @@ def matching(G, initialMatching = None):
             """Make v unmatched by alternating the path to the root of its structure tree."""
             path = alternatingPath(v)
             path.reverse()
-            for i in range(0,len(path)-1,2):
-                matching[path[i]] = path[i+1]
-                matching[path[i+1]] = path[i]
+            for i in range(0, len(path) - 1, 2):
+                matching[path[i]] = path[i + 1]
+                matching[path[i + 1]] = path[i]
 
         def addMatch(v, w):
             """Here with an S-S edge vw connecting vertices in different structure trees.
@@ -122,7 +124,7 @@ def matching(G, initialMatching = None):
             matching[v] = w
             matching[w] = v
 
-        def ss(v,w):
+        def ss(v, w):
             """Handle detection of an S-S edge in augmenting path search.
             Like augment(), returns true iff the matching size was increased.
             """
@@ -171,14 +173,15 @@ def matching(G, initialMatching = None):
                 S[v] = v
                 unexplored.append(v)
 
-        current = 0     # index into unexplored, in FIFO order so we get short paths
+        # index into unexplored, in FIFO order so we get short paths
+        current = 0
         while current < len(unexplored):
             v = unexplored[current]
             current += 1
 
             for w in G[v]:
                 if leader[w] in S:  # S-S edge: blossom or augmenting path
-                    if ss(v,w):
+                    if ss(v, w):
                         return True
 
                 elif w not in T:    # previously unexplored node, add as T-node
@@ -195,6 +198,7 @@ def matching(G, initialMatching = None):
         pass
 
     return matching
+
 
 def greedyMatching(G, initialMatching=None):
     """Near-linear-time greedy heuristic for creating high-cardinality matching.
@@ -221,7 +225,7 @@ def greedyMatching(G, initialMatching=None):
             avail[v] = {}
             for w in G[v]:
                 if w not in matching:
-                    avail[v][w] = (v,w)
+                    avail[v][w] = (v, w)
                     has_edge = True
             if not avail[v]:
                 del avail[v]
@@ -232,6 +236,7 @@ def greedyMatching(G, initialMatching=None):
     deg1 = {v for v in avail if len(avail[v]) == 1}
     deg2 = {v for v in avail if len(avail[v]) == 2}
     d2edges = []
+
     def updateDegree(v):
         """Cluster degree changed, update sets."""
         if v in deg1:
@@ -245,9 +250,9 @@ def greedyMatching(G, initialMatching=None):
         elif len(avail[v]) == 2:
             deg2.add(v)
 
-    def addMatch(v,w):
+    def addMatch(v, w):
         """Add edge connecting two given cluster reps, update avail."""
-        p,q = avail[v][w]
+        p, q = avail[v][w]
         matching[p] = q
         matching[q] = p
         for x in avail[v].keys():
@@ -264,12 +269,12 @@ def greedyMatching(G, initialMatching=None):
 
     def contract(v):
         """Handle degree two vertex."""
-        u,w = avail[v]  # find reps for two neighbors
-        d2edges.extend([avail[v][u],avail[v][w]])
+        u, w = avail[v]  # find reps for two neighbors
+        d2edges.extend([avail[v][u], avail[v][w]])
         del avail[u][v]
         del avail[w][v]
         if len(avail[u]) > len(avail[w]):
-            u,w = w,u   # swap to preserve near-linear time bound
+            u, w = w, u   # swap to preserve near-linear time bound
         for x in avail[u].keys():
             del avail[x][u]
             if x in avail[w]:
@@ -286,28 +291,29 @@ def greedyMatching(G, initialMatching=None):
         if deg1:
             v = arbitrary_item(deg1)
             w = arbitrary_item(avail[v])
-            addMatch(v,w)
+            addMatch(v, w)
         elif deg2:
             v = arbitrary_item(deg2)
             contract(v)
         else:
             v = arbitrary_item(avail)
             w = arbitrary_item(avail[v])
-            addMatch(v,w)
+            addMatch(v, w)
 
     # at this point the edges listed in d2edges form a matchable tree
     # repeat the degree one part of the algorithm only on those edges
     avail = {}
-    d2edges = [(u,v) for u,v in d2edges if u not in matching and v not in matching]
-    for u,v in d2edges:
+    d2edges = [(u, v)
+               for u, v in d2edges if u not in matching and v not in matching]
+    for u, v in d2edges:
         avail[u] = {}
         avail[v] = {}
-    for u,v in d2edges:
-        avail[u][v] = avail[v][u] = (u,v)
+    for u, v in d2edges:
+        avail[u][v] = avail[v][u] = (u, v)
     deg1 = {v for v in avail if len(avail[v]) == 1}
     while deg1:
         v = arbitrary_item(deg1)
         w = arbitrary_item(avail[v])
-        addMatch(v,w)
+        addMatch(v, w)
 
     return matching

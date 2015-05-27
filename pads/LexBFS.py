@@ -13,6 +13,7 @@ from .PartitionRefinement import PartitionRefinement
 from .Sequence import Sequence
 from .Util import arbitrary_item
 
+
 def LexBFS(G):
     """Find lexicographic breadth-first-search traversal order of a graph.
     G should be represented in such a way that "for v in G" loops through
@@ -29,5 +30,5 @@ def LexBFS(G):
         P.remove(v)
         if not set:
             S.remove(set)
-        for new,old in P.refine(G[v]):
-            S.insertBefore(old,new)
+        for new, old in P.refine(G[v]):
+            S.insertBefore(old, new)
