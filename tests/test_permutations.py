@@ -5,7 +5,6 @@ from pads.permutations import PlainChanges
 from pads.permutations import SteinhausJohnsonTrotter
 
 
-# If run standalone, perform unit tests
 class PermutationTest(unittest.TestCase):    
     def testChanges(self):
         """Do we get the expected sequence of changes for n=3?"""
@@ -58,6 +57,3 @@ class PermutationTest(unittest.TestCase):
                 count += 1
             self.assertEqual(len(invs),count)
             self.assertEqual(len(invs),telephone[n])
-
-if __name__ == "__main__":
-    unittest.main()

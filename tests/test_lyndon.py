@@ -6,7 +6,7 @@ from pads.lyndon import isLyndonWord
 from pads.lyndon import LengthLimitedLyndonWords
 from pads.lyndon import DeBruijnSequence
 
-# If run standalone, perform unit tests
+
 class LyndonTest(unittest.TestCase):
     def testCount(self):
         """Test that we count Lyndon words correctly."""
@@ -54,6 +54,3 @@ class LyndonTest(unittest.TestCase):
                 db = db + db    # duplicate so we can wrap easier
                 subs = set(tuple(db[i:i+n]) for i in range(s**n))
                 self.assertEqual(len(subs), s**n)
-
-if __name__ == "__main__":
-    unittest.main()

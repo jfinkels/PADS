@@ -4,8 +4,6 @@ from pads.two_satisfiability import Forced
 from pads.two_satisfiability import Not
 from pads.two_satisfiability import Satisfiable
 
-# Unit tests
-# Run python TwoSatisfiability.py to perform these tests.
 
 class TwoSatTest(unittest.TestCase):
     T1 = {1:[2,3], 2:[Not(1),3]}
@@ -20,6 +18,3 @@ class TwoSatTest(unittest.TestCase):
         """Check that we can correctly identify forced variables."""
         self.assertEqual(Forced(self.T1),{1:False})
         self.assertEqual(Forced(self.T2),None)
-
-if __name__ == "__main__":
-    unittest.main()   

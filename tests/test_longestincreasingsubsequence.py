@@ -2,8 +2,6 @@ import unittest
 
 from pads.longest_increasing_subsequence import LongestIncreasingSubsequence
 
-# If run as "python LongestIncreasingSubsequence.py", run tests on various
-# small lists and check that the correct subsequences are generated.
 
 class LISTest(unittest.TestCase):
     def testLIS(self):
@@ -13,6 +11,3 @@ class LISTest(unittest.TestCase):
                                                       list(range(10)))
         self.assertEqual(LongestIncreasingSubsequence([3,1,4,1,5,9,2,6,5,3,5,8,9,7,9]),
                                                       [1,2,3,5,8,9])
-
-if __name__ == "__main__":
-    unittest.main()   

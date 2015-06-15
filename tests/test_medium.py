@@ -7,7 +7,6 @@ from pads.medium import StateTransitionGraph
 from pads.medium import ExplicitMedium
 from pads.medium import LabeledGraphMedium
 
-# Perform some sanity checks if run standalone
 
 class MediumTest(unittest.TestCase):
 
@@ -96,6 +95,3 @@ class MediumTest(unittest.TestCase):
         for s in M:
             for t in M.tokens():
                 self.assertEqual(M(s,t),L(s,t))
-
-if __name__ == "__main__":
-    unittest.main()

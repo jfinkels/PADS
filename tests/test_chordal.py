@@ -3,6 +3,7 @@ import unittest
 from pads.chordal import Chordal
 from pads.chordal import PerfectEliminationOrdering
 
+
 class ChordalTest(unittest.TestCase):
     claw = {0:[1,2,3],1:[0],2:[0],3:[0]}
     butterfly = {0:[1,2,3,4],1:[0,2],2:[0,1],3:[0,4],4:[0,3]}
@@ -26,6 +27,3 @@ class ChordalTest(unittest.TestCase):
                         for x in G[v]:
                             if w != x and w not in eliminated and x not in eliminated:
                                 self.assertTrue(w in G[x] and x in G[w]) 
-
-if __name__ == "__main__":
-    unittest.main()   

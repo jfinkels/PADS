@@ -5,8 +5,6 @@ from pads.biconnectivity import stOrientation
 from pads.biconnectivity import BiconnectedComponents
 from pads.biconnectivity import TopologicalOrder
 
-# If run as "python Biconnectivity.py", run tests on various small graphs
-# and check that the correct results are obtained.
 
 class BiconnectivityTest(unittest.TestCase):
     G1 = {
@@ -51,6 +49,3 @@ class BiconnectivityTest(unittest.TestCase):
         outdegree = dict([(v,len(STO[v])) for v in self.G1])
         self.assertEqual(len([v for v in self.G1 if indegree[v] == 0]), 1)
         self.assertEqual(len([v for v in self.G1 if outdegree[v] == 0]), 1)
-
-if __name__ == "__main__":
-    unittest.main()   

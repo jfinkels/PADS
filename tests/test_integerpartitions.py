@@ -8,7 +8,6 @@ from pads.integer_partitions import binary_partitions
 from pads.integer_partitions import lex_partitions
 from pads.integer_partitions import revlex_partitions
 
-# If run standalone, perform unit tests
 
 class PartitionTest(unittest.TestCase):
     counts = [1,1,2,3,5,7,11,15,22,30,42,56,77,101,135]
@@ -108,6 +107,3 @@ class PartitionTest(unittest.TestCase):
                 else:
                     binaries.append(list(p))
             self.assertEqual(binaries,[list(p) for p in binary_partitions(n)])
-
-if __name__ == "__main__":
-    unittest.main()

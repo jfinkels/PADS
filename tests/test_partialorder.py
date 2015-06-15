@@ -25,6 +25,3 @@ class PartialOrderTest(unittest.TestCase):
     def testHypercubeDilworth(self):
         CD = list(MinimumChainDecomposition(self.cube))
         self.assertEqual(len(CD),6)
-
-if __name__ == "__main__":
-    unittest.main()   

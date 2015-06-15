@@ -16,6 +16,3 @@ class NotNotTest(unittest.TestCase):
         D = {Not(x):x for x in NotNotTest.things}
         for x in NotNotTest.things:
             self.assertEqual(D[Not(x)],x)
-
-if __name__ == "__main__":
-    unittest.main()   

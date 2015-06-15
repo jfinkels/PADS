@@ -4,7 +4,6 @@ from pads.eratosthenes import primes
 from pads.eratosthenes import PracticalNumbers
 
 
-# If run standalone, perform unit tests
 class SieveTest(unittest.TestCase):    
     def testPrime(self):
         """Test that the first few primes are generated correctly."""
@@ -17,6 +16,3 @@ class SieveTest(unittest.TestCase):
         G = PracticalNumbers()
         for p in [1,2,4,6,8,12,16,18,20,24,28,30,32,36]:
             self.assertEqual(p,next(G))
-
-if __name__ == "__main__":
-    unittest.main()

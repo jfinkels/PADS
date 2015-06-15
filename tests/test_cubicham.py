@@ -3,8 +3,6 @@ import unittest
 from pads.cubic_ham import HamiltonianCycles
 from pads.cubic_ham import arbitrary_item
 
-# If run as "python CubicHam.py", run tests on various small graphs
-# and check that the correct number of cycles is generated.
 
 class CubicHamTest(unittest.TestCase):
     def check(self,G,N):
@@ -67,6 +65,3 @@ class CubicHamTest(unittest.TestCase):
         for i in range(3):
             G = self.truncate(G)
             self.check(G,3)
-
-if __name__ == "__main__":
-    unittest.main()   

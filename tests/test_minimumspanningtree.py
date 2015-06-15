@@ -2,7 +2,6 @@ import unittest
 
 from pads.minimum_spanning_tree import MinimumSpanningTree
 
-# If run standalone, perform unit tests
 
 class MSTTest(unittest.TestCase):
     def testMST(self):
@@ -12,6 +11,3 @@ class MSTTest(unittest.TestCase):
         for e,f in zip(MinimumSpanningTree(G),T):
             self.assertEqual(min(e),min(f))
             self.assertEqual(max(e),max(f))
-
-if __name__ == "__main__":
-    unittest.main()   

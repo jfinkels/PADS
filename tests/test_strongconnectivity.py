@@ -3,9 +3,6 @@ import unittest
 from pads.strong_connectivity import StronglyConnectedComponents
 from pads.strong_connectivity import Condensation
 
-    
-# If run as "python StrongConnectivity.py", run tests on various small graphs
-# and check that the correct results are obtained.
 
 class StrongConnectivityTest(unittest.TestCase):
 
@@ -50,6 +47,3 @@ class StrongConnectivityTest(unittest.TestCase):
         """Check that the condensations are what we expect."""
         self.assertEqual(Condensation(self.G1),self.Con1)
         self.assertEqual(Condensation(self.G2),self.Con2)
-
-if __name__ == "__main__":
-    unittest.main()   

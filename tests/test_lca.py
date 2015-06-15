@@ -6,8 +6,6 @@ from pads.lca import LogarithmicRangeMin
 from pads.lca import LCA
 from pads.lca import OfflineLCA
 
-# if run as "python LCA.py", run tests on random data
-# and check that RangeMin's results are correct.
 
 class RandomRangeMinTest(unittest.TestCase):
     def testRangeMin(self):
@@ -19,6 +17,7 @@ class RandomRangeMinTest(unittest.TestCase):
                 i = random.randint(0,len(data)-1)
                 j = random.randint(i+1,len(data))
                 self.assertEqual(R[i:j],min(data[i:j]))
+
 
 class LCATest(unittest.TestCase):
     parent = {'b':'a','c':'a','d':'a','e':'b','f':'b','g':'f','h':'g','i':'g'}
@@ -49,6 +48,3 @@ class LCATest(unittest.TestCase):
         L = OfflineLCA(self.parent, self.lcas.keys())
         for (p,q),v in self.lcas.items():
             self.assertEqual(L[p][q],v)
-
-if __name__ == "__main__":
-    unittest.main()   

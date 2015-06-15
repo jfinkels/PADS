@@ -11,6 +11,3 @@ class ReachabilityTest(unittest.TestCase):
             for t in "ABCDE":
                 self.assertEqual(R.reachable(s,t),
                                  s <= t and s+t not in ["AB","DE"])
-
-if __name__ == "__main__":
-    unittest.main()   

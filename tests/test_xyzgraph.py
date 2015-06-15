@@ -13,6 +13,3 @@ class xyzGraphTest(unittest.TestCase):
     def testCubeIsXYZ(self):
         """Check that a cube is correctly identified as an xyz graph."""
         self.assertEqual(len(list(xyzEmbeddings(self.cube))),1)
-
-if __name__ == "__main__":
-    unittest.main()   

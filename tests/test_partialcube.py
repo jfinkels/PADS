@@ -6,7 +6,6 @@ from pads.medium import StateTransitionGraph
 from pads.partial_cube import MediumForPartialCube
 from pads.partial_cube import isPartialCube
 
-# Perform some sanity checks if run standalone
 
 class PartialCubeTest(unittest.TestCase):
 
@@ -73,6 +72,3 @@ class PartialCubeTest(unittest.TestCase):
             G[i,4] = [(i,3),(i,5),((i+d)%n,1)]
             G[i,5] = [(i,4),((i-a)%n,0),((i-c)%n,2)]
         self.assertEqual(isPartialCube(G),False)
-
-if __name__ == "__main__":
-    unittest.main()

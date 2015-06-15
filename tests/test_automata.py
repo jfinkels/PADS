@@ -40,6 +40,3 @@ class RegExpTest(unittest.TestCase):
             for j in range(i):
                 self.assertNotEqual(self.languages[i][0],
                                     self.languages[j][0])
-
-if __name__ == "__main__":
-    unittest.main()   
