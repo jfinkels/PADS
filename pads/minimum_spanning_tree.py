@@ -3,8 +3,8 @@
 Kruskal's algorithm for minimum spanning trees. D. Eppstein, April 2006.
 """
 
-from .UnionFind import UnionFind
-from .Graphs import isUndirected
+from .union_find import UnionFind
+from .graphs import isUndirected
 
 
 def MinimumSpanningTree(G):

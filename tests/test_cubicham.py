@@ -1,7 +1,7 @@
 import unittest
 
-from pads.CubicHam import HamiltonianCycles
-from pads.CubicHam import arbitrary_item
+from pads.cubic_ham import HamiltonianCycles
+from pads.cubic_ham import arbitrary_item
 
 # If run as "python CubicHam.py", run tests on various small graphs
 # and check that the correct number of cycles is generated.

@@ -1,6 +1,6 @@
 import unittest
 
-from pads.LongestIncreasingSubsequence import LongestIncreasingSubsequence
+from pads.longest_increasing_subsequence import LongestIncreasingSubsequence
 
 # If run as "python LongestIncreasingSubsequence.py", run tests on various
 # small lists and check that the correct subsequences are generated.

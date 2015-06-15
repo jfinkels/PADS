@@ -14,7 +14,7 @@ test takes constant time to perform.
 D. Eppstein, April 2009.
 """
 
-from .PartialOrder import TopologicalOrder
+from .partial_order import TopologicalOrder
 
 
 class Reachability:

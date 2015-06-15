@@ -1,6 +1,6 @@
 import unittest
 
-from pads.Automata import RegularLanguage
+from pads.automata import RegularLanguage
 
 
 class RegExpTest(unittest.TestCase):

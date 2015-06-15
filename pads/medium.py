@@ -22,12 +22,12 @@ theory of finite automata.
 D. Eppstein, May 2007.
 """
 
-from .BFS import BreadthFirstLevels
-from .DFS import search as dfs_search
-from .DFS import nontree as NONTREE
-from .DFS import reverse as REVERSE
-from .DFS import forward as FORWARD
-from .Graphs import isUndirected
+from .bfs import BreadthFirstLevels
+from .dfs import search as dfs_search
+from .dfs import nontree as NONTREE
+from .dfs import reverse as REVERSE
+from .dfs import forward as FORWARD
+from .graphs import isUndirected
 
 
 class MediumError(ValueError):

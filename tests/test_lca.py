@@ -1,10 +1,10 @@
 import random
 import unittest
 
-from pads.LCA import RangeMin
-from pads.LCA import LogarithmicRangeMin
-from pads.LCA import LCA
-from pads.LCA import OfflineLCA
+from pads.lca import RangeMin
+from pads.lca import LogarithmicRangeMin
+from pads.lca import LCA
+from pads.lca import OfflineLCA
 
 # if run as "python LCA.py", run tests on random data
 # and check that RangeMin's results are correct.

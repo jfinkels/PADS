@@ -13,7 +13,7 @@ If G is a graph, then
 D. Eppstein, July 2005.
 """
 
-from .DFS import Searcher
+from .dfs import Searcher
 
 
 class StronglyConnectedComponents(Searcher):

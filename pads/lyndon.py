@@ -2,7 +2,7 @@
 Algorithms on strings and sequences based on Lyndon words.
 David Eppstein, October 2011."""
 
-from .Eratosthenes import MoebiusFunction
+from .eratosthenes import MoebiusFunction
 
 
 def LengthLimitedLyndonWords(s, n):

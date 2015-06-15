@@ -1,9 +1,9 @@
 import unittest
 
-from pads.PartialOrder import isAcyclic
-from pads.PartialOrder import TransitiveClosure
-from pads.PartialOrder import MaximumAntichain
-from pads.PartialOrder import MinimumChainDecomposition
+from pads.partial_order import isAcyclic
+from pads.partial_order import TransitiveClosure
+from pads.partial_order import MaximumAntichain
+from pads.partial_order import MinimumChainDecomposition
 
 
 class PartialOrderTest(unittest.TestCase):

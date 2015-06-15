@@ -5,15 +5,15 @@ Test whether a graph is an isometric subgraph of a hypercube.
 D. Eppstein, September 2005, rewritten May 2007 per arxiv:0705.1025.
 """
 
-from .BFS import BreadthFirstLevels
-from .Medium import MediumError
-from .Medium import LabeledGraphMedium
-from .Medium import RoutingTable
-from .Medium import HypercubeEmbedding
-from .Bipartite import isBipartite
-from .UnionFind import UnionFind
-from .StrongConnectivity import StronglyConnectedComponents
-from .Graphs import isUndirected
+from .bfs import BreadthFirstLevels
+from .medium import MediumError
+from .medium import LabeledGraphMedium
+from .medium import RoutingTable
+from .medium import HypercubeEmbedding
+from .bipartite import isBipartite
+from .union_find import UnionFind
+from .strong_connectivity import StronglyConnectedComponents
+from .graphs import isUndirected
 
 
 def PartialCubeEdgeLabeling(G):

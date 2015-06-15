@@ -4,10 +4,10 @@ Generate all Hamiltonian cycles in graphs of maximum degree three.
 D. Eppstein, April 2004.
 """
 
-from .Graphs import *
-from .Biconnectivity import isBiconnected
-from .CardinalityMatching import matching
-from .Util import arbitrary_item, map_to_constant
+from .graphs import *
+from .biconnectivity import isBiconnected
+from .cardinality_matching import matching
+from .util import arbitrary_item, map_to_constant
 
 
 def HamiltonianCycles(G):

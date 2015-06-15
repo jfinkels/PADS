@@ -9,9 +9,9 @@ http://www.cs.colostate.edu/~rmm/lexbfs.ps
 D. Eppstein, November 2003.
 """
 
-from .PartitionRefinement import PartitionRefinement
-from .Sequence import Sequence
-from .Util import arbitrary_item
+from .partition_refinement import PartitionRefinement
+from .sequence import Sequence
+from .util import arbitrary_item
 
 
 def LexBFS(G):

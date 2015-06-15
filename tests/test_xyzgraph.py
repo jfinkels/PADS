@@ -1,7 +1,7 @@
 import unittest
 
-from pads.xyzGraph import CubicMatchPartitions
-from pads.xyzGraph import xyzEmbeddings
+from pads.xyz_graph import CubicMatchPartitions
+from pads.xyz_graph import xyzEmbeddings
 
 class xyzGraphTest(unittest.TestCase):
     cube = {v:[v^i for i in (1,2,4)] for v in range(8)}

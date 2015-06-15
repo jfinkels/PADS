@@ -1,8 +1,8 @@
 import random
 import unittest
 
-from pads.IntegerHeap import IntegerHeap
-from pads.IntegerHeap import LinearHeap
+from pads.integer_heap import IntegerHeap
+from pads.integer_heap import LinearHeap
 
 # ======================================================================
 #   Unit tests

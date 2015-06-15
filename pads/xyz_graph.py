@@ -13,10 +13,10 @@ D. Eppstein, June 2006.
 """
 from collections import defaultdict
 
-from .Graphs import isUndirected
-from .PartialOrder import TopologicalOrder
-from .StrongConnectivity import StronglyConnectedComponents
-from .Biconnectivity import stOrientation
+from .graphs import isUndirected
+from .partial_order import TopologicalOrder
+from .strong_connectivity import StronglyConnectedComponents
+from .biconnectivity import stOrientation
 
 
 def CubicMatchPartitions(G):

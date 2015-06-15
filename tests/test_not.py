@@ -1,6 +1,6 @@
 import unittest
 
-from pads.Not import Not
+from pads._not import Not
 
 
 class NotNotTest(unittest.TestCase):

@@ -7,8 +7,8 @@ consecutive edges have the same label.
 D. Eppstein, July 2005.
 """
 
-from StrongConnectivity import StronglyConnectedComponents
-import DFS
+from .strong_connectivity import StronglyConnectedComponents
+import .dfs
 
 
 class NonrepetitiveGraph:

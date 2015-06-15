@@ -1,10 +1,10 @@
 import unittest
 
-from pads.Medium import Medium
-from pads.Medium import BitvectorMedium
-from pads.Medium import StateTransitionGraph
-from pads.PartialCube import MediumForPartialCube
-from pads.PartialCube import isPartialCube
+from pads.medium import Medium
+from pads.medium import BitvectorMedium
+from pads.medium import StateTransitionGraph
+from pads.partial_cube import MediumForPartialCube
+from pads.partial_cube import isPartialCube
 
 # Perform some sanity checks if run standalone
 

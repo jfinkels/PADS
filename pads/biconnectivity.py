@@ -5,10 +5,10 @@ DFS-based algorithm for computing biconnected components.
 D. Eppstein, April 2004.
 """
 
-from .Graphs import isUndirected
-from .Util import arbitrary_item
-from .PartialOrder import TopologicalOrder
-from .DFS import Searcher
+from .graphs import isUndirected
+from .util import arbitrary_item
+from .partial_order import TopologicalOrder
+from .dfs import Searcher
 
 disconnected = object()  # flag for BiconnectedComponents
 

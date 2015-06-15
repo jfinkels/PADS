@@ -19,13 +19,14 @@ D. Eppstein, July 2005.
 import random
 import sys
 from optparse import OptionParser
-from BipartiteMatching import imperfections
-from StrongConnectivity import StronglyConnectedComponents
-from Repetitivity import NonrepetitiveGraph
-from Wrap import wrap
-from Not import Not
-from TwoSatisfiability import Forced
-from SVG import SVG
+
+from .bipartite_matching import imperfections
+from .strong_connectivity import StronglyConnectedComponents
+from .repetitivity import NonrepetitiveGraph
+from .wrap import wrap
+from ._not import Not
+from .two_satisfiability import Forced
+from .svg import SVG
 
 
 class BadSudoku(Exception):

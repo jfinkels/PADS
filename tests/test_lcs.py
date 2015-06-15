@@ -1,6 +1,6 @@
 import unittest
 
-from pads.LCS import LongestCommonSubsequence
+from pads.lcs import LongestCommonSubsequence
 
 
 # If run standalone, perform unit tests

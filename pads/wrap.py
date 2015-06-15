@@ -10,7 +10,7 @@ time via the OnlineConcaveMinima algorithm in SMAWK.py.
 D. Eppstein, August 2005.
 """
 
-from SMAWK import OnlineConcaveMinima
+from smawk import OnlineConcaveMinima
 
 
 def wrap(text,                 # string or unicode to be wrapped

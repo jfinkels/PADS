@@ -1,8 +1,8 @@
 import unittest
 
-from pads.TwoSatisfiability import Forced
-from pads.TwoSatisfiability import Not
-from pads.TwoSatisfiability import Satisfiable
+from pads.two_satisfiability import Forced
+from pads.two_satisfiability import Not
+from pads.two_satisfiability import Satisfiable
 
 # Unit tests
 # Run python TwoSatisfiability.py to perform these tests.

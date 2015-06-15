@@ -5,9 +5,9 @@ with fast comparisons of the positions of two items in a sequence.
 
 D. Eppstein, November 2003.
 """
-
 import sys
-from Sequence import Sequence
+
+from .sequence import Sequence
 
 
 class SimpleOrderedSequence(Sequence):

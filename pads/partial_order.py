@@ -5,8 +5,8 @@ Various operations on partial orders and directed acyclic graphs.
 D. Eppstein, July 2006.
 """
 
-from .DFS import preorder, postorder
-from .BipartiteMatching import matching
+from .dfs import preorder, postorder
+from .bipartite_matching import matching
 
 
 def isTopologicalOrder(G, L):

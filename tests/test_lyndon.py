@@ -1,10 +1,10 @@
 import unittest
 
-from pads.Lyndon import CountLyndonWords
-from pads.Lyndon import LyndonWordsWithLength
-from pads.Lyndon import isLyndonWord
-from pads.Lyndon import LengthLimitedLyndonWords
-from pads.Lyndon import DeBruijnSequence
+from pads.lyndon import CountLyndonWords
+from pads.lyndon import LyndonWordsWithLength
+from pads.lyndon import isLyndonWord
+from pads.lyndon import LengthLimitedLyndonWords
+from pads.lyndon import DeBruijnSequence
 
 # If run standalone, perform unit tests
 class LyndonTest(unittest.TestCase):

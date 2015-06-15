@@ -1,6 +1,6 @@
 import unittest
 
-from pads.MinimumSpanningTree import MinimumSpanningTree
+from pads.minimum_spanning_tree import MinimumSpanningTree
 
 # If run standalone, perform unit tests
 

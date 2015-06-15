@@ -31,10 +31,10 @@ If G is a graph of this type,
 D. Eppstein, April 2009.
 """
 
-from .Not import Not, SymbolicNegation
-from .Graphs import copyGraph
-from .StrongConnectivity import Condensation
-from .AcyclicReachability import Reachability
+from ._not import Not, SymbolicNegation
+from .graphs import copyGraph
+from .strong_connectivity import Condensation
+from .acyclic_reachability import Reachability
 
 
 def Symmetrize(G):

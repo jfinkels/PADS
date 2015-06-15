@@ -1,6 +1,6 @@
 import unittest
 
-from pads.AcyclicReachability import Reachability
+from pads.acyclic_reachability import Reachability
 
 
 class ReachabilityTest(unittest.TestCase):

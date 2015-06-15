@@ -1,11 +1,11 @@
 import unittest
 
-from pads.Medium import BitvectorMedium
-from pads.Medium import RoutingTable
-from pads.Medium import HypercubeEmbedding
-from pads.Medium import StateTransitionGraph
-from pads.Medium import ExplicitMedium
-from pads.Medium import LabeledGraphMedium
+from pads.medium import BitvectorMedium
+from pads.medium import RoutingTable
+from pads.medium import HypercubeEmbedding
+from pads.medium import StateTransitionGraph
+from pads.medium import ExplicitMedium
+from pads.medium import LabeledGraphMedium
 
 # Perform some sanity checks if run standalone
 

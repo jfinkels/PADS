@@ -9,9 +9,9 @@ D. Eppstein, UC Irvine, November 2003.
 import sys
 import operator
 
-from .PartitionRefinement import PartitionRefinement
-from .Sequence import Sequence
-from .Util import arbitrary_item
+from .partition_refinement import PartitionRefinement
+from .sequence import Sequence
+from .util import arbitrary_item
 
 
 # Hack for Python 3 compatibility

@@ -1,9 +1,9 @@
 import unittest
 
-from pads.Biconnectivity import isBiconnected
-from pads.Biconnectivity import stOrientation
-from pads.Biconnectivity import BiconnectedComponents
-from pads.Biconnectivity import TopologicalOrder
+from pads.biconnectivity import isBiconnected
+from pads.biconnectivity import stOrientation
+from pads.biconnectivity import BiconnectedComponents
+from pads.biconnectivity import TopologicalOrder
 
 # If run as "python Biconnectivity.py", run tests on various small graphs
 # and check that the correct results are obtained.

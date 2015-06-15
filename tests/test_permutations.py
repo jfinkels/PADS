@@ -1,8 +1,8 @@
 import unittest
 
-from pads.Permutations import Involutions
-from pads.Permutations import PlainChanges
-from pads.Permutations import SteinhausJohnsonTrotter
+from pads.permutations import Involutions
+from pads.permutations import PlainChanges
+from pads.permutations import SteinhausJohnsonTrotter
 
 
 # If run standalone, perform unit tests

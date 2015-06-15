@@ -1,7 +1,7 @@
 import unittest
 
-from pads.Eratosthenes import primes
-from pads.Eratosthenes import PracticalNumbers
+from pads.eratosthenes import primes
+from pads.eratosthenes import PracticalNumbers
 
 
 # If run standalone, perform unit tests

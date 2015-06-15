@@ -5,7 +5,7 @@ Reduction-based algorithm for recognizing Halin and D3-reducible graphs
 D. Eppstein, January 2015.
 """
 
-from .Graphs import copyGraph, isUndirected
+from .graphs import copyGraph, isUndirected
 
 
 # ============================================================

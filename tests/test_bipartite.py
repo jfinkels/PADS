@@ -1,6 +1,6 @@
 import unittest
 
-from pads.Bipartite import isBipartite
+from pads.bipartite import isBipartite
 
 
 # If run as "python Bipartite.py", run tests on various small graphs

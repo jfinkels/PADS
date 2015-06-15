@@ -4,11 +4,11 @@ Two-color graphs and find related structures.
 D. Eppstein, May 2004.
 """
 
-from .Biconnectivity import BiconnectedComponents
-from .Graphs import union
-from .DFS import search as dfs_search
-from .DFS import nontree as NONTREE
-from .DFS import forward as FORWARD
+from .biconnectivity import BiconnectedComponents
+from .graphs import union
+from .dfs import search as dfs_search
+from .dfs import nontree as NONTREE
+from .dfs import forward as FORWARD
 
 
 class NonBipartite(Exception):

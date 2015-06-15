@@ -1,7 +1,7 @@
 import unittest
 
-from pads.Chordal import Chordal
-from pads.Chordal import PerfectEliminationOrdering
+from pads.chordal import Chordal
+from pads.chordal import PerfectEliminationOrdering
 
 class ChordalTest(unittest.TestCase):
     claw = {0:[1,2,3],1:[0],2:[0],3:[0]}

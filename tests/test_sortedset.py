@@ -1,6 +1,6 @@
-from pads.SortedSet import SortedSet
-
 import unittest
+
+from pads.sorted_set import SortedSet
 
 
 # ======================================================================

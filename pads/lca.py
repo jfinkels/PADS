@@ -15,7 +15,7 @@ D. Eppstein, November 2003.
 """
 from collections import defaultdict
 
-from .UnionFind import UnionFind
+from .union_find import UnionFind
 
 # 2to3 compatibility
 try:

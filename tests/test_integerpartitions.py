@@ -1,12 +1,12 @@
 import unittest
 
-from pads.IntegerPartitions import mckay
-from pads.IntegerPartitions import fixed_length_partitions
-from pads.IntegerPartitions import partitions
-from pads.IntegerPartitions import conjugate
-from pads.IntegerPartitions import binary_partitions
-from pads.IntegerPartitions import lex_partitions
-from pads.IntegerPartitions import revlex_partitions
+from pads.integer_partitions import mckay
+from pads.integer_partitions import fixed_length_partitions
+from pads.integer_partitions import partitions
+from pads.integer_partitions import conjugate
+from pads.integer_partitions import binary_partitions
+from pads.integer_partitions import lex_partitions
+from pads.integer_partitions import revlex_partitions
 
 # If run standalone, perform unit tests
 

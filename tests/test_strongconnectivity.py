@@ -1,7 +1,7 @@
 import unittest
 
-from pads.StrongConnectivity import StronglyConnectedComponents
-from pads.StrongConnectivity import Condensation
+from pads.strong_connectivity import StronglyConnectedComponents
+from pads.strong_connectivity import Condensation
 
     
 # If run as "python StrongConnectivity.py", run tests on various small graphs

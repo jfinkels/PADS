@@ -5,8 +5,8 @@ Find maximum cardinality matchings in general undirected graphs.
 D. Eppstein, UC Irvine, September 6, 2003.
 """
 
-from .UnionFind import UnionFind
-from .Util import arbitrary_item
+from .union_find import UnionFind
+from .util import arbitrary_item
 
 
 def matching(G, initialMatching=None):
