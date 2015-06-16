@@ -5,7 +5,7 @@ Test whether a graph is an isometric subgraph of a hypercube.
 D. Eppstein, September 2005, rewritten May 2007 per arxiv:0705.1025.
 """
 
-from .bfs import BreadthFirstLevels
+from .bfs import breadth_first_levels
 from .medium import MediumError
 from .medium import LabeledGraphMedium
 from .medium import RoutingTable
@@ -75,7 +75,7 @@ def PartialCubeEdgeLabeling(G):
             i += 1
 
         # Breadth first search to propagate bitvectors to the rest of the graph
-        for LG in BreadthFirstLevels(CG, root):
+        for LG in breadth_first_levels(CG, root):
             for v in LG:
                 for w in LG[v]:
                     bitvec[w] |= bitvec[v]

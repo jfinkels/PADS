@@ -6,7 +6,7 @@ D. Eppstein, May 2007.
 """
 
 
-def BreadthFirstLevels(G, root):
+def breadth_first_levels(G, root):
     """
     Generate a sequence of bipartite directed graphs, each consisting
     of the edges from level i to level i+1 of G. Edges that connect

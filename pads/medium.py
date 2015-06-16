@@ -22,7 +22,7 @@ theory of finite automata.
 D. Eppstein, May 2007.
 """
 
-from .bfs import BreadthFirstLevels
+from .bfs import breadth_first_levels
 from .dfs import search as dfs_search
 from .dfs import nontree as NONTREE
 from .dfs import reverse as REVERSE
@@ -246,7 +246,7 @@ def RoutingTable(M):
 
     # find list of tokens that lead to the initial state
     activeTokens = set()
-    for LG in BreadthFirstLevels(G, initialState):
+    for LG in breadth_first_levels(G, initialState):
         for v in LG:
             for w in LG[v]:
                 activeTokens.add(G[w][v])
