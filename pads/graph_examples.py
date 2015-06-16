@@ -41,7 +41,8 @@ def LCFNotation(L, n):
     for a description of this notation.
     """
     n *= len(L)
-    return {i: ((i - 1) % n, (i + 1) % n, (i + L[i % len(L)]) % n) for i in range(n)}
+    return {i: ((i - 1) % n, (i + 1) % n, (i + L[i % len(L)]) % n)
+            for i in range(n)}
 
 McGeeGraph = LCFNotation([-12, 7, -7], 8)
 DyckGraph = LCFNotation([-13, 5, -5, 13], 8)

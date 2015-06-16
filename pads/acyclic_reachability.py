@@ -1,6 +1,7 @@
 """AcyclicReachability.py
 
-Bit-parallel algorithm for testing which vertices can reach which other vertices in a DAG.
+Bit-parallel algorithm for testing which vertices can reach which other
+vertices in a DAG.
 
 Usage:
     R = Reachability(G)
@@ -34,4 +35,5 @@ class Reachability:
 
     def reachable(self, source, destination):
         """Test whether the DAG has a path from source to destination."""
-        return (1 << self.key[destination]) & self.canReach[self.key[source]] != 0
+        return ((1 << self.key[destination]) & self.canReach[self.key[source]]
+                != 0)

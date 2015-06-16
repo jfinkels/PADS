@@ -35,7 +35,10 @@ def LyndonWordsWithLength(s, n):
 
 def LyndonWords(s):
     """Generate all Lyndon words over an s-symbol alphabet.
-    The generation order is by length, then lexicographic within each length."""
+
+    The generation order is by length, then lexicographic within each length.
+
+    """
     n = 0
     while True:
         for w in LyndonWordsWithLength(s, n):

@@ -18,11 +18,12 @@ Various input formats are supported and automatically detected:
    http://www.algorithmic-solutions.info/leda_guide/graphs/leda_native_graph_fileformat.html
 
 The output is a dict mapping vertices to adjacency lists (also dicts).
-Each vertex is either a unique integer or a string.
-Each adjacency list maps neighbors to edge ids, either unique integers or strings.
-Each edge is represented twice, once for each endpoint.
+Each vertex is either a unique integer or a string.  Each adjacency list
+maps neighbors to edge ids, either unique integers or strings.  Each
+edge is represented twice, once for each endpoint.
 
-Only the graph structure itself is returned; any additional information may be lost.
+Only the graph structure itself is returned; any additional information
+may be lost.
 
 D. Eppstein, UC Irvine, August 12, 2003.
 """
@@ -37,7 +38,7 @@ def graphNum(s):
     try:
         return int(s)
     except:
-        raise GraphFormatError, 'Number expected: "%s"' % s
+        raise GraphFormatError('Number expected: "%s"' % s)
 
 
 def graph():
@@ -48,23 +49,28 @@ def graph():
 def vertex(G, v):
     """Add new vertex v to graph G."""
     if v in G:
-        raise GraphFormatError, 'Duplicate vertex %s', str(v)
+        raise GraphFormatError('Duplicate vertex %s', str(v))
     G[v] = {}
 
 
 def edge(G, u, v, e):
-    """Add edge e connecting vertices u and v in graph G.  Vertices must already be in G."""
+    """Add edge e connecting vertices u and v in graph G.  Vertices must
+    already be in G.
+
+    """
     if u == v:
-        raise GraphFormatError, 'Self-loop at %s' % str(u)
+        raise GraphFormatError('Self-loop at %s' % str(u))
     if u not in G:
-        raise GraphFormatError, 'Unexpected vertex %s in edge to %s' % (str(u), str(v))
+        raise GraphFormatError('Unexpected vertex %s in edge to %s'
+                               % (str(u), str(v)))
     if v not in G:
-        raise GraphFormatError, 'Unexpected vertex %s in edge from %s' % (str(v), str(u))
+        raise GraphFormatError('Unexpected vertex %s in edge from %s'
+                               % (str(v), str(u)))
     G[u][v] = G[v][u] = e
 
 
 # ==========================================================================
-#		MALF format
+# MALF format
 # ==========================================================================
 
 def readMALF(lines):
@@ -76,7 +82,7 @@ def readMALF(lines):
             break
         n = graphNum(line.split()[0])
         if n != len(G) + 1:
-            raise GraphFormatError, 'Nonconsecutive vertices in MALF'
+            raise GraphFormatError('Nonconsecutive vertices in MALF')
         vertex(G, n)
 
     m = 0
@@ -84,18 +90,19 @@ def readMALF(lines):
         nums = [graphNum(x) for x in line.split()]
         m += 1
         if len(nums) != 4:
-            raise GraphFormatError, "Other than four numbers per line in MALF edge list"
+            raise GraphFormatError("Other than four numbers per line in MALF"
+                                   " edge list")
         elif nums[0] != m:
-            raise GraphFormatError, 'Nonconsecutive edges in MALF'
+            raise GraphFormatError('Nonconsecutive edges in MALF')
         elif nums[1] != 0:
-            raise GraphFormatError, "Unrecognized edge type in MALF edge list"
+            raise GraphFormatError("Unrecognized edge type in MALF edge list")
         edge(G, nums[2], nums[3], m)
 
     return G
 
 
 # ==========================================================================
-#		Edge list format
+# Edge list format
 # ==========================================================================
 
 def readEdgeList(lines):
@@ -105,9 +112,11 @@ def readEdgeList(lines):
     for line in filter(None, lines):
         words = line.split()
         if len(words) < 2 or len(words) > 3:
-            raise GraphFormatError, 'Wrong number of words in edge list: "%s"' % line
+            raise GraphFormatError('Wrong number of words in edge list: "%s"'
+                                   % line)
         if len(words) == 3 and words[1] != '-':
-            raise GraphFormatError, 'Unrecognized edge type "%s" in edge list' % words[1]
+            raise GraphFormatError('Unrecognized edge type "%s" in edge list'
+                                   % words[1])
         u, v = words[0], words[-1]
         if u not in G:
             vertex(G, u)
@@ -120,7 +129,7 @@ def readEdgeList(lines):
 
 
 # ==========================================================================
-#		Node edge list format
+# Node edge list format
 # ==========================================================================
 
 def readNodeEdgeList(lines):
@@ -137,7 +146,7 @@ def readNodeEdgeList(lines):
         u = line
         v = next(lines)
         if v.startswith('//'):
-            raise GraphFormatError, 'Missing edge endpoint in node edge list'
+            raise GraphFormatError('Missing edge endpoint in node edge list')
         edge(G, u, v, id)
         numEdges[0] += 1
 
@@ -147,12 +156,13 @@ def readNodeEdgeList(lines):
     def namedEdge(line):
         id = line
         if id in EdgeNames:
-            raise GraphFormatError, 'Edge name "%s" used twice in node edge list' % id
+            raise GraphFormatError('Edge name "%s" used twice in node edge'
+                                   ' list' % id)
         addEdge(next(lines), id)
         EdgeNames[id] = id
 
     def noActionYet(line):
-        raise GraphFormatError, 'No section yet in node edge list'
+        raise GraphFormatError('No section yet in node edge list')
 
     actions = {
         'nodes': addVertex,
@@ -166,7 +176,8 @@ def readNodeEdgeList(lines):
             try:
                 action = actions[line[3:]]
             except KeyError:
-                raise GraphFormatError, 'Unrecognized section "%s" in node edge list' % line[3:]
+                raise GraphFormatError('Unrecognized section "%s" in node edge'
+                                       ' list' % line[3:])
         else:
             action(line)
 
@@ -174,7 +185,7 @@ def readNodeEdgeList(lines):
 
 
 # ==========================================================================
-#		GraphML format
+# GraphML format
 # ==========================================================================
 
 def readGraphML(lines):
@@ -188,23 +199,25 @@ def readGraphML(lines):
         context.append(name)
         if len(context) == 1:
             if name != 'graphml':
-                raise GraphFormatError, 'Unrecognized outer tag "%s" in GraphML' % name
+                raise GraphFormatError('Unrecognized outer tag "%s" in GraphML'
+                                       % name)
         elif len(context) == 2 and name == 'graph':
             if 'edgedefault' not in attrs:
-                raise GraphFormatError, 'Required attribute edgedefault missing in GraphML'
+                raise GraphFormatError('Required attribute edgedefault missing'
+                                       ' in GraphML')
             if attrs['edgedefault'] == 'undirected':
                 defaultDirectedness[0] = 'false'
         elif len(context) == 3 and context[1] == 'graph' and name == 'node':
             if 'id' not in attrs:
-                raise GraphFormatError, 'Anonymous node in GraphML'
+                raise GraphFormatError('Anonymous node in GraphML')
             vertex(G, attrs['id'])
         elif len(context) == 3 and context[1] == 'graph' and name == 'edge':
             if 'source' not in attrs:
-                raise GraphFormatError, 'Edge without source in GraphML'
+                raise GraphFormatError('Edge without source in GraphML')
             if 'target' not in attrs:
-                raise GraphFormatError, 'Edge without target in GraphML'
+                raise GraphFormatError('Edge without target in GraphML')
             if attrs.get('directed', defaultDirectedness[0]) != 'false':
-                raise GraphFormatError, 'Directed edge in GraphML'
+                raise GraphFormatError('Directed edge in GraphML')
             edge(G, attrs['source'], attrs['target'], edgecounter[0])
             edgecounter[0] += 1
 
@@ -222,7 +235,7 @@ def readGraphML(lines):
 
 
 # ==========================================================================
-#		Graph6 and Sparse6 format
+# Graph6 and Sparse6 format
 # ==========================================================================
 
 def graph6data(str):
@@ -234,7 +247,10 @@ def graph6data(str):
 
 
 def graph6n(data):
-    """Read initial one or four-unit value from graph6 sequence.  Return value, rest of seq."""
+    """Read initial one or four-unit value from graph6 sequence.  Return
+    value, rest of seq.
+
+    """
     if data[0] <= 62:
         return data[0], data[1:]
     return (data[1] << 12) + (data[2] << 6) + data[3], data[4:]
@@ -248,10 +264,16 @@ def readGraph6(str):
     n, data = graph6n(data)
     nd = (n * (n - 1) // 2 + 5) // 6
     if len(data) != nd:
-        raise GraphFormatError, 'Expected %d bits but got %d in graph6' % (n * (n - 1) // 2, len(data) * 6)
+        expected = n * (n - 1) // 2
+        actual = len(data) * 6
+        raise GraphFormatError('Expected %d bits but got %d in graph6'
+                               % (expected, actual))
 
     def bits():
-        """Return sequence of individual bits from 6-bit-per-value list of data values."""
+        """Return sequence of individual bits from 6-bit-per-value list
+        of data values.
+
+        """
         for d in data:
             for i in [5, 4, 3, 2, 1, 0]:
                 yield (d >> i) & 1
@@ -261,7 +283,8 @@ def readGraph6(str):
     for i in range(n):
         vertex(G, i)
 
-    for (i, j), b in zip([(i, j) for j in range(1, n) for i in range(j)], bits()):
+    for (i, j), b in zip([(i, j) for j in range(1, n) for i in range(j)],
+                         bits()):
         if b:
             edge(G, i, j, nEdges)
             nEdges += 1
@@ -274,7 +297,7 @@ def readSparse6(str):
     if str.startswith('>>sparse6<<'):
         str = str[10:]
     if not str.startswith(':'):
-        raise GraphFormatError, 'Expected colon in sparse6'
+        raise GraphFormatError('Expected colon in sparse6')
     n, data = graph6n(graph6data(str[1:]))
     k = 1
     while 1 << k < n:
@@ -325,11 +348,14 @@ def readSparse6(str):
 
 
 # ==========================================================================
-#		LEDA.GRAPH format
+# LEDA.GRAPH format
 # ==========================================================================
 
 def ledaLines(lines):
-    """Filter sequence of lines to keep only the relevant ones for LEDA.GRAPH"""
+    """Filter sequence of lines to keep only the relevant ones for
+    LEDA.GRAPH.
+
+    """
     def relevant(line):
         return line and not line.startswith('#')
     return filter(relevant, lines)
@@ -351,12 +377,14 @@ def readLeda(lines):
     for i in range(m):
         words = next(lines).split()
         if len(words) < 4:
-            raise GraphFormatError, 'Too few fields in LEDA.GRAPH edge %d' % (i + 1)
+            raise GraphFormatError('Too few fields in LEDA.GRAPH edge %d'
+                                   % (i + 1))
         source = graphNum(words[0])
         target = graphNum(words[1])
         reversal = graphNum(words[2])
         if not reversal:
-            raise GraphFormatError, 'Edge %d is directed in LEDA.GRAPH' % (i + 1)
+            raise GraphFormatError('Edge %d is directed in LEDA.GRAPH.'
+                                   % (i + 1))
         if source < target:
             edge(G, source, target, i + 1)
 
@@ -364,7 +392,7 @@ def readLeda(lines):
 
 
 # ==========================================================================
-#		Main entry
+# Main entry
 # ==========================================================================
 
 def readUndirectedGraph(arg):

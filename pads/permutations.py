@@ -24,12 +24,13 @@ separate object. E.g.
         # elements point to the same list object as each other
 
 The Steinhaus-Johnson-Trotter implementation given here sets up a
-sequence of recursive simple generators, each taking constant space,
-for a total space of O(n), where n is the number of items being permuted.
+sequence of recursive simple generators, each taking constant space, for
+a total space of O(n), where n is the number of items being permuted.
 The number of recursive calls to generate a swap that moves the item
 originally in position n of the input permutation is O(n-i+1), so all
-but a 1/n fraction of the swaps take no recursion and the rest always take O(n) time, for an average time per swap of O(1) and an average time per
-generated permutation of O(1). The other generators are similar.
+but a 1/n fraction of the swaps take no recursion and the rest always
+take O(n) time, for an average time per swap of O(1) and an average time
+per generated permutation of O(1). The other generators are similar.
 """
 
 # 2to3 compatibility

@@ -4,7 +4,10 @@ Generate all Hamiltonian cycles in graphs of maximum degree three.
 D. Eppstein, April 2004.
 """
 
-from .graphs import *
+from .graphs import copyGraph
+from .graphs import isUndirected
+from .graphs import maxDegree
+from .graphs import minDegree
 from .biconnectivity import isBiconnected
 from .cardinality_matching import matching
 from .util import arbitrary_item, map_to_constant
@@ -48,9 +51,11 @@ def HamiltonianCycles(G):
 
     # The overall backtracking algorithm is implemented by means of
     # a stack of actions.  At each step we pop the most recent action
-    # off the stack and call it.  Each stacked function should return None or False
+    # off the stack and call it.  Each stacked function should return None or
+    # False
     # normally, or True to signal that we have found a Hamiltonian cycle.
-    # Whenever we modify the graph, we push an action undoing that modification.
+    # Whenever we modify the graph, we push an action undoing that
+    # modification.
     # Below are definitions of actions and action-related functions.
 
     def remove(v, w):

@@ -1,6 +1,7 @@
 """SortedSet.py
 
-Set data structure augmented by a method to list all items in the set in sorted order.
+Set data structure augmented by a method to list all items in the set in
+sorted order.
 
 Two naive methods to do this would be
   (1) just use a Python set type and sort when requested, or
@@ -19,11 +20,12 @@ from functools import cmp_to_key
 
 
 class SortedSet:
+    """Maintain a set of items in such a way that iter(set) returns the
+    items in sorted order.
 
-    """Maintain a set of items in such a way that iter(set) returns the items in sorted order.
-    We also allow a custom comparison routine, and augment the usual add() and remove() methods
-    with an update() method that tells the set that a single item's position in the order might
-    have changed."""
+    We also allow a custom comparison routine, and augment the usual
+    add() and remove() methods with an update() method that tells the
+    set that a single item's position in the order might have changed."""
 
     def __init__(self, iterable=[], comparison=None):
         """Create a new sorted set with the given comparison function."""
@@ -49,7 +51,10 @@ class SortedSet:
             self._additions.discard(item)
 
     def update(self, item):
-        """Flag the given item as needing re-comparison with its neighbors in the order."""
+        """Flag the given item as needing re-comparison with its
+        neighbors in the order.
+
+        """
         if self._previous:
             self._removals.add(item)
             self._additions.add(item)

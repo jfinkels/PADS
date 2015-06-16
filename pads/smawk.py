@@ -179,7 +179,9 @@ class OnlineConcaveMinima:
         # Third case: row i-1 does not supply a column minimum in
         # any column up to tentative. We simply advance finished
         # while maintaining the invariant.
-        if self._matrix(i - 1, self._tentative) >= self._values[self._tentative]:
+        prev_row = self._matrix(i - 1, self._tentative)
+        tentative_value = self._values[self._tentative]
+        if prev_row >= tentative_value:
             self._finished = i
             return
 

@@ -307,11 +307,13 @@ def D3HamiltonianCycle(G):
 
 def isDual3Tree(G, triangleHooks=[], pathHooks=[], finalize=isK4):
     """Test if the graph G is the dual of a 3-tree."""
-    def noPath(u, v, w, x): return False
+    def noPath(*args, **kw):
+        return False
     return D3reducible(G, triangleHooks, [noPath], finalize)
 
 
 def isWheel(G, triangleHooks=[], pathHooks=[], finalize=isK4):
     """Test if the graph G is a wheel."""
-    def noTriangle(u, v, w, Nu, Nv, Nw, x): return False
+    def noTriangle(*args, **kw):
+        return False
     return D3reducible(G, [noTriangle], pathHooks, finalize)

@@ -25,6 +25,10 @@ class LanguageError(Exception):
     pass
 
 
+class RegExpError(Exception):
+    pass
+
+
 def Language(A):
     """Convert automaton A into an object describing its language.
     This is distinct from class RegularLanguage in case we
@@ -156,7 +160,10 @@ class FiniteAutomaton:
         return self.asNFA().RegExp()
 
     def complement(self):
-        """Make automaton recognizing complement of given automaton's language."""
+        """Make automaton recognizing complement of given automaton's
+        language.
+
+        """
         return _ComplementDFA(self.asDFA())
 
     def union(self, other):
@@ -419,7 +426,9 @@ class RegExp(NFA):
         return state
 
     def base(self):
-        """Parse a subexpression that can be starred: single letter or group."""
+        """Parse a subexpression that can be starred: single letter or group.
+
+        """
         if self.pos == len(self.expr) or self.expr[self.pos] == ')':
             return self.epsilon()
         if self.expr[self.pos] == '(':
@@ -505,8 +514,8 @@ def _RenumberNFA(N, offset=0):
     ttable = {}
     for state in N.states():
         for symbol in N.alphabet:
-            ttable[replacements[state], symbol] = [replacements[x]
-                                                   for x in N.transition(state, symbol)]
+            ttable[replacements[state], symbol] = \
+                [replacements[x] for x in N.transition(state, symbol)]
     final = [replacements[x] for x in N.states() if N.isfinal(x)]
     return LookupNFA(N.alphabet, initial, ttable, final)
 

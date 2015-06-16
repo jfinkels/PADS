@@ -2,7 +2,10 @@
 
 Various simple functions for graph input.
 
-Each function's input graph G should be represented in such a way that "for v in G" loops through the vertices, and "G[v]" produces a list of the neighbors of v; for instance, G may be a dictionary mapping each vertex to its neighbor set.
+Each function's input graph G should be represented in such a way that
+"for v in G" loops through the vertices, and "G[v]" produces a list of
+the neighbors of v; for instance, G may be a dictionary mapping each
+vertex to its neighbor set.
 
 D. Eppstein, April 2004.
 """

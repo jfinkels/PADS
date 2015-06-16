@@ -39,17 +39,21 @@ def matching(G, initialMatching=None):
         #
         # S: dictionary of blossoms at even levels of the structure tree.
         # Dictionary keys are names of blossoms (as returned by the union-find
-        # data structure) and values are the structure tree parent of the blossom
-        # (a T-node, or the top vertex if the blossom is a root of a structure tree).
+        # data structure) and values are the structure tree parent of the
+        # blossom
+        # (a T-node, or the top vertex if the blossom is a root of a structure
+        #  tree).
         #
         # T: dictionary of vertices at odd levels of the structure tree.
         # Dictionary keys are the vertices; T[x] is a vertex with an unmatched
-        # edge to x.  To find the parent in the structure tree, use leader[T[x]].
+        # edge to x.  To find the parent in the structure tree, use
+        # leader[T[x]].
         #
         # unexplored: collection of unexplored vertices within blossoms of S
         #
         # base: if x was originally a T-vertex, but becomes part of a blossom,
-        # base[t] will be the pair (v,w) at the base of the blossom, where v and t
+        # base[t] will be the pair (v,w) at the base of the blossom, where v
+        # and t
         # are on the same side of the blossom and w is on the other side.
 
         leader = UnionFind()
@@ -108,7 +112,10 @@ def matching(G, initialMatching=None):
                 start = T[tnode]
 
         def alternate(v):
-            """Make v unmatched by alternating the path to the root of its structure tree."""
+            """Make v unmatched by alternating the path to the root of its
+            structure tree.
+
+            """
             path = alternatingPath(v)
             path.reverse()
             for i in range(0, len(path) - 1, 2):
@@ -116,8 +123,9 @@ def matching(G, initialMatching=None):
                 matching[path[i + 1]] = path[i]
 
         def addMatch(v, w):
-            """Here with an S-S edge vw connecting vertices in different structure trees.
-            Find the corresponding augmenting path and use it to augment the matching.
+            """Here with an S-S edge vw connecting vertices in different
+            structure trees.  Find the corresponding augmenting path and use it
+            to augment the matching.
             """
             alternate(v)
             alternate(w)
@@ -303,8 +311,8 @@ def greedyMatching(G, initialMatching=None):
     # at this point the edges listed in d2edges form a matchable tree
     # repeat the degree one part of the algorithm only on those edges
     avail = {}
-    d2edges = [(u, v)
-               for u, v in d2edges if u not in matching and v not in matching]
+    d2edges = [(u, x)
+               for u, x in d2edges if u not in matching and x not in matching]
     for u, v in d2edges:
         avail[u] = {}
         avail[v] = {}

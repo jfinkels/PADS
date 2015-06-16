@@ -35,7 +35,7 @@ class SVG:
             self.prefix = ""
         if standalone:
             self.stream.write('''<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 ''')
         self.indentation = indentation
@@ -43,7 +43,8 @@ class SVG:
         br = _coord(bbox.real)
         bi = _coord(bbox.imag)
         self.element('''svg width="%s" height="%s" viewBox="0 0 %s %s"
-     xmlns="http://www.w3.org/2000/svg" version="1.1"''' % (br, bi, br, bi), +1)
+     xmlns="http://www.w3.org/2000/svg" version="1.1"''' % (br, bi, br, bi),
+                     +1)
 
     def close(self):
         """Output the end of an SVG file."""
@@ -110,7 +111,7 @@ class SVG:
     def rectangle(self, p, q, style={}, **morestyle):
         """Rectangle with corners at points p and q"""
         x = min(p.real, q.real)
-        y = min(p.imag, q.imag)
+        # y = min(p.imag, q.imag)
         width = abs((p - q).real)
         height = abs((p - q).imag)
         self.element('rect x="%s" y="%s" width="%s" height="%s"' %
@@ -121,7 +122,8 @@ class SVG:
         """Line segment from p to q"""
         self.element('line x1="%s" y1="%s" x2="%s" y2="%s"' %
                      (_coord(p.real), _coord(p.imag),
-                      _coord(q.real), _coord(q.imag)), style=style, **morestyle)
+                      _coord(q.real), _coord(q.imag)), style=style,
+                     **morestyle)
 
     def arc(self, p, q, r, large=False, style={}, **morestyle):
         """Circular arc from p to q with radius r.
@@ -135,7 +137,8 @@ class SVG:
         r = _coord(abs(r))
         self.element('path d="M %s,%s A %s,%s 0 %s 0 %s,%s"' %
                      (_coord(p.real), _coord(p.imag), r, r, large,
-                      _coord(q.real), _coord(q.imag)), style=style, **morestyle)
+                      _coord(q.real), _coord(q.imag)), style=style,
+                     **morestyle)
 
     def text(self, label, location, style={}, **morestyle):
         """Text label at the given location.

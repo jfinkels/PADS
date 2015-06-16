@@ -4,7 +4,7 @@ Following a numerical algorithm by C. R. Collins and K. Stephenson,
 "A Circle Packing Algorithm", Comp. Geom. Theory and Appl. 2003.
 """
 
-from math import pi, acos, asin, sin, e
+from math import pi, acos, sin, e
 
 tolerance = 1 + 10e-12    # how accurately to approximate things
 
@@ -122,7 +122,8 @@ def InvertAround(packing, k, smallCircles=None):
 def acxyz(x, y, z):
     """Angle at a circle of radius x given by two circles of radii y and z"""
     try:
-        return acos(((x + y)**2 + (x + z)**2 - (y + z)**2) / (2.0 * (x + y) * (x + z)))
+        return acos(((x + y)**2 + (x + z)**2 - (y + z)**2)
+                    / (2.0 * (x + y) * (x + z)))
     except ValueError:
         return pi / 3
     except ZeroDivisionError:

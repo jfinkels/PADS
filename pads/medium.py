@@ -9,7 +9,7 @@ As a very brief introduction to media theory:
 - Each token t has a "reverse" r such that St = V != S iff Vr = S != V.
 - Any two states can be connected by a sequence of actions that
   uses each token at most once and does not use both a token and its reverse.
-- In any sequence of effective actions taking a state back to itself, 
+- In any sequence of effective actions taking a state back to itself,
   the tokens can be matched up in token-reverse pairs.
 
 The resulting theory is equivalent to that for partial cubes (graphs that
