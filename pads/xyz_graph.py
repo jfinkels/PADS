@@ -16,7 +16,7 @@ from collections import defaultdict
 from .graphs import isUndirected
 from .partial_order import TopologicalOrder
 from .strong_connectivity import StronglyConnectedComponents
-from .biconnectivity import stOrientation
+from .biconnectivity import st_orientation
 
 
 def CubicMatchPartitions(G):
@@ -31,7 +31,7 @@ def CubicMatchPartitions(G):
     for v in G:
         if len(G[v]) != 3:
             raise ValueError("CubicMatchPartitions: graph is not cubic")
-    ST = stOrientation(G)
+    ST = st_orientation(G)
     L = TopologicalOrder(ST)
     for B in range(1 << (len(L) // 2 - 1)):
         # Here with a bitstring representing the sequence of choices

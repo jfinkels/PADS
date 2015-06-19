@@ -1,7 +1,7 @@
 import unittest
 
-from pads.biconnectivity import isBiconnected
-from pads.biconnectivity import stOrientation
+from pads.biconnectivity import is_biconnected
+from pads.biconnectivity import st_orientation
 from pads.biconnectivity import BiconnectedComponents
 from pads.biconnectivity import TopologicalOrder
 
@@ -30,8 +30,8 @@ class BiconnectivityTest(unittest.TestCase):
 
     def testIsBiconnected(self):
         """G1 is biconnected but G2 is not."""
-        self.assertEqual(isBiconnected(self.G1), True)
-        self.assertEqual(isBiconnected(self.G2), False)
+        self.assertEqual(is_biconnected(self.G1), True)
+        self.assertEqual(is_biconnected(self.G2), False)
 
     def testBiconnectedComponents(self):
         """G2 has four biconnected components."""
@@ -39,8 +39,8 @@ class BiconnectivityTest(unittest.TestCase):
         CV = sorted(sorted(component.keys()) for component in C)
         self.assertEqual(CV,[[0,2,5],[1,3,6,8],[2,3],[4,7]])
     
-    def testSTOrientation(self):
-        STO = stOrientation(self.G1)
+    def test_st_orientation(self):
+        STO = st_orientation(self.G1)
         L = list(TopologicalOrder(STO))
         indegree = dict([(v,0) for v in self.G1])
         for v in L:

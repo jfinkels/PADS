@@ -1,9 +1,4 @@
-"""Biconnectivity.py
-
-DFS-based algorithm for computing biconnected components.
-
-D. Eppstein, April 2004.
-"""
+"""DFS-based algorithm for computing biconnected components."""
 
 from .graphs import isUndirected
 from .util import arbitrary_item
@@ -129,7 +124,7 @@ class BiconnectivityTester(Searcher):
             self._rootedge = parent, child   # end of first component, isolani
 
 
-def isBiconnected(G):
+def is_biconnected(G):
     """Return True if graph G is biconnected, False otherwise."""
     try:
         BiconnectivityTester(G)
@@ -138,16 +133,13 @@ def isBiconnected(G):
         return False
 
 
-class stOrienter(Searcher):
-
-    """
-    Subclass for st-orienting a biconnected graph.
-    """
+class STOrienter(Searcher):
+    """Subclass for st-orienting a biconnected graph."""
 
     def __init__(self, G):
         """Relate edges for st-orientation."""
         if not isUndirected(G):
-            raise ValueError("stOrienter: input not undirected graph")
+            raise ValueError("input not undirected graph")
 
         # set up data structures for DFS
         self._dfsnumber = {}
@@ -180,16 +172,16 @@ class stOrienter(Searcher):
             self._low[source] = min(self._low[source],
                                     self._dfsnumber[destination])
             if source != self._down[destination]:
-                self.addOrientation(destination, source, destination)
+                self.add_orientation(destination, source, destination)
 
     def postorder(self, parent, child):
         if self._low[child] != self._dfsnumber[parent]:
             self._low[parent] = min(self._low[parent], self._low[child])
-            self.addOrientation(child, parent, self._lowv[self._low[child]])
+            self.add_orientation(child, parent, self._lowv[self._low[child]])
         elif parent != child:
             self.roots.append((parent, child))
 
-    def addOrientation(self, source, dest, anchor):
+    def add_orientation(self, source, dest, anchor):
         """Store orientation info for source->dest edge.
         It should be oriented the same as the edge from the anchor
         to the current child of the anchor."""
@@ -198,9 +190,9 @@ class stOrienter(Searcher):
         L.append((source, dest))
 
 
-def stOrientation(G):
+def st_orientation(G):
     """Find an acyclic orientation of G, with one source and one sink."""
-    stO = stOrienter(G)
+    stO = STOrienter(G)
     if len(stO.roots) != 1:
         raise NotBiconnected
 

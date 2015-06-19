@@ -8,7 +8,7 @@ from .graphs import copyGraph
 from .graphs import isUndirected
 from .graphs import maxDegree
 from .graphs import minDegree
-from .biconnectivity import isBiconnected
+from .biconnectivity import is_biconnected
 from .cardinality_matching import matching
 from .util import arbitrary_item, map_to_constant
 
@@ -226,7 +226,7 @@ def HamiltonianCycles(G):
         # more expensive pruning steps first.
 
         # If graph is Hamiltonian it must be biconnected
-        if not isBiconnected(G):
+        if not is_biconnected(G):
             return None
 
         # If graph is Hamiltonian, unforced edges must have a perfect matching.
