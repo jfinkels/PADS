@@ -1,9 +1,6 @@
-"""Automata.py
-
-Manipulation of and conversions between regular expressions,
+"""Manipulation of and conversions between regular expressions,
 deterministic finite automata, and nondeterministic finite automata.
 
-D. Eppstein, UC Irvine, November 2003.
 """
 
 import sys
@@ -29,7 +26,7 @@ class RegExpError(Exception):
     pass
 
 
-def Language(A):
+def language(A):
     """Convert automaton A into an object describing its language.
     This is distinct from class RegularLanguage in case we
     want to later add other types of automaton and nonregular languages.
@@ -77,25 +74,25 @@ class RegularLanguage:
 
     def __invert__(self):
         """Complement (with respect to alphabet) of language."""
-        return Language(self.recognizer.complement())
+        return language(self.recognizer.complement())
 
     def __and__(self, other):
         """Intersection of two languages with the same alphabet."""
         if not isinstance(other, RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
-        return Language(self.recognizer.intersection(other.recognizer))
+        return language(self.recognizer.intersection(other.recognizer))
 
     def __or__(self, other):
         """Union of two languages with the same alphabet."""
         if not isinstance(other, RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
-        return Language(self.recognizer.union(other.recognizer))
+        return language(self.recognizer.union(other.recognizer))
 
     def __xor__(self, other):
         """Symmetric difference of two languages with the same alphabet."""
         if not isinstance(other, RegularLanguage):
             raise LanguageError("Unable to intersect nonregular language")
-        return Language(self.recognizer.symmetricDifference(other.recognizer))
+        return language(self.recognizer.symmetricDifference(other.recognizer))
 
     def __nonzero__(self):
         """Is this the empty language?"""
