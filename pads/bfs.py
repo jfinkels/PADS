@@ -1,8 +1,7 @@
-"""BFS.py
+"""Functions for breadth-first search in a graph.
 
-Breadth First Search. See also LexBFS.py.
+For lexicographic breadth-first search, see :mod:`lex_bfs`.
 
-D. Eppstein, May 2007.
 """
 
 
