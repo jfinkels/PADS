@@ -1,6 +1,6 @@
 import unittest
 
-from pads.bipartite import isBipartite
+from pads.bipartite import is_bipartite
 
 
 class BipartitenessTest(unittest.TestCase):
@@ -9,8 +9,8 @@ class BipartitenessTest(unittest.TestCase):
 
     def testEvenCycles(self):
         for i in range(4,12,2):
-            self.assertEqual(isBipartite(self.cycle(i)), True)
+            self.assertEqual(is_bipartite(self.cycle(i)), True)
 
     def testOddCycles(self):
         for i in range(3,12,2):
-            self.assertEqual(isBipartite(self.cycle(i)), False)
+            self.assertEqual(is_bipartite(self.cycle(i)), False)

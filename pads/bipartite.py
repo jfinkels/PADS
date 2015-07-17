@@ -15,7 +15,7 @@ class NonBipartite(Exception):
     pass
 
 
-def TwoColor(G):
+def two_color(G):
     """
     Find a bipartition of G, if one exists.
     Raises NonBipartite or returns dict mapping vertices
@@ -30,43 +30,43 @@ def TwoColor(G):
     return color
 
 
-def Bipartition(G):
+def bipartition(G):
     """
     Find a bipartition of G, if one exists.
     Raises NonBipartite or returns sequence of vertices
     on one side of the bipartition.
     """
-    color = TwoColor(G)
+    color = two_color(G)
     for v in color:
         if color[v]:
             yield v
 
 
-def isBipartite(G):
+def is_bipartite(G):
     """
     Return True if G is bipartite, False otherwise.
     """
     try:
-        TwoColor(G)
+        two_color(G)
         return True
     except NonBipartite:
         return False
 
 
-def BipartiteOrientation(G, adjacency_list_type=set):
+def bipartite_orientation(G, adjacency_list_type=set):
     """
     Given an undirected bipartite graph G, return a directed graph in which
     the edges are oriented from one side of the bipartition to the other.
     The second argument has the same meaning as in Graphs.copyGraph.
     """
-    B = Bipartition(G)
+    B = bipartition(G)
     return {v: adjacency_list_type(iter(G[v])) for v in B}
 
 
-def OddCore(G):
+def odd_core(G):
     """
     Subgraph of vertices and edges that participate in odd cycles.
     Aka, the union of nonbipartite biconnected components.
     """
     return union(*[C for C in BiconnectedComponents(G)
-                   if not isBipartite(C)])
+                   if not is_bipartite(C)])

@@ -10,7 +10,7 @@ from .medium import MediumError
 from .medium import LabeledGraphMedium
 from .medium import RoutingTable
 from .medium import HypercubeEmbedding
-from .bipartite import isBipartite
+from .bipartite import is_bipartite
 from .union_find import UnionFind
 from .strong_connectivity import StronglyConnectedComponents
 from .graphs import isUndirected
@@ -56,7 +56,7 @@ def PartialCubeEdgeLabeling(G):
 
     # Main contraction loop in place of the original algorithm's recursion
     while len(CG) > 1:
-        if not isBipartite(CG):
+        if not is_bipartite(CG):
             raise MediumError("graph is not bipartite")
 
         # Find max degree vertex in G, and update label limit
