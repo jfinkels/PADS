@@ -1,7 +1,7 @@
 import unittest
 
-from pads.chordal import Chordal
-from pads.chordal import PerfectEliminationOrdering
+from pads.chordal import is_chordal
+from pads.chordal import perfect_elimination_ordering
 
 
 class ChordalTest(unittest.TestCase):
@@ -14,14 +14,14 @@ class ChordalTest(unittest.TestCase):
     def testChordal(self):
         """Check that Chordal() returns the correct answer on each test graph."""
         for G,isChordal in ChordalTest.graphs:
-            self.assertEqual(Chordal(G), isChordal)
+            self.assertEqual(is_chordal(G), isChordal)
 
     def testElimination(self):
         """Check that PerfectEliminationOrdering generates an elimination ordering."""
         for G,isChordal in ChordalTest.graphs:
             if isChordal:
                 eliminated = set()
-                for v in PerfectEliminationOrdering(G):
+                for v in perfect_elimination_ordering(G):
                     eliminated.add(v)
                     for w in G[v]:
                         for x in G[v]:

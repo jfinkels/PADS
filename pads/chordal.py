@@ -13,7 +13,7 @@ from .lex_bfs import LexBFS
 from .graphs import isUndirected
 
 
-def PerfectEliminationOrdering(G):
+def perfect_elimination_ordering(G):
     """Return a perfect elimination ordering, or raise an exception if not chordal.
     G should be represented in such a way that "for v in G" loops through
     the vertices, and "G[v]" produces a list of the neighbors of v; for
@@ -32,17 +32,17 @@ def PerfectEliminationOrdering(G):
             parent[v] = B[max([position[w] for w in leftNeighbors[v]])]
             if not leftNeighbors[v] - {parent[v]} <= leftNeighbors[parent[v]]:
                 raise ValueError(
-                    "Input to PerfectEliminationOrdering is not chordal")
+                    "Input to perfect_elimination_ordering is not chordal")
     B.reverse()
     return B
 
 
-def Chordal(G):
+def is_chordal(G):
     """Test if a given graph is chordal."""
     if not isUndirected(G):
         raise ValueError("Input to Chordal is not an undirected graph")
     try:
-        PerfectEliminationOrdering(G)
+        perfect_elimination_ordering(G)
     except:
         return False
     return True
