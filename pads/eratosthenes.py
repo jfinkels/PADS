@@ -64,7 +64,7 @@ def primes():
         n += 2              # Move on to next odd number.
 
 
-def FactoredIntegers():
+def factored_integers():
     """
     Generate pairs n,F where F is the prime factorization of n.
     F is represented as a dictionary in which each prime factor of n
@@ -97,27 +97,27 @@ def FactoredIntegers():
         i += 1
 
 
-def MoebiusSequence():
+def moebius_sequence():
     """The sequence of values of the Moebius function, OEIS A008683."""
-    for n, F in FactoredIntegers():
+    for n, F in factored_integers():
         if n > 1 and set(F.values()) != {1}:
             yield 0
         else:
             yield (-1)**len(F)
 
-MoebiusFunctionValues = [None]
-MoebiusFunctionIterator = MoebiusSequence()
+moebius_function_values = [None]
+moebius_function_iterator = moebius_sequence()
 
 
-def MoebiusFunction(n):
+def moebius_function(n):
     """A functional version of the Moebius sequence.
     Efficient only for small values of n."""
-    while n >= len(MoebiusFunctionValues):
-        MoebiusFunctionValues.append(next(MoebiusFunctionIterator))
-    return MoebiusFunctionValues[n]
+    while n >= len(moebius_function_values):
+        moebius_function_values.append(next(moebius_function_iterator))
+    return moebius_function_values[n]
 
 
-def isPracticalFactorization(f):
+def is_practical_factorization(f):
     """Test whether f is the factorization of a practical number."""
     f = sorted(f.items())
     sigma = 1
@@ -128,8 +128,8 @@ def isPracticalFactorization(f):
     return True
 
 
-def PracticalNumbers():
+def practical_numbers():
     """Generate the sequence of practical (or panarithmic) numbers."""
-    for x, f in FactoredIntegers():
-        if isPracticalFactorization(f):
+    for x, f in factored_integers():
+        if is_practical_factorization(f):
             yield x

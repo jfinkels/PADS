@@ -1,7 +1,7 @@
 import unittest
 
 from pads.eratosthenes import primes
-from pads.eratosthenes import PracticalNumbers
+from pads.eratosthenes import practical_numbers
 
 
 class SieveTest(unittest.TestCase):    
@@ -13,6 +13,6 @@ class SieveTest(unittest.TestCase):
 
     def testPractical(self):
         """Test that the first few practical nos are generated correctly."""
-        G = PracticalNumbers()
+        G = practical_numbers()
         for p in [1,2,4,6,8,12,16,18,20,24,28,30,32,36]:
             self.assertEqual(p,next(G))
