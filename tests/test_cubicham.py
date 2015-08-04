@@ -1,6 +1,6 @@
 import unittest
 
-from pads.cubic_ham import HamiltonianCycles
+from pads.cubic_ham import hamiltonian_cycles
 from pads.cubic_ham import arbitrary_item
 
 
@@ -8,7 +8,7 @@ class CubicHamTest(unittest.TestCase):
     def check(self,G,N):
         """Make sure G has N Hamiltonian cycles."""
         count = 0
-        for C in HamiltonianCycles(G):
+        for C in hamiltonian_cycles(G):
             # Count the cycle.
             count += 1
 

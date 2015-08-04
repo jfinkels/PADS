@@ -13,7 +13,7 @@ from .cardinality_matching import matching
 from .util import arbitrary_item, map_to_constant
 
 
-def HamiltonianCycles(G):
+def hamiltonian_cycles(G):
     """
     Generate a sequence of all Hamiltonian cycles in graph G.
     G should be represented in such a way that "for v in G" loops through
@@ -28,8 +28,7 @@ def HamiltonianCycles(G):
     # In the copied graph G, G[v][w] is True when vw is an original edge
     # of the input, and False when it was produced by a contraction.
     if not G or not isUndirected(G) or maxDegree(G) > 3:
-        raise ValueError(
-            "HamiltonianCycles input must be undirected degree three graph")
+        raise ValueError("input must be undirected degree three graph")
     if minDegree(G) < 2:
         return
     G = copyGraph(G, map_to_constant(True))
