@@ -1,4 +1,4 @@
-"""CirclePack.py
+"""circle_pack.py
 Compute circle packings according to the Koebe-Thurston-Andreev theory,
 Following a numerical algorithm by C. R. Collins and K. Stephenson,
 "A Circle Packing Algorithm", Comp. Geom. Theory and Appl. 2003.
@@ -13,7 +13,7 @@ tolerance = 1 + 10e-12    # how accurately to approximate things
 # ======================================================
 
 
-def CirclePack(internal, external):
+def circle_pack(internal, external):
     """Find a circle packing for the given data.
     The two arguments should be dictionaries with disjoint keys; the
     keys of the two arguments are identifiers for circles in the packing.
@@ -24,11 +24,11 @@ def CirclePack(internal, external):
 
     # Some sanity checks and preprocessing
     if min(external.values()) <= 0:
-        raise ValueError("CirclePack: external radii must be positive")
+        raise ValueError("external radii must be positive")
     radii = dict(external)
     for k in internal:
         if k in external:
-            raise ValueError("CirclePack: keys are not disjoint")
+            raise ValueError("keys are not disjoint")
         radii[k] = 1
 
     # The main iteration for finding the correct set of radii
@@ -85,7 +85,7 @@ def NormalizePacking(packing, k=None, target=1.0):
     else:
         z, r = packing[k]
     s = target / r
-    return dict((kk, (zz * s, rr * s)) for kk, (zz, rr) in packing.iteritems())
+<    return dict((kk, (zz * s, rr * s)) for kk, (zz, rr) in packing.iteritems())
 
 
 def InvertAround(packing, k, smallCircles=None):
