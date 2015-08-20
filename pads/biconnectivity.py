@@ -1,6 +1,6 @@
 """DFS-based algorithm for computing biconnected components."""
 
-from .graphs import isUndirected
+from .graphs import is_undirected
 from .util import arbitrary_item
 from .partial_order import TopologicalOrder
 from .dfs import Searcher
@@ -20,7 +20,7 @@ class BiconnectedComponents(Searcher):
 
     def __init__(self, G):
         """Search for biconnected components of graph G."""
-        if not isUndirected(G):
+        if not is_undirected(G):
             raise ValueError(
                 "BiconnectedComponents: input not undirected graph")
 
@@ -95,7 +95,7 @@ class BiconnectivityTester(Searcher):
 
     def __init__(self, G):
         """Search for biconnected components of graph G."""
-        if not isUndirected(G):
+        if not is_undirected(G):
             raise NotBiconnected
         self._dfsnumber = {}
         self._low = {}
@@ -138,7 +138,7 @@ class STOrienter(Searcher):
 
     def __init__(self, G):
         """Relate edges for st-orientation."""
-        if not isUndirected(G):
+        if not is_undirected(G):
             raise ValueError("input not undirected graph")
 
         # set up data structures for DFS

@@ -27,7 +27,7 @@ from .dfs import search as dfs_search
 from .dfs import nontree as NONTREE
 from .dfs import reverse as REVERSE
 from .dfs import forward as FORWARD
-from .graphs import isUndirected
+from .graphs import is_undirected
 
 
 class MediumError(ValueError):
@@ -192,7 +192,7 @@ class LabeledGraphMedium(Medium):
     """
 
     def __init__(self, G):
-        if not isUndirected(G):
+        if not is_undirected(G):
             raise MediumError("not an undirected graph")
         self._action = {v: {} for v in G}
         self._reverse = {}

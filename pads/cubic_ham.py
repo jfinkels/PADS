@@ -4,10 +4,10 @@ Generate all Hamiltonian cycles in graphs of maximum degree three.
 D. Eppstein, April 2004.
 """
 
-from .graphs import copyGraph
-from .graphs import isUndirected
-from .graphs import maxDegree
-from .graphs import minDegree
+from .graphs import copy_graph
+from .graphs import is_undirected
+from .graphs import max_degree
+from .graphs import min_degree
 from .biconnectivity import is_biconnected
 from .cardinality_matching import matching
 from .util import arbitrary_item, map_to_constant
@@ -27,11 +27,11 @@ def hamiltonian_cycles(G):
     # Check input and copy it so we can modify the copy.
     # In the copied graph G, G[v][w] is True when vw is an original edge
     # of the input, and False when it was produced by a contraction.
-    if not G or not isUndirected(G) or maxDegree(G) > 3:
+    if not G or not is_undirected(G) or max_degree(G) > 3:
         raise ValueError("input must be undirected degree three graph")
-    if minDegree(G) < 2:
+    if min_degree(G) < 2:
         return
-    G = copyGraph(G, map_to_constant(True))
+    G = copy_graph(G, map_to_constant(True))
 
     # Subgraph of forced edges in the input
     forced_in_input = {v: {} for v in G}

@@ -11,7 +11,7 @@ D. Eppstein, April 2004.
 """
 
 
-def isUndirected(G):
+def is_undirected(G):
     """Check that G represents a simple undirected graph."""
     for v in G:
         if v in G[v]:
@@ -22,17 +22,17 @@ def isUndirected(G):
     return True
 
 
-def maxDegree(G):
+def max_degree(G):
     """Return the maximum vertex (out)degree of graph G."""
     return max([len(G[v]) for v in G])
 
 
-def minDegree(G):
+def min_degree(G):
     """Return the minimum vertex (out)degree of graph G."""
     return min([len(G[v]) for v in G])
 
 
-def copyGraph(G, adjacency_list_type=set):
+def copy_graph(G, adjacency_list_type=set):
     """
     Make a copy of a graph G and return the copy.
     Any information stored in edges G[v][w] is discarded.
@@ -49,7 +49,7 @@ def copyGraph(G, adjacency_list_type=set):
     return {v: adjacency_list_type(iter(G[v])) for v in G}
 
 
-def InducedSubgraph(V, G, adjacency_list_type=set):
+def induced_subgraph(V, G, adjacency_list_type=set):
     """
     The subgraph consisting of all edges between pairs of vertices in V.
     """
@@ -66,19 +66,19 @@ def union(*graphs):
     return out
 
 
-def isIndependentSet(V, G):
+def is_independent_set(V, G):
     """
     True if V is an independent set of vertices in G, False otherwise.
     """
     class NonIndependent(Exception):
         pass
 
-    def TestIndependent(seq):
+    def test_independent(seq):
         for x in seq:
             raise NonIndependent
 
     try:
-        InducedSubgraph(V, G, TestIndependent)
+        induced_subgraph(V, G, test_independent)
         return True
     except NonIndependent:
         return False

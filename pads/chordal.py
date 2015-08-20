@@ -10,7 +10,7 @@ D. Eppstein, November 2003.
 """
 
 from .lex_bfs import LexBFS
-from .graphs import isUndirected
+from .graphs import is_undirected
 
 
 def perfect_elimination_ordering(G):
@@ -39,7 +39,7 @@ def perfect_elimination_ordering(G):
 
 def is_chordal(G):
     """Test if a given graph is chordal."""
-    if not isUndirected(G):
+    if not is_undirected(G):
         raise ValueError("Input to Chordal is not an undirected graph")
     try:
         perfect_elimination_ordering(G)

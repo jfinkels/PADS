@@ -13,7 +13,7 @@ from .medium import HypercubeEmbedding
 from .bipartite import is_bipartite
 from .union_find import UnionFind
 from .strong_connectivity import StronglyConnectedComponents
-from .graphs import isUndirected
+from .graphs import is_undirected
 
 
 def PartialCubeEdgeLabeling(G):
@@ -32,7 +32,7 @@ def PartialCubeEdgeLabeling(G):
     """
 
     # Some simple sanity checks
-    if not isUndirected(G):
+    if not is_undirected(G):
         raise MediumError("graph is not undirected")
     L = list(StronglyConnectedComponents(G))
     if len(L) != 1:

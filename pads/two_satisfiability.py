@@ -32,7 +32,7 @@ D. Eppstein, April 2009.
 """
 
 from ._not import Not, SymbolicNegation
-from .graphs import copyGraph
+from .graphs import copy_graph
 from .strong_connectivity import Condensation
 from .acyclic_reachability import Reachability
 
@@ -47,7 +47,7 @@ def Symmetrize(G):
     for each of the implications they include, so we use this routine
     to fill in any missing implications.
     """
-    H = copyGraph(G)
+    H = copy_graph(G)
     for v in G:
         H.setdefault(Not(v), set())  # make sure all negations are included
         for w in G[v]:

@@ -13,7 +13,7 @@ D. Eppstein, June 2006.
 """
 from collections import defaultdict
 
-from .graphs import isUndirected
+from .graphs import is_undirected
 from .partial_order import TopologicalOrder
 from .strong_connectivity import StronglyConnectedComponents
 from .biconnectivity import st_orientation
@@ -26,7 +26,7 @@ def CubicMatchPartitions(G):
     This function generates a sequence of such representations.
     """
 
-    if not isUndirected(G):
+    if not is_undirected(G):
         raise ValueError("CubicMatchPartitions: graph is not undirected")
     for v in G:
         if len(G[v]) != 3:

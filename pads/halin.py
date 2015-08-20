@@ -5,7 +5,8 @@ Reduction-based algorithm for recognizing Halin and D3-reducible graphs
 D. Eppstein, January 2015.
 """
 
-from .graphs import copyGraph, isUndirected
+from .graphs import copy_graph
+from .graphs import is_undirected
 
 
 # ============================================================
@@ -40,9 +41,9 @@ def D3reducible(G, triangleHooks=[], pathHooks=[], finalize=isK4):
     the return value for the overall computation.
     By default the return value is a Boolean that is true
     whenever the irreducible graph is K4."""
-    if not isUndirected(G):
+    if not is_undirected(G):
         raise TypeError("Argument to D3reducible must be an undirected graph")
-    G = copyGraph(G)        # We are going to change G, so make a copy of it
+    G = copy_graph(G)        # We are going to change G, so make a copy of it
     C = {v for v in G if len(G[v]) == 3}  # Active vertices, init. all w/deg=3
 
     def otherNeighbor(u, v, w):
