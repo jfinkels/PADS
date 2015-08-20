@@ -1,14 +1,14 @@
 import unittest
 
-from pads.halin import D3reducible
-from pads.halin import D3HamiltonianCycle
-from pads.halin import HalinLeafVertices
-from pads.halin import isWheel
-from pads.halin import isDual3Tree
-from pads.halin import isHalin
+from pads.halin import is_D3_reducible
+from pads.halin import hamiltonian_cycle_D3
+from pads.halin import halin_leaf_vertices
+from pads.halin import is_wheel
+from pads.halin import is_dual_3_tree
+from pads.halin import is_halin
 
 
-class HalinTest(unittest.TestCase):
+class TestHalin(unittest.TestCase):
     cube = {i:[i^1,i^2,i^4] for i in range(8)}
     trunctet = {(i,j):[(i,k) for k in range(4) if k!=i and k!=j]+[(j,i)]
                 for i in range(4) for j in range(4) if i!=j}
@@ -21,39 +21,39 @@ class HalinTest(unittest.TestCase):
     for i in range(14,39):
         ternary[i] = ((i-1)//3,i-1,i+1)
 
-    def testD3Reducible(self):
+    def test_is_D3_reducible(self):
         """Check correct classification of D3-reducible graphs"""
-        self.assertEqual(D3reducible(self.cube), False)
-        self.assertEqual(D3reducible(self.trunctet), True)
-        self.assertEqual(D3reducible(self.wheel), True)
-        self.assertEqual(D3reducible(self.nonhalin), True)
-        self.assertEqual(D3reducible(self.ternary), True)
+        self.assertEqual(is_D3_reducible(self.cube), False)
+        self.assertEqual(is_D3_reducible(self.trunctet), True)
+        self.assertEqual(is_D3_reducible(self.wheel), True)
+        self.assertEqual(is_D3_reducible(self.nonhalin), True)
+        self.assertEqual(is_D3_reducible(self.ternary), True)
 
-    def testReductionTypes(self):
+    def test_reduction_types(self):
         """Check that the correct reduction types are being applied"""
-        self.assertEqual(isWheel(self.trunctet),False)
-        self.assertEqual(isWheel(self.wheel),True)
-        self.assertEqual(isWheel(self.ternary),False)
-        self.assertEqual(isWheel(self.nonhalin), False)
-        self.assertEqual(isDual3Tree(self.trunctet),True)
-        self.assertEqual(isDual3Tree(self.wheel),False)
-        self.assertEqual(isDual3Tree(self.ternary),False)
-        self.assertEqual(isDual3Tree(self.nonhalin), False)
+        self.assertEqual(is_wheel(self.trunctet),False)
+        self.assertEqual(is_wheel(self.wheel),True)
+        self.assertEqual(is_wheel(self.ternary),False)
+        self.assertEqual(is_wheel(self.nonhalin), False)
+        self.assertEqual(is_dual_3_tree(self.trunctet),True)
+        self.assertEqual(is_dual_3_tree(self.wheel),False)
+        self.assertEqual(is_dual_3_tree(self.ternary),False)
+        self.assertEqual(is_dual_3_tree(self.nonhalin), False)
 
-    def testHalin(self):
+    def test_halin(self):
         """Check correct classification of Halin graphs"""
-        self.assertEqual(isHalin(self.cube), False)
-        self.assertEqual(isHalin(self.trunctet), False)
-        self.assertEqual(isHalin(self.wheel), True)
-        self.assertEqual(isHalin(self.nonhalin), False)
-        self.assertEqual(isHalin(self.ternary), True)
-        self.assertEqual(HalinLeafVertices(self.wheel),{1,2,3,4,5})
-        self.assertEqual(HalinLeafVertices(self.ternary),set(range(13,40)))
+        self.assertEqual(is_halin(self.cube), False)
+        self.assertEqual(is_halin(self.trunctet), False)
+        self.assertEqual(is_halin(self.wheel), True)
+        self.assertEqual(is_halin(self.nonhalin), False)
+        self.assertEqual(is_halin(self.ternary), True)
+        self.assertEqual(halin_leaf_vertices(self.wheel),{1,2,3,4,5})
+        self.assertEqual(halin_leaf_vertices(self.ternary),set(range(13,40)))
 
-    def testHamiltonian(self):
+    def test_hamiltonian(self):
         """Check correct construction of Hamiltonian cycle"""
         for G in (self.trunctet,self.wheel,self.nonhalin,self.ternary):
-            H = D3HamiltonianCycle(G)
+            H = hamiltonian_cycle_D3(G)
             self.assertEqual(set(H),set(G))     # same vertices?
             for v in H:
                 self.assertEqual(len(H[v]),2)   # degree-two?

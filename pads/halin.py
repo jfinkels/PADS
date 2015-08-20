@@ -13,7 +13,7 @@ from .graphs import is_undirected
 #     Main reduction algorithm for D3 reducible graphs
 # ============================================================
 
-def isK4(G):
+def is_K4(G):
     """Is this graph K4?"""
     if len(G) != 4:
         return False
@@ -23,7 +23,7 @@ def isK4(G):
     return True
 
 
-def D3reducible(G, triangleHooks=[], pathHooks=[], finalize=isK4):
+def is_D3_reducible(G, triangleHooks=[], pathHooks=[], finalize=is_K4):
     """Test if the graph G is D3-reducible.
 
     Whenever a reduction is found, the hook functions are
@@ -130,7 +130,7 @@ def D3reducible(G, triangleHooks=[], pathHooks=[], finalize=isK4):
     return finalize(G)
 
 
-def reconstructD3(G, initialize, triangle, path, recognizer=D3reducible):
+def reconstruct_D3(G, initialize, triangle, path, recognizer=is_D3_reducible):
     """Recursively reconstruct a D3-reducible graph G
     by inverting the reductions used to recognize it.
 
@@ -173,9 +173,9 @@ def reconstructD3(G, initialize, triangle, path, recognizer=D3reducible):
 #     Additional reduction rules for Halin graphs
 # ============================================================
 
-def isOuterK4(G, outer):
+def is_outer_K4(G, outer):
     """Have we reduced to a K4 with a non-outer vertex?"""
-    if not isK4(G):
+    if not is_K4(G):
         return False
     for v in G:
         if v not in outer:
@@ -183,7 +183,7 @@ def isOuterK4(G, outer):
     return False
 
 
-def isHalin(G, triangleHooks=[], pathHooks=[], finalize=isOuterK4):
+def is_halin(G, triangleHooks=[], pathHooks=[], finalize=is_outer_K4):
     """Test if the graph G is Halin.
     The two hook arguments are the same as for D3reducible,
     but the finalize argument takes two parameters:
@@ -213,11 +213,11 @@ def isHalin(G, triangleHooks=[], pathHooks=[], finalize=isOuterK4):
         """Have we reduced to a K4 with only one outer face?"""
         return finalize(H, outer)
 
-    return D3reducible(G, [triangle] + triangleHooks,
-                       [path] + pathHooks, final)
+    return is_D3_reducible(G, [triangle] + triangleHooks,
+                           [path] + pathHooks, final)
 
 
-def HalinLeafVertices(G):
+def halin_leaf_vertices(G):
     """Reconstruct the leaf cycle of Halin graph G.
     The cycle is returned as a set of its vertices."""
 
@@ -225,7 +225,7 @@ def HalinLeafVertices(G):
 
     def initialize(H, marked):
         """Augment outer to include all outer vertices"""
-        if not isOuterK4(H, marked):
+        if not is_outer_K4(H, marked):
             raise TypeError("Argument to HalinLeafVertices must be Halin")
         for v in H:
             if v not in marked:
@@ -250,7 +250,7 @@ def HalinLeafVertices(G):
         outer.add(v)
         outer.add(w)
 
-    reconstructD3(G, initialize, triangle, path, isHalin)
+    reconstruct_D3(G, initialize, triangle, path, is_halin)
     return outer & set(iter(G))     # Find all marked vertices
 
 
@@ -258,12 +258,12 @@ def HalinLeafVertices(G):
 #     Hamiltonian cycle
 # ============================================================
 
-def D3HamiltonianCycle(G):
+def hamiltonian_cycle_D3(G):
     ham = {}                # Where to put the Hamiltonian cycle
 
     def initialize(H):
         """Start a Hamiltonian cycle on a K4"""
-        if not isK4(H):
+        if not is_K4(H):
             raise TypeError("Argument to D3HamiltonianCycle not D3 reducible")
         C = list(H)
         for i in range(4):
@@ -298,7 +298,7 @@ def D3HamiltonianCycle(G):
         ham[w].add(v)
         ham[v] = {u, w}
 
-    reconstructD3(G, initialize, triangle, path)
+    reconstruct_D3(G, initialize, triangle, path)
     return ham
 
 
@@ -306,15 +306,15 @@ def D3HamiltonianCycle(G):
 #     Additional reduction rules for other graph classes
 # ============================================================
 
-def isDual3Tree(G, triangleHooks=[], pathHooks=[], finalize=isK4):
+def is_dual_3_tree(G, triangleHooks=[], pathHooks=[], finalize=is_K4):
     """Test if the graph G is the dual of a 3-tree."""
     def noPath(*args, **kw):
         return False
-    return D3reducible(G, triangleHooks, [noPath], finalize)
+    return is_D3_reducible(G, triangleHooks, [noPath], finalize)
 
 
-def isWheel(G, triangleHooks=[], pathHooks=[], finalize=isK4):
+def is_wheel(G, triangleHooks=[], pathHooks=[], finalize=is_K4):
     """Test if the graph G is a wheel."""
     def noTriangle(*args, **kw):
         return False
-    return D3reducible(G, [noTriangle], pathHooks, finalize)
+    return is_D3_reducible(G, [noTriangle], pathHooks, finalize)
