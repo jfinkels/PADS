@@ -46,15 +46,15 @@ def IntegerHeap(i):
         return BitVectorHeap()
     return FlatHeap(i)
 
-Log2Table = {}          # Table of powers of two, with their logs
+log2_table = {}          # Table of powers of two, with their logs
 
 
-def Log2(b):
+def log2(b):
     """Return log_2(b), where b must be a power of two."""
-    while b not in Log2Table:
-        i = len(Log2Table)
-        Log2Table[1 << i] = i
-    return Log2Table[b]
+    while b not in log2_table:
+        i = len(log2_table)
+        log2_table[1 << i] = i
+    return log2_table[b]
 
 # ======================================================================
 #   BitVectorHeap
@@ -89,7 +89,7 @@ class BitVectorHeap:
         """Return the minimum value in the heap."""
         if not self._S:
             raise ValueError("BitVectorHeap is empty")
-        return Log2(self._S & ~ (self._S - 1))
+        return log2(self._S & ~ (self._S - 1))
 
 # ======================================================================
 #   FlatHeap

@@ -24,7 +24,7 @@ except:
     xrange = range
 
 
-def _decodeSlice(self, it):
+def _decode_slice(self, it):
     """Work around removal of __getslice__ in Python 3"""
     if type(it) != slice:
         raise ValueError("Can only access LCA object by slice notation")
@@ -52,7 +52,7 @@ class RangeMin:
 
     def __getitem__(self, it):
         """When called by X[left:right], return min(X[left:right])."""
-        left, right = _decodeSlice(self, it)
+        left, right = _decode_slice(self, it)
         if right <= left:
             return None     # empty range has no minimum
         return self._data[self._lca(left, right - 1)]
@@ -131,7 +131,7 @@ class RestrictedRangeMin:
 
     def __getitem__(self, it):
         """When called by X[left:right], return min(X[left:right])."""
-        left, right = _decodeSlice(self, it)
+        left, right = _decode_slice(self, it)
         firstblock = left >> self._blocksize
         lastblock = (right - 1) >> self._blocksize
         if firstblock == lastblock:
@@ -163,7 +163,7 @@ class PrecomputedRangeMin:
 
     def __getitem__(self, it):
         """When called by X[left:right], return min(X[left:right])."""
-        left, right = _decodeSlice(self, it)
+        left, right = _decode_slice(self, it)
         return self._minima[left][right - left - 1]
 
     def __len__(self):
@@ -182,7 +182,7 @@ class LogarithmicRangeMin:
 
     def __getitem__(self, it):
         """When called by X[left:right], return min(X[left:right])."""
-        left, right = _decodeSlice(self, it)
+        left, right = _decode_slice(self, it)
         j = _logtable[right - left]
         row = self._minima[j]
         return min(row[left], row[right - 2**j])
