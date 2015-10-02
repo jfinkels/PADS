@@ -6,7 +6,7 @@ D. Eppstein, March 2002.
 """
 
 
-def LongestCommonSubsequence(A, B):
+def longest_common_subsequence(A, B):
     """Find longest common subsequence of iterables A and B."""
     A = list(A)
     B = list(B)
