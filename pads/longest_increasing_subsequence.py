@@ -7,7 +7,7 @@ D. Eppstein, April 2004
 from bisect import bisect_left
 
 
-def LongestIncreasingSubsequence(S):
+def longest_increasing_subsequence(S):
     """
     Find and return longest increasing subsequence of S.
     If multiple increasing subsequences exist, the one that ends
