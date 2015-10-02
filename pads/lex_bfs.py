@@ -14,7 +14,7 @@ from .sequence import Sequence
 from .util import arbitrary_item
 
 
-def LexBFS(G):
+def lex_bfs(G):
     """Find lexicographic breadth-first-search traversal order of a graph.
     G should be represented in such a way that "for v in G" loops through
     the vertices, and "G[v]" produces a sequence of the neighbors of v; for

@@ -9,7 +9,7 @@ Comput. Sci. 234:59-84 (2000), http://www.cs.colostate.edu/~rmm/lexbfs.ps
 D. Eppstein, November 2003.
 """
 
-from .lex_bfs import LexBFS
+from .lex_bfs import lex_bfs
 from .graphs import is_undirected
 
 
@@ -21,7 +21,7 @@ def perfect_elimination_ordering(G):
     Running time is O(n+m) and additional space usage over G is O(n+m).
     """
     alreadyProcessed = set()
-    B = list(LexBFS(G))
+    B = list(lex_bfs(G))
     position = {B[i]: i for i in range(len(B))}
     leftNeighbors = {}
     parent = {}
