@@ -118,6 +118,13 @@ class SVG:
                      (_coord(x), _coord(x), _coord(width), _coord(height)),
                      style=style, **morestyle)
 
+    def polygon(self, points, style={}, **morestyle):
+        """Polygon with corners at the given set of points"""
+        pointlist = " ".join(_coord(p.real) + "," + _coord(p.imag)
+                             for p in points)
+        self.element('polygon points="%s"' % pointlist, style=style,
+                     **morestyle)
+
     def segment(self, p, q, style={}, **morestyle):
         """Line segment from p to q"""
         self.element('line x1="%s" y1="%s" x2="%s" y2="%s"' %
