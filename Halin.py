@@ -29,11 +29,11 @@ def D3reducible(G,triangleHooks=[],pathHooks=[],finalize=isK4):
     called in turn on it, and should return True if the reduction
     should be allowed to continue or False otherwise.
 
-    The arguments to a triangle hook are the three triangle
-    vertices, their three neighbors, and the id that will be
-    given to the new vertex formed by the collapsed triangle.
-    The arguments to a path hook are the three path vertices
-    and the apex.
+    The arguments to a triangle hook are the graph, the three
+    triangle vertices, their three neighbors, and the id that
+    will be given to the new vertex formed by the collapsed
+    triangle. The arguments to a path hook are the graph, the
+    three path vertices and the apex.
     
     The finalize hook takes as input the irreducible graph
     after all reductions are complete, and produces as output
@@ -62,7 +62,7 @@ def D3reducible(G,triangleHooks=[],pathHooks=[],finalize=isK4):
 
         # Run the hooks
         for hook in triangleHooks:
-            if not hook(u,v,w,Nu,Nv,Nw,x):
+            if not hook(G,u,v,w,Nu,Nv,Nw,x):
                 return False
 
         # Make the change!
@@ -76,9 +76,7 @@ def D3reducible(G,triangleHooks=[],pathHooks=[],finalize=isK4):
         G[Nw].add(x)
 
         # Update the active vertices
-        for z in (x,Nu,Nv,Nw):
-            if len(G[z]) == 3:
-                C.add(z)
+        C.update(z for z in (x,Nu,Nv,Nw) if len(G[z]) == 3)
     
     def path(u,v,w):
         """Try a D3b reduction."""
@@ -91,7 +89,7 @@ def D3reducible(G,triangleHooks=[],pathHooks=[],finalize=isK4):
 
         # Run the hooks
         for hook in pathHooks:
-            if not hook(u,v,w,apex):
+            if not hook(G,u,v,w,apex):
                 return False
         
         # Make the change!
@@ -146,7 +144,7 @@ def reconstructD3(G,initialize,triangle,path,recognizer=D3reducible):
       because it won't be passed in later. If the graph
       is not recognized, this should throw an exception.
     
-    - triangle and path take the same seven and four arguments
+    - triangle and path take the same eight and five arguments
       (respectively) as the triangle and path hooks from the
       reductions, but are called in the opposite order to
       the order they are called in the reductions."""
@@ -188,22 +186,23 @@ def isHalin(G,triangleHooks=[],pathHooks=[],finalize=isOuterK4):
     vertices that have been marked as outer."""
     outer = set()           # Vertices that must be on the outer face
     
-    def triangle(u,v,w,Nu,Nv,Nw,x):
+    def triangle(G,u,v,w,Nu,Nv,Nw,x):
         """Check and recolor vertices for triangle reduction"""
         if u in outer and v in outer and w in outer:
             return False    # Can't collapse when all three are outer
-        for p,q in ((u,Nu),(v,Nv),(w,Nw)):
-            if p in outer:
-                outer.add(q) # Mark neighbors of outer as outer
-        outer.add(x)         # As well as the new supervertex
+        outer.update(q for p,q in ((u,Nu),(v,Nv),(w,Nw)) if p in outer)
+                            # Mark neighbors of outer as outer
+        outer.add(x)        # As well as the new supervertex
         return True
 
-    def path(u,v,w,x):
+    def path(G,u,v,w,x):
         """Check and recolor vertices for path reduction"""
         if x in outer:
             return False    # Can't shorten path with outer apex
-        outer.add(u)        # Mark remaining path vertices as outer
-        outer.add(w)
+        if len(G) == 5:
+            outer.update(v for v in G if v != x)
+        else:
+            outer.update((u,w)) # Mark remaining path vertices as outer
         return True
 
     def final(H):
@@ -224,12 +223,10 @@ def HalinLeafVertices(G):
             raise TypeError("Argument to HalinLeafVertices must be Halin")
         for v in H:
             if v not in marked:
-                for w in H:
-                    if v != w:
-                        outer.add(w)    # outerize everything but v
+                outer.update(w for w in H if v != w)  # outerize all but v
                 break
 
-    def triangle(u,v,w,Nu,Nv,Nw,x):
+    def triangle(G,u,v,w,Nu,Nv,Nw,x):
         """Undo a D3a reduction"""
         nout = 0
         for (p,q) in ((u,Nu),(v,Nv),(w,Nw)):
@@ -238,12 +235,10 @@ def HalinLeafVertices(G):
                 nout += 1
         assert nout == 2
 
-    def path(u,v,w,x):
+    def path(G,u,v,w,x):
         """Undo a D3b reduction"""
         assert x not in outer
-        outer.add(u)
-        outer.add(v)
-        outer.add(w)
+        outer.update((u,v,w))
 
     reconstructD3(G,initialize,triangle,path,isHalin)
     return outer & set(iter(G))     # Find all marked vertices
@@ -265,7 +260,7 @@ def D3HamiltonianCycle(G):
         for i in range(4):
             ham[C[i-1]] = {C[i-2],C[i]}
 
-    def triangle(u,v,w,Nu,Nv,Nw,x):
+    def triangle(G,u,v,w,Nu,Nv,Nw,x):
         """Undo D3a reduction on Hamiltonian cycle"""
         # Permute so the missing edge in the Hamiltonian cycle is Nw-x
         if Nu not in ham[x]:
@@ -284,7 +279,7 @@ def D3HamiltonianCycle(G):
         ham[w] = {u,v}
         ham[v] = {w,Nv}
 
-    def path(u,v,w,x):
+    def path(G,u,v,w,x):
         """Undo D3b reduction on Hamiltonian cycle"""
         if w not in ham[u]: w = x    # Permute so w is a ham-neighbor of u
         ham[u].remove(w)
@@ -303,12 +298,12 @@ def D3HamiltonianCycle(G):
 
 def isDual3Tree(G,triangleHooks=[],pathHooks=[],finalize=isK4):
     """Test if the graph G is the dual of a 3-tree."""
-    def noPath(u,v,w,x): return False
+    def noPath(G,u,v,w,x): return False
     return D3reducible(G,triangleHooks,[noPath],finalize)
 
 def isWheel(G,triangleHooks=[],pathHooks=[],finalize=isK4):
     """Test if the graph G is a wheel."""
-    def noTriangle(u,v,w,Nu,Nv,Nw,x): return False
+    def noTriangle(G,u,v,w,Nu,Nv,Nw,x): return False
     return D3reducible(G,[noTriangle],pathHooks,finalize)
 
 
@@ -321,6 +316,8 @@ class HalinTest(unittest.TestCase):
     trunctet = {(i,j):[(i,k) for k in range(4) if k!=i and k!=j]+[(j,i)]
                 for i in range(4) for j in range(4) if i!=j}
     wheel = {0:[1,2,3,4,5],1:[0,2,5],2:[0,1,3],3:[0,2,4],4:[0,3,5],5:[0,1,4]}
+    halin8 = {0:[1,7,5],1:[0,2,7],2:[1,3,6],3:[2,4,6],
+              4:[3,5,6],5:[0,4,6],6:[2,3,4,5,7],7:[0,1,6]}
     nonhalin = {0:[1,2,4],1:[0,3,5,7],2:[0,3,4,6],3:[1,2,7],
                 4:[0,2,6],5:[1,6,7],6:[2,4,5],7:[1,3,5]}
     ternary = {0:(1,2,3),13:(4,14,39),39:(12,13,38)}
@@ -353,9 +350,11 @@ class HalinTest(unittest.TestCase):
         self.assertEqual(isHalin(self.cube), False)
         self.assertEqual(isHalin(self.trunctet), False)
         self.assertEqual(isHalin(self.wheel), True)
+        self.assertEqual(isHalin(self.halin8), True)
         self.assertEqual(isHalin(self.nonhalin), False)
         self.assertEqual(isHalin(self.ternary), True)
         self.assertEqual(HalinLeafVertices(self.wheel),{1,2,3,4,5})
+        self.assertEqual(HalinLeafVertices(self.halin8),{0,1,2,3,4,5})
         self.assertEqual(HalinLeafVertices(self.ternary),set(range(13,40)))
 
     def testHamiltonian(self):
@@ -369,4 +368,4 @@ class HalinTest(unittest.TestCase):
                     self.assertEqual(w in G[v], True)   # subgraph?
 
 if __name__ == "__main__":
-    unittest.main()   
+    unittest.main()  
