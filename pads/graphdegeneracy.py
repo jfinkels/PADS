@@ -4,14 +4,13 @@ Compute the degeneracy of graphs, and degeneracy orderings of graphs.
 
 D. Eppstein, July 2016.
 """
+from .graphs import is_undirected
+from .bucketqueue import BucketQueue
 
-import unittest
-from Graphs import isUndirected
-from bucketqueue import BucketQueue
 
 def degeneracySequence(G):
     """Generate pairs (vertex,number of later neighbors) in degeneracy order."""
-    if not isUndirected(G):
+    if not is_undirected(G):
         raise TypeError("Graph must be undirected")
     Q = BucketQueue()
     for v in G:
@@ -51,25 +50,3 @@ def triangles(G):
     """Use degeneracy to list all the triangles in G"""
     G = degeneracyOrientation(G)
     return ((u,v,w) for u in G for v in G[u] for w in G[u] if w in G[v])
-
-
-# ============================================================
-#     If run from command line, perform unit tests
-# ============================================================
-
-class DegeneracyTest(unittest.TestCase):
-    G = {1:[2,5],2:[1,3,5],3:[2,4],4:[3,5,6],5:[1,2,4],6:[4]} #File:6n-graf.svg
-
-    def testDegeneracy(self):
-        self.assertEqual(degeneracy(DegeneracyTest.G),2)
-    
-    def testCore(self):
-        self.assertEqual(core(DegeneracyTest.G),{1,2,3,4,5})
-
-    def testTriangles(self):
-        T = list(triangles(DegeneracyTest.G))
-        self.assertEqual(len(T),1)
-        self.assertEqual(set(T[0]),{1,2,5})
-
-if __name__ == "__main__":
-    unittest.main()   

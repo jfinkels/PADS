@@ -6,10 +6,9 @@ as described at http://11011110.livejournal.com/332116.html
 
 D. Eppstein, July 2016.
 """
+from .bucketqueue import BucketQueue
+from .sequence import Sequence
 
-import unittest
-from bucketqueue import BucketQueue
-from Sequence import Sequence
 
 def IntegerPointsByDistance():
     """All integer points in order by distance, regardless of sign.
@@ -106,38 +105,3 @@ def IntegerPointsByDistance():
     for e in queue:
         yield e.beyond
         split(e)
-
-# ============================================================
-#     If run from command line, perform unit tests
-# ============================================================
-
-class IntegerPointsByDistanceTest(unittest.TestCase):
-    radius = 100
-    threshold = radius**2
-    trange = range(-radius,radius+1)
-
-    def testOrdered(self):
-        """Test whether point ordering is by distance."""
-        oldDistance = 0
-        for x,y in IntegerPointsByDistance():
-            newDistance = x**2 + y**2
-            self.assertTrue(newDistance >= oldDistance)
-            oldDistance = newDistance
-            if newDistance > IntegerPointsByDistanceTest.threshold:
-                break
-
-    def testCircle(self):
-        """Test whether each point in a disk is listed exactly once."""
-        points = []
-        for x,y in IntegerPointsByDistance():
-            if x**2 + y**2 > IntegerPointsByDistanceTest.threshold:
-                break
-            points.append((x,y))
-        self.assertEqual(len(points),len(set(points)))
-        self.assertEqual(len(points),len(
-            [None for x in IntegerPointsByDistanceTest.trange
-             for y in IntegerPointsByDistanceTest.trange
-             if x**2 + y**2 <= IntegerPointsByDistanceTest.threshold]))
-
-if __name__ == "__main__":
-    unittest.main()   
