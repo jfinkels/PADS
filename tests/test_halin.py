@@ -13,6 +13,8 @@ class TestHalin(unittest.TestCase):
     trunctet = {(i,j):[(i,k) for k in range(4) if k!=i and k!=j]+[(j,i)]
                 for i in range(4) for j in range(4) if i!=j}
     wheel = {0:[1,2,3,4,5],1:[0,2,5],2:[0,1,3],3:[0,2,4],4:[0,3,5],5:[0,1,4]}
+    halin8 = {0:[1,7,5],1:[0,2,7],2:[1,3,6],3:[2,4,6],
+              4:[3,5,6],5:[0,4,6],6:[2,3,4,5,7],7:[0,1,6]}
     nonhalin = {0:[1,2,4],1:[0,3,5,7],2:[0,3,4,6],3:[1,2,7],
                 4:[0,2,6],5:[1,6,7],6:[2,4,5],7:[1,3,5]}
     ternary = {0:(1,2,3),13:(4,14,39),39:(12,13,38)}
@@ -45,9 +47,11 @@ class TestHalin(unittest.TestCase):
         self.assertEqual(is_halin(self.cube), False)
         self.assertEqual(is_halin(self.trunctet), False)
         self.assertEqual(is_halin(self.wheel), True)
+        self.assertEqual(is_halin(self.halin8), True)
         self.assertEqual(is_halin(self.nonhalin), False)
         self.assertEqual(is_halin(self.ternary), True)
         self.assertEqual(halin_leaf_vertices(self.wheel),{1,2,3,4,5})
+        self.assertEqual(halin_lead_vertices(self.halin8),{0,1,2,3,4,5})
         self.assertEqual(halin_leaf_vertices(self.ternary),set(range(13,40)))
 
     def test_hamiltonian(self):

@@ -117,3 +117,15 @@ class Sequence:
         self._insafter(self._prev[x], y)
         if self._first == x:
             self._first = y
+
+    def predecessor(self,x):
+        """Find the previous element in the sequence."""
+        x = self.key(x)
+        prev = self._prev[x]
+        return self._items.get(prev,prev)
+
+    def successor(self,x):
+        """Find the next element in the sequence."""
+        x = self.key(x)
+        next = self._next[x]
+        return self._items.get(next,next)

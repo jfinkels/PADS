@@ -51,7 +51,7 @@ def wrap(text,                 # string or unicode to be wrapped
         if j > len(words):
             return -i    # concave flag for out of bounds
         total = cost.value(i) + nlinepenalty
-        prevmeasure = i and words[i - 1][2]
+        prevmeasure = i and (words[i - 1][2] + spacings[words[i - 1][1]])
         linemeasure = words[j - 1][2] - prevmeasure
         if linemeasure > target:
             total += overpenalty * (linemeasure - target)
