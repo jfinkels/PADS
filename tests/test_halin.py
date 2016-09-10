@@ -51,7 +51,7 @@ class TestHalin(unittest.TestCase):
         self.assertEqual(is_halin(self.nonhalin), False)
         self.assertEqual(is_halin(self.ternary), True)
         self.assertEqual(halin_leaf_vertices(self.wheel),{1,2,3,4,5})
-        self.assertEqual(halin_lead_vertices(self.halin8),{0,1,2,3,4,5})
+        self.assertEqual(halin_leaf_vertices(self.halin8),{0,1,2,3,4,5})
         self.assertEqual(halin_leaf_vertices(self.ternary),set(range(13,40)))
 
     def test_hamiltonian(self):
