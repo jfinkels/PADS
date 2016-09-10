@@ -7,7 +7,7 @@ D. Eppstein, July 2016.
 
 import unittest
 from Graphs import isUndirected
-from BucketQueue import BucketQueue
+from bucketqueue import BucketQueue
 
 def degeneracySequence(G):
     """Generate pairs (vertex,number of later neighbors) in degeneracy order."""

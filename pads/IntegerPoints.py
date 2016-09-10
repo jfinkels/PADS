@@ -8,7 +8,7 @@ D. Eppstein, July 2016.
 """
 
 import unittest
-from BucketQueue import BucketQueue
+from bucketqueue import BucketQueue
 from Sequence import Sequence
 
 def IntegerPointsByDistance():
