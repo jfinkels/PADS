@@ -17,6 +17,7 @@ the maximum priority.
 D. Eppstein, July 2016.
 """
 
+
 class BucketQueue:
     def __init__(self):
         """Create a new empty integer priority queue."""
@@ -24,21 +25,22 @@ class BucketQueue:
         self._Q = {}        # map from priorities to buckets
         self._N = None      # lower bound on min priority
 
-    def __getitem__(self,item):
+    def __getitem__(self, item):
         """Look up the priority of an item."""
         return self._D[item]
 
-    def __delitem__(self,item):
+    def __delitem__(self, item):
         """Remove an item from the priority queue."""
         priority = self._D[item]
-        del self._D[item]               # remove from map of items => priorities
+        # remove from map of items => priorities
+        del self._D[item]
         self._Q[priority].remove(item)  # remove from bucket
         if not self._Q[priority]:
             del self._Q[priority]       # remove empty bucket
 
-    def __setitem__(self,item,priority):
+    def __setitem__(self, item, priority):
         """Add an element to the priority queue with the given priority."""
-        if not isinstance(priority,int):
+        if not isinstance(priority, int):
             raise TypeError("Priority must be an integer")
         if item in self._D:
             del self[item]
@@ -64,9 +66,9 @@ class BucketQueue:
         We rely on the fact that the usual __iter__ always
         leaves self._N equal to the priority."""
         for x in iter(self):
-            yield x,self._N
+            yield x, self._N
 
-    def __contains__(self,item):
+    def __contains__(self, item):
         """Container class membership test."""
         return item in self._D
 

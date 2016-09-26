@@ -8,7 +8,7 @@ D. Eppstein, July 2005.
 """
 
 from .strong_connectivity import StronglyConnectedComponents
-import .dfs
+from .dfs import preorder as dfs_preorder
 
 
 class NonrepetitiveGraph:
@@ -120,7 +120,7 @@ class NonrepetitiveGraph:
         """Yield pairs (w,label) on nonrepetitive paths from v,L."""
         if v not in self or L not in self[v]:
             return
-        for w, LL, bit in DFS.preorder(self.nrg, (v, L, False)):
+        for w, LL, bit in dfs_preorder(self.nrg, (v, L, False)):
             if bit and LL in self[w]:
                 yield w, LL
 

@@ -3,7 +3,7 @@ import unittest
 from pads.biconnectivity import is_biconnected
 from pads.biconnectivity import st_orientation
 from pads.biconnectivity import BiconnectedComponents
-from pads.biconnectivity import TopologicalOrder
+from pads.partial_order import TopologicalOrder
 
 
 class BiconnectivityTest(unittest.TestCase):

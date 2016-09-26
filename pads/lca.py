@@ -19,8 +19,8 @@ from .union_find import UnionFind
 
 # 2to3 compatibility
 try:
-    xrange
-except:
+    xrange  # noqa
+except NameError:
     xrange = range
 
 

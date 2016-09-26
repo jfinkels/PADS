@@ -3,7 +3,7 @@ Compute circle packings according to the Koebe-Thurston-Andreev theory,
 Following a numerical algorithm by C. R. Collins and K. Stephenson,
 "A Circle Packing Algorithm", Comp. Geom. Theory and Appl. 2003.
 """
-
+from __future__ import division
 from math import pi, acos, sin, e
 
 tolerance = 1 + 10e-12    # how accurately to approximate things
@@ -85,7 +85,7 @@ def NormalizePacking(packing, k=None, target=1.0):
     else:
         z, r = packing[k]
     s = target / r
-<    return dict((kk, (zz * s, rr * s)) for kk, (zz, rr) in packing.iteritems())
+    return dict((kk, (zz * s, rr * s)) for kk, (zz, rr) in packing.iteritems())
 
 
 def InvertAround(packing, k, smallCircles=None):

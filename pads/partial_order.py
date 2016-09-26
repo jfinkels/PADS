@@ -95,6 +95,5 @@ def MaximumAntichain(G):
     """
     if not isAcyclic(G):
         raise ValueError("MaximumAntichain: input is not acyclic.")
-    TC = TransitiveClosure(G)
     M, A, B = matching(TransitiveClosure(G))
     return set(A).intersection(B)

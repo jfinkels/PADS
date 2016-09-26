@@ -35,8 +35,8 @@ per generated permutation of O(1). The other generators are similar.
 
 # 2to3 compatibility
 try:
-    xrange
-except:
+    xrange  # noqa
+except NameError:
     xrange = range
 
 

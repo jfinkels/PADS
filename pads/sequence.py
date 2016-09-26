@@ -6,9 +6,6 @@ subject to insertions and deletions.
 D. Eppstein, November 2003.
 """
 
-import math
-import sys
-
 
 class SequenceError(Exception):
     pass
@@ -118,14 +115,14 @@ class Sequence:
         if self._first == x:
             self._first = y
 
-    def predecessor(self,x):
+    def predecessor(self, x):
         """Find the previous element in the sequence."""
         x = self.key(x)
         prev = self._prev[x]
-        return self._items.get(prev,prev)
+        return self._items.get(prev, prev)
 
-    def successor(self,x):
+    def successor(self, x):
         """Find the next element in the sequence."""
         x = self.key(x)
         next = self._next[x]
-        return self._items.get(next,next)
+        return self._items.get(next, next)

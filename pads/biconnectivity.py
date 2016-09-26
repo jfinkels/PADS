@@ -1,8 +1,6 @@
 """DFS-based algorithm for computing biconnected components."""
 
 from .graphs import is_undirected
-from .util import arbitrary_item
-from .partial_order import TopologicalOrder
 from .dfs import Searcher
 
 disconnected = object()  # flag for BiconnectedComponents

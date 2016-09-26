@@ -664,31 +664,34 @@ def rectangle(grid):
             for x1, perp in ((r1, (c1, c2)), (r2, (c1, c2)),
                              (c1, (r1, r2)), (c2, (r1, r2))):
                 xd = [d for d in digits if grid.locations[d] & mask & x1.mask]
-                if len(xd) == 2:    # found locked pair on x1's corners
-                    for x2 in perp:
-                        for d in xd:
-                            x2d = grid.locations[d] & x2.mask
-                            if x2d & mask == x2d:   # and bilocal on x2
-                                dd = xd[0] + xd[1] - d  # other digit
+                # Skip this iteration if we have not found locked pair
+                # on x1's corners.
+                if len(xd) != 2:
+                    continue
+                for x2 in perp:
+                    for d in xd:
+                        x2d = grid.locations[d] & x2.mask
+                        if x2d & mask == x2d:   # and bilocal on x2
+                            dd = xd[0] + xd[1] - d  # other digit
 
-                                def explain():
-                                    return ["For the rectangle in",
-                                            r1.name + ",",
-                                            r2.name + ",", c1.name +
-                                            ", and", c2.name,
-                                            "the two corners in",
-                                            x1.name,
-                                            "must contain both digits",
-                                            str(xd[0]), "and", str(xd[1]),
-                                            "and the two corners in",
-                                            x2.name, "must contain one", str(
-                                                d) + ".",
-                                            "Therefore, to avoid creating an",
-                                            "ambiguous rectangle, the",
-                                            "remaining corner must not contain",
-                                            str(dd) + "."]
-                                grid.unplace(
-                                    dd, mask & ~(x1.mask | x2.mask), explain)
+                            def explain():
+                                return ["For the rectangle in",
+                                        r1.name + ",",
+                                        r2.name + ",", c1.name +
+                                        ", and", c2.name,
+                                        "the two corners in",
+                                        x1.name,
+                                        "must contain both digits",
+                                        str(xd[0]), "and", str(xd[1]),
+                                        "and the two corners in",
+                                        x2.name, "must contain one", str(
+                                            d) + ".",
+                                        "Therefore, to avoid creating an",
+                                        "ambiguous rectangle, the",
+                                        "remaining corner must not contain",
+                                        str(dd) + "."]
+                            grid.unplace(
+                                dd, mask & ~(x1.mask | x2.mask), explain)
 
 
 def trapezoid(grid):
@@ -1057,43 +1060,46 @@ def path(grid):
     if not grid.bilocation or not grid.bivalues:
         return
     for cell in range(81):
-        if not grid.contents[cell]:
-            for d in grid.choices(cell):
-                for neighbor, nd in grid.bilocation.reachable(cell, d):
-                    if nd == d:
-                        def explain():
-                            path = grid.bilocation.shortest(
-                                cell, d, neighbor, d)
-                            return [inpath, pathname(path) + ",",
-                                    bilocal_explanation + ".",
-                                    "This placement conflicts with placing",
-                                    d, "in", cellnames[cell], "or",
-                                    cellnames[neighbor] + ",", "making it",
-                                    "impossible to place the sequence's",
-                                    len(path) - 1, "digits in the remaining",
-                                    len(path) - 2, "cells."]
-                        grid.unplace(d, neighbors[cell] & neighbors[neighbor],
-                                     explain)
-                if cell in grid.bivalues:
-                    reachable = grid.bivalues.reachable(cell,
-                                                        grid.otherbv[cell, d])
-                    for neighbor, nd in reachable:
-                        if d == grid.otherbv[neighbor, nd]:
-                            def explain():
-                                path = grid.bivalues.shortest(cell,
-                                                              grid.otherbv[cell, d], neighbor, nd)
-                                return [inpath, pathname(path) + ",",
-                                        bivalue_explanation + ".",
-                                        "This placement conflicts with placing",
-                                        d, "in", cellnames[cell], "or",
-                                        cellnames[neighbor] + ",", "making it",
-                                        "impossible to fill the sequence's",
-                                        len(path), "cells using only the",
-                                        len(path) - 1,
-                                        "shared digits of the sequence."]
-                            grid.unplace(d,
-                                         neighbors[cell] & neighbors[neighbor],
-                                         explain)
+        if grid.contents[cell]:
+            continue
+        for d in grid.choices(cell):
+            for neighbor, nd in grid.bilocation.reachable(cell, d):
+                if nd == d:
+                    def explain():
+                        path = grid.bilocation.shortest(
+                            cell, d, neighbor, d)
+                        return [inpath, pathname(path) + ",",
+                                bilocal_explanation + ".",
+                                "This placement conflicts with placing",
+                                d, "in", cellnames[cell], "or",
+                                cellnames[neighbor] + ",", "making it",
+                                "impossible to place the sequence's",
+                                len(path) - 1, "digits in the remaining",
+                                len(path) - 2, "cells."]
+                    grid.unplace(d, neighbors[cell] & neighbors[neighbor],
+                                 explain)
+            if cell not in grid.bivalues:
+                continue
+            reachable = grid.bivalues.reachable(cell,
+                                                grid.otherbv[cell, d])
+            for neighbor, nd in reachable:
+                if d == grid.otherbv[neighbor, nd]:
+                    def explain():
+                        path = grid.bivalues.shortest(cell,
+                                                      grid.otherbv[cell, d],
+                                                      neighbor, nd)
+                        return [inpath, pathname(path) + ",",
+                                bivalue_explanation + ".",
+                                "This placement conflicts with placing",
+                                d, "in", cellnames[cell], "or",
+                                cellnames[neighbor] + ",", "making it",
+                                "impossible to fill the sequence's",
+                                len(path), "cells using only the",
+                                len(path) - 1,
+                                "shared digits of the sequence."]
+                    grid.unplace(d,
+                                 neighbors[cell] & neighbors[neighbor],
+                                 explain)
 
 
 def explain_conflict_path(grid, cell, d, why, reached, dd):
@@ -1141,8 +1147,11 @@ def explain_conflict(grid, cell, d, why, reached, dd):
     for neighbor, ddd in why:
         if ddd == dd:
             if (1 << neighbor) & neighbors[reached]:
-                return explain_conflict_path(grid, cell, d, why, reached, dd) + \
-                    explain_conflict_path(grid, cell, d, why, neighbor, dd) + \
+                explanation1 = explain_conflict_path(grid, cell, d, why,
+                                                     reached, dd)
+                explanation2 = explain_conflict_path(grid, cell, d, why,
+                                                     neighbor, dd)
+                return explanation1 + explanation2 + \
                     [cellnames[reached], "and", cellnames[neighbor],
                         "cannot both contain", str(
                             dd) + ",", "so", cellnames[cell],
@@ -1190,41 +1199,43 @@ def conflict(grid):
     if not grid.bilocation or not grid.bivalues:
         return
     for cell in range(81):
-        if not grid.contents[cell]:
-            for d in grid.choices(cell):
-                conflicts = [0] * 10
-                why = {}
-                for reached, dd in grid.bilocation.reachable(cell, d):
-                    why[reached, dd] = True
-                    if (1 << reached) & conflicts[dd]:
+        if grid.contents[cell]:
+            continue
+        for d in grid.choices(cell):
+            conflicts = [0] * 10
+            why = {}
+            for reached, dd in grid.bilocation.reachable(cell, d):
+                why[reached, dd] = True
+                if (1 << reached) & conflicts[dd]:
+                    def explain():
+                        return explain_conflict(grid, cell, d, why,
+                                                reached, dd)
+                    grid.place(d, cell, explain)
+                    return  # allow changes to propagate
+                else:
+                    conflicts[dd] |= neighbors[reached]
+            if cell in grid.bivalues:
+                for reached, dd in grid.bivalues.reachable(cell,
+                                                           grid.otherbv[cell,
+                                                                        d]):
+                    other = grid.otherbv[reached, dd]
+                    why[reached, other] = False
+                    if (1 << reached) & conflicts[other]:
                         def explain():
-                            return explain_conflict(grid, cell, d, why,
-                                                    reached, dd)
+                            return explain_conflict(grid, cell, d,
+                                                    why, reached, other)
                         grid.place(d, cell, explain)
                         return  # allow changes to propagate
                     else:
-                        conflicts[dd] |= neighbors[reached]
-                if cell in grid.bivalues:
-                    for reached, dd in grid.bivalues.reachable(cell,
-                                                               grid.otherbv[cell, d]):
-                        other = grid.otherbv[reached, dd]
-                        why[reached, other] = False
-                        if (1 << reached) & conflicts[other]:
-                            def explain():
-                                return explain_conflict(grid, cell, d,
-                                                        why, reached, other)
-                            grid.place(d, cell, explain)
-                            return  # allow changes to propagate
-                        else:
-                            conflicts[other] |= neighbors[reached]
-                for g in groups:
-                    for dd in digits:
-                        if grid.locations[dd] & g.mask & ~ conflicts[dd] == 0:
-                            def explain():
-                                return explain_conflict_group(grid, cell, d,
-                                                              why, g, dd)
-                            grid.place(d, cell, explain)
-                            return  # allow changes to propagate
+                        conflicts[other] |= neighbors[reached]
+            for g in groups:
+                for dd in digits:
+                    if grid.locations[dd] & g.mask & ~ conflicts[dd] == 0:
+                        def explain():
+                            return explain_conflict_group(grid, cell, d,
+                                                          why, g, dd)
+                        grid.place(d, cell, explain)
+                        return  # allow changes to propagate
 
 
 def createimplication(mask, pos, digit, T):

@@ -33,7 +33,13 @@ class SimpleOrderedSequence(Sequence):
 
     def cmp(self, x, y):
         """Compare the positions of x and y in the sequence."""
-        return cmp(self._tag[self.key(x)], self._tag[self.key(y)])
+        x_pos = self._tag[self.key(x)]
+        y_pos = self._tag[self.key(y)]
+        if x_pos < y_pos:
+            return -1
+        if x_pos > y_pos:
+            return +1
+        return 0
 
     def append(self, x):
         """Add x to the end of the sequence."""

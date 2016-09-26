@@ -16,8 +16,8 @@ def IntegerPointsByDistance():
     Each point is generated in constant amortized time."""
 
     # Start out by generating the two initial points of the hull
-    yield (0,0)
-    yield (0,1)
+    yield (0, 0)
+    yield (0, 1)
 
     # Data structures: hull, a sequence of edges, and queue, a bucket queue
     # Each point is represented as a tuple (x,y) of integer coordinates
@@ -28,14 +28,14 @@ def IntegerPointsByDistance():
     #            (which is not necessarily the other endpoint)
     #    beyond -- the next point beyond the edge, in its rectangle
     class edge:
-        def __init__(self,corner,unit,beyond):
+        def __init__(self, corner, unit, beyond):
             self.corner = corner
             self.unit = unit
             self.beyond = beyond
 
-    e = edge((0,0),(0,1),(-1,0))
-    f = edge((0,1),(0,-1),(1,0))
-    hull = Sequence([e,f])
+    e = edge((0, 0), (0, 1), (-1, 0))
+    f = edge((0, 1), (0, -1), (1, 0))
+    hull = Sequence([e, f])
 
     def dist2(p):
         """Squared Euclidean distance of a point from the origin"""
@@ -49,13 +49,16 @@ def IntegerPointsByDistance():
     prioritize(e)
     prioritize(f)
 
-    def box(p,u,b):
-        """Given an edge with corner p and unit u, find a boxed translate of b."""
+    def box(p, u, b):
+        """Given an edge with corner p and unit u, find a boxed translate of b.
+
+        """
         dot = (b[0]-p[0])*u[0]+(b[1]-p[1])*u[1]
         shift = dot//dist2(u)
-        b = (b[0]-shift*u[0],b[1]-shift*u[1])
-        if abs(u[0]) + abs(u[1]) == 1:  # Unit square has 2 boxed xlates, pick best
-            c = (b[0]+u[0],b[1]+u[1])
+        b = (b[0]-shift*u[0], b[1]-shift*u[1])
+        if abs(u[0]) + abs(u[1]) == 1:  # Unit square has 2 boxed
+                                        # xlates, pick best
+            c = (b[0]+u[0], b[1]+u[1])
             if dist2(c) < dist2(b):
                 return c
         return b
@@ -72,28 +75,29 @@ def IntegerPointsByDistance():
         if e.unit == f.unit:    # Special case flat vertex
             if dist2(f.beyond) < dist2(e.beyond):
                 e.beyond = f.beyond
-        else:                   # Concave vertex, use opp vertex of parallelogram
+        else:                   # Concave vertex, use opp vertex of
+                                # parallelogram
             p = e.corner
             q = f.corner
             r = hull.successor(f).corner
-            e.unit = (r[0]-p[0],r[1]-p[1])
-            e.beyond = (p[0]-q[0]+r[0],p[1]-q[1]+r[1])
+            e.unit = (r[0]-p[0], r[1]-p[1])
+            e.beyond = (p[0]-q[0]+r[0], p[1]-q[1]+r[1])
         hull.remove(f)
         del queue[f]
         prioritize(e)
-    
+
     def split(e):
         """Update the hull after adding e's beyond point"""
         p = e.corner
         q = hull.successor(e).corner
         u = e.unit
         b = e.beyond
-        e.unit = (b[0]-p[0],b[1]-p[1])
-        e.beyond = box(p,e.unit,(b[0]-u[0],b[1]-u[1]))
-        fu = (q[0]-b[0],q[1]-b[1])
-        fb = box(b,fu,(q[0]+u[0],q[1]+u[1]))
-        f = edge(b,fu,fb)
-        hull.insertAfter(e,f)
+        e.unit = (b[0]-p[0], b[1]-p[1])
+        e.beyond = box(p, e.unit, (b[0]-u[0], b[1]-u[1]))
+        fu = (q[0]-b[0], q[1]-b[1])
+        fb = box(b, fu, (q[0]+u[0], q[1]+u[1]))
+        f = edge(b, fu, fb)
+        hull.insertAfter(e, f)
         prioritize(e)
         prioritize(f)
         while nonconvex(hull.predecessor(e)):

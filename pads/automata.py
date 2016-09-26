@@ -13,8 +13,8 @@ from .util import arbitrary_item
 
 # Hack for Python 3 compatibility
 try:
-    unicode
-except:
+    unicode  # noqa
+except NameError:
     unicode = str
 
 

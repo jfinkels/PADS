@@ -27,6 +27,18 @@ may be lost.
 
 D. Eppstein, UC Irvine, August 12, 2003.
 """
+from io import IOBase
+import sys
+
+FILE_TYPES = (IOBase)
+
+STR_TYPES = (str)
+
+if sys.version_info < (3, 0):
+    FILE_TYPES += (file, )  # noqa
+
+if sys.version_info < (3, 0):
+    STR_TYPES += (unicode, )  # noqa
 
 
 class GraphFormatError(Exception):
@@ -399,9 +411,9 @@ def readUndirectedGraph(arg):
     """Parse graph and return in modified GvR format.
     Argument may be a file object, a single string, or a sequence of lines.
     """
-    if isinstance(arg, file):
+    if isinstance(arg, FILE_TYPES):
         lines = [L.strip() for L in arg]
-    elif isinstance(arg, str) or isinstance(arg, unicode):
+    elif isinstance(arg, STR_TYPES):
         lines = [arg]
     else:
         lines = list(arg)
