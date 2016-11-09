@@ -34,11 +34,11 @@ class PartitionTest(unittest.TestCase):
         for n in range(len(self.counts)):
             last = [n+1]
             for p in mckay(n):
-                self.assert_(last > p)
+                self.assertGreater(last, p)
                 last = list(p)  # make less-mutable copy
             last = [n+1]
             for p in revlex_partitions(n):
-                self.assert_(last > p)
+                self.assertGreater(last, p)
                 last = list(p)  # make less-mutable copy
 
     def testLex(self):
@@ -46,7 +46,7 @@ class PartitionTest(unittest.TestCase):
         for n in range(1,len(self.counts)):
             last = []
             for p in lex_partitions(n):
-                self.assert_(last < p)
+                self.assertLess(last, p)
                 last = list(p)  # make less-mutable copy
 
     def testRange(self):
@@ -54,13 +54,16 @@ class PartitionTest(unittest.TestCase):
         for n in range(len(self.counts)):
             for p in mckay(n):
                 for x in p:
-                    self.assert_(0 < x <= n)
+                    self.assertLess(0, x)
+                    self.assertLessEqual(x, n)
             for p in lex_partitions(n):
                 for x in p:
-                    self.assert_(0 < x <= n)
+                    self.assertLess(0, x)
+                    self.assertLessEqual(x, n)
             for p in revlex_partitions(n):
                 for x in p:
-                    self.assert_(0 < x <= n)
+                    self.assertLess(0, x)
+                    self.assertLessEqual(x, n)
     
     def testFixedLength(self):
         """Check that the fixed length partition outputs are correct."""
@@ -81,7 +84,8 @@ class PartitionTest(unittest.TestCase):
             for p in partitions(n):
                 c = conjugate(p)
                 for x in c:
-                    self.assert_(0 < x <= n)
+                    self.assertLess(0, x)
+                    self.assertLessEqual(x, n)
                 self.assertEqual(sum(c),n)
 
     def testConjugateInvolution(self):

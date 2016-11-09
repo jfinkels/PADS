@@ -10,7 +10,7 @@ class PartialOrderTest(unittest.TestCase):
     cube = {i:[i^b for b in (1,2,4,8) if i^b > i] for i in range(16)}
             
     def testHypercubeAcyclic(self):
-        self.assert_(isAcyclic(self.cube))
+        self.assertTrue(isAcyclic(self.cube))
         
     def testHypercubeClosure(self):
         TC = TransitiveClosure(self.cube)
